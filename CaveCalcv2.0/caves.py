@@ -17,6 +17,7 @@ import math
 import re
 import numpy as np
 from decimal import *
+import cavecalc.data
 import cavecalc.util as ccu
 from cavecalc.data.phreeqc_templates import *
 from cavecalc.setter import SettingsObject
@@ -48,9 +49,9 @@ else:
     
 # Global parameters
 EQ_STEP = True                      #   run initial isotope equilibration step
-PHREEQC_TOLERANCE = 0.1             #   tolerance on phreeqc percent error
+PHREEQC_TOLERANCE = 0.1            #   tolerance on phreeqc percent error
 PRESSURE =  1.001                   #   atmospheric pressure (bar)
-BEDROCK_PHASE_QZ_LEVEL = 1e-10      #   precision of bedrock phase declaration
+BEDROCK_PHASE_QZ_LEVEL = 1e-9    #   precision of bedrock phase declaration
 
 # Class definitions
 class Solution(object):
@@ -109,6 +110,9 @@ class Solution(object):
             if self.s.settings['soil_Ba'] > 0 or \
                self.s.settings['bedrock_BaCa'] > 0:
                 self._calcite_string += SS_BA   # add Ba-bearing members
+            if self.s.settings['soil_U'] > 0 or \
+               self.s.settings['bedrock_UCa'] > 0:
+                self._calcite_string += SS_U   # add U-bearing members
             return self._calcite_string
         
     @property
@@ -130,6 +134,9 @@ class Solution(object):
                 if self.s.settings['soil_Ba'] > 0 or \
                    self.s.settings['bedrock_BaCa'] > 0:
                     self._aragonite_string += SS_BA   # add Ba-bearing members
+                if self.s.settings['soil_U'] > 0 or \
+                   self.s.settings['bedrock_UCa'] > 0:
+                    self._aragonite_string += SS_U   # add U-bearing members
                 return self._aragonite_string
         
 
@@ -192,10 +199,12 @@ class Solution(object):
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
+                'u'     :   self.s.settings['soil_U'],
                 'ba'    :   self.s.settings['soil_Ba'],
                 'cl'    :   2*( self.s.settings['soil_Ca'] + 
                                 self.s.settings['soil_Mg'] +
                                 self.s.settings['soil_Sr'] +
+                                self.s.settings['soil_U'] +
                                 self.s.settings['soil_Ba'] ),
                 'co2_si':   math.log10(PRESSURE * 1e-6 * self.s.settings['init_pCO2']) }
         
@@ -240,9 +249,11 @@ class Solution(object):
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
                 'ba'    :   self.s.settings['soil_Ba'],
+                'u'     :   self.s.settings['soil_U'],
                 'cl'    :   2*( self.s.settings['soil_Ca'] + 
                                 self.s.settings['soil_Mg'] +
                                 self.s.settings['soil_Sr'] +
+                                self.s.settings['soil_U']  +
                                 self.s.settings['soil_Ba'] ),
                 'c'     :   self.init_C,
                 'o'     :   self.init_O,
@@ -299,10 +310,12 @@ class Solution(object):
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
+                'u'     :   self.s.settings['soil_U'],
                 'ba'    :   self.s.settings['soil_Ba'],
                 'cl'    :   2*( self.s.settings['soil_Ca'] + 
                                 self.s.settings['soil_Mg'] +
                                 self.s.settings['soil_Sr'] +
+                                self.s.settings['soil_U'] +
                                 self.s.settings['soil_Ba'] ),
                 'c'     :   self.init_C,
                 'o'     :   self.init_O,
@@ -567,7 +580,10 @@ class Carbonate(object):
         
         if self.s.settings['bedrock_mineral'].capitalize() == 'Calcite': 
             eq_string = BEDROCK_DISS1.format( moles_bedrock = m_bedrock,
-                                          moles_pyrite = m_pyrite ) 
+                                          moles_pyrite = m_pyrite )
+        elif self.s.settings['bedrock_mineral'].capitalize() == 'Dolomite': 
+                eq_string = BEDROCK_DISS1.format( moles_bedrock = m_bedrock,
+                                              moles_pyrite = m_pyrite ) 
         elif self.s.settings['bedrock_mineral'].capitalize() == 'Aragonite':
             eq_string = BEDROCK_DISS3.format( moles_bedrock = m_bedrock,
                                           moles_pyrite = m_pyrite )
@@ -611,15 +627,17 @@ class Carbonate(object):
         MgCa = Decimal(self.s.settings['bedrock_MgCa'] * 0.001)
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
+        UCa =  Decimal(self.s.settings['bedrock_UCa']*0.001)
         a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
         b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
         c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
     
         # metal totals
-        tCa = 1 / (1+MgCa+SrCa+BaCa)
+        tCa = 1 / (1+MgCa+SrCa+BaCa+UCa)
         tMg = dcqz(MgCa * tCa)
         tSr = dcqz(SrCa * tCa)
         tBa = dcqz(BaCa * tCa)
+        tU =  dcqz(UCa * tCa)
         
         # isotope totals
         Ca44 = dcqz(a/(1+a) * tCa) 
@@ -643,6 +661,10 @@ class Carbonate(object):
         if BaCa > 0:
             metals += "Ba{Ba}".format(Ba=tBa)
             d += " + {}Ba+2".format(tBa)
+        if UCa > 0:
+            metals += "U{U}".format(U=tU)
+            d += " + {}UO2+2".format(tU)
+            O16 = dcqz(O16 + 2 * tU)
             
         carbonate = "C{}[13C]{}O{}[18O]{}".format( C12, C13, O16, O18 )
         s = metals + carbonate
@@ -653,12 +675,12 @@ class Carbonate(object):
         delta_h     =    -2.297
         analytic_line   =    "-171.9065     -0.077993      2839.319      71.595"
         
-        "{}Mg+2 + {}Sr+2 + {}Ba+2"
+        "{}Mg+2 + {}Sr+2 + {}Ba+2 + {}UO2+2"
         self.diss_reaction = s + ' = ' + d
         self.pq_phase_entry = self.diss_reaction + \
-                              '\n\tlog_k\t' + str(log_k) +  \
-                              '\n\tdelta_h\t' + str(delta_h) + \
-                              '\n\t' + analytic_line
+                              '\n\tlog_k\t' + str(v['log_k']) +  \
+                              '\n\tdelta_h\t' + str(v['delta_h']) + \
+                              '\n\t' + str(v['analytic_line'])
                               
     def _get_aragonite_phase(self):
         
@@ -673,15 +695,17 @@ class Carbonate(object):
         MgCa = Decimal(self.s.settings['bedrock_MgCa'] * 0.001)
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
+        UCa =  Decimal(self.s.settings['bedrock_UCa']*0.001)
         a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
         b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
         c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
     
         # metal totals
-        tCa = 1 / (1+MgCa+SrCa+BaCa)
+        tCa = 1 / (1+MgCa+SrCa+BaCa+UCa)
         tMg = dcqz(MgCa * tCa)
         tSr = dcqz(SrCa * tCa)
         tBa = dcqz(BaCa * tCa)
+        tU =  dcqz(UCa * tCa)
         
         # isotope totals
         Ca44 = dcqz(a/(1+a) * tCa) 
@@ -705,6 +729,10 @@ class Carbonate(object):
         if BaCa > 0:
             metals += "Ba{Ba}".format(Ba=tBa)
             d += " + {}Ba+2".format(tBa)
+        if UCa > 0:
+            metals += "U{U}".format(U=tU)
+            d += " + {}UO2+2".format(tU)  
+            O16 = dcqz(O16 + 2 * tU)
             
         carbonate = "C{}[13C]{}O{}[18O]{}".format( C12, C13, O16, O18 )
         s = metals + carbonate
@@ -715,12 +743,12 @@ class Carbonate(object):
         delta_h = -2.589
         analytic_line = "-171.9773     -0.077993      2903.293      71.595"
         
-        "{}Mg+2 + {}Sr+2 + {}Ba+2"
+        "{}Mg+2 + {}Sr+2 + {}Ba+2 + {}UO2+2"
         self.diss_reaction = s + ' = ' + d
         self.pq_phase_entry = self.diss_reaction + \
-                              '\n\tlog_k\t' + str(log_k) +  \
-                              '\n\tdelta_h\t' + str(delta_h) + \
-                              '\n\t' + analytic_line                          
+                              '\n\tlog_k\t' + str(v['log_k']) +  \
+                              '\n\tdelta_h\t' + str(v['delta_h']) + \
+                              '\n\t' + str(v['analytic_line'])                         
     
     def _get_dolomite_phase(self):
         
@@ -734,15 +762,17 @@ class Carbonate(object):
         bed_18O = self.s.settings['bedrock_d18O']
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
+        UCa = Decimal(self.s.settings['bedrock_UCa']*0.001)
         a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
         b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
         c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
     
         # metal totals
-        tCa = 2 / (2+SrCa+BaCa)
+        tCa = 2 / (2+SrCa+BaCa+UCa)
         tMg = dcqz(2 / (2+SrCa+BaCa))
         tSr = dcqz(SrCa * tCa)
         tBa = dcqz(BaCa * tCa)
+        tU = dcqz(UCa * tCa)
         
         # isotope totals
         Ca44 = dcqz(a/(1+a) * tCa)
@@ -765,6 +795,10 @@ class Carbonate(object):
         if BaCa > 0:
             metals += "Ba{}".format(tBa)
             d += " + {}Ba+2".format(tBa)
+        if UCa > 0:
+            metals += "U{}".format(tU)
+            d += " + {}UO2+2".format(tU) 
+            O16 = dcqz(O16 + 2 * tU)
             
         carbonate = "C{C12}[13C]{C13}O{O16}[18O]{O18}".format(
                        C12=C12, C13=C13, O16=O16, O18=O18
@@ -807,7 +841,9 @@ class Carbonate(object):
                 '[18O]' :   -2,
                 'Mg'    :   2,
                 'Sr'    :   2,
-                'Ba'    :   2
+                'Ba'    :   2,
+                'U'     :   2,
+ 
             }
         
         print("\n" + reaction_string)
@@ -1117,6 +1153,7 @@ class Gas(object):
         return Gas(**kwargs)
 
    
+ 
 class Simulator(object):
     """Runs Cavecalc models.
     
@@ -1153,7 +1190,11 @@ class Simulator(object):
         self.settings_archive = deepcopy(settings) # will not be changed
         self.id = id
         
+        # Dynamically set the database based on 'precipitate_mineralogy'
+        if self.settings['precipitate_mineralogy'] == 'Aragonite':
+            self._set_database('aragonite.dat')
         
+                
         # set up input log if requested
         if self.settings['phreeqc_log_file']:
             l = self.settings['phreeqc_log_file_name']
@@ -1171,6 +1212,11 @@ class Simulator(object):
         self.desc_buffer = ""
         self._define_selected_output()
         self._parse_settings()
+        
+    def _set_database(self, db_name):
+        """Dynamically set the database path."""
+        db_path = os.path.dirname(cavecalc.data.__file__)  # Get the database directory
+        self.settings['database'] = os.path.join(db_path, db_name)  # Construct full database path    
         
     def _define_selected_output(self):
         """Defines PHREEQC SELECTED_OUTPUT block."""
@@ -1329,10 +1375,14 @@ class Simulator(object):
                     raise Exception("IPhreeqc failed to load. Ensure " + \
                     "IPhreeqcCOM is installed correctly.")
                                  
+            
+            # Dynamically set the database based on 'precipitate_mineralogy'
+            if self.settings['precipitate_mineralogy'] == 'Aragonite':
+                self._set_database('aragonite.dat')
+            
             # IPhreeqc is now initialised. Load the database
             self._call_iphreeqc('load_database',self.settings['database'])
             
-         
         if 'phreeqpy' in MODE:
             c = inflection.underscore(command)
         else:
