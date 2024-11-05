@@ -24,12 +24,12 @@ if sys.argv[1] == 'install':
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'matplotlib'])
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'phreeqpy'])
 
-setup(  name =          'cavecalc',
+setup(  name =          'cavecalcv2.0',
         description =   'Cave Geochemical Modelling',
-        author =        'Robert Owen',
-        author_email =  'robert.owen@earth.ox.ac.uk',
-		url =			'https://www.earth.ox.ac.uk/people/robert-owen/',
-        version =       '1.1',
+        author =        'Samuel Hollowood',
+        author_email =  'samuel.hollowood@bnc.ox.ac.uk',
+		url =			'https://www.earth.ox.ac.uk/people/samuel-hollowood',
+        version =       '2.0',
         packages =      ['cavecalc', 'cavecalc.data', 'cavecalc.gui'],
         package_data =  {'cavecalc.data' : ['*.dat']},
         scripts =       ['scripts/cc_input_gui.py', 'scripts/cc_output_gui.py'],
