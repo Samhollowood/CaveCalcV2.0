@@ -91,7 +91,7 @@ dir_event = './run_event_test/' # directory to save model output and EventAnalys
 # Run model and EventaAnalyser
 model = ForwardModels(settings=s, output_dir= dir_event)
 model.run_models()
-model.Stal_save()
+model.save()
 
 #Plotting EventAnalyser and generating summary file
 dir1 = s['user_filepath']  #Same as 'users_filepath' defined in s = {}
