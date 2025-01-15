@@ -245,6 +245,10 @@ class ForwardModels(object):
             
         with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
             pickle.dump(self.results, f)
+
+        # Print the full absolute output directory path
+        full_output_dir = os.path.abspath(self.output_dir)
+        print(f"Results and settings have been saved in: {full_output_dir}")
             
             # Extract user_filepath from input settings
         extracted_values = {}
@@ -263,10 +267,8 @@ class ForwardModels(object):
                 dir2 = os.path.join(self.output_dir,'CDA Results')  # Example for dir2
                 plot = e.plot_CDA(dir1, dir2)
                 print("Plotting completed successfully.")
-                print(f"Results and settings have been saved in: {self.output_dir}")
             except Exception as err:
                 print(f"CDA not initialised so no CDA plots")
-                print(f"Results and settings have been saved in: {self.output_dir}")
 
             
            
