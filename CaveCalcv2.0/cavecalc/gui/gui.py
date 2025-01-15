@@ -357,8 +357,8 @@ class CCInputGUI(object):
         # Show loading screen
         self._show_loading_screen()
         self._load_defaults()
-        self.event_analyser_input_path = StringVar()
-        self.event_analyser_path = StringVar()
+        self.CDA_input_path = StringVar()
+        self.CDA_path = StringVar()
         self.construct_inputs()
        
         
@@ -405,7 +405,7 @@ class CCInputGUI(object):
         'tolerance_SrCa',
         'tolerance_BaCa',
         'tolerance_UCa',
-        'EventAnalyser_out_dir' 
+        'out_dir' 
         ]
     
         # Generate the list of settings based on layout numbers
@@ -439,11 +439,11 @@ class CCInputGUI(object):
        if filename: 
            path_variable.set(filename)      
       
-    def _plot_event_analyser(self): 
+    def _plot_CDA(self): 
         """Opens the plotting window with the user-provided file paths."""
         s = self.settings.copy()
         dir1 = s.pop('user_filepath').get()
-        dir2 = self.event_analyser_path.get()
+        dir2 = self.CDA_path.get()
 
         if not dir1 or not dir2:
             print("Both file paths are required!")
@@ -452,17 +452,17 @@ class CCInputGUI(object):
         try: 
             evaluator = Evaluate()
             print("Plotting...")
-            evaluator.plot_eventanalyser(dir1, dir2)
+            evaluator.plot_CDA(dir1, dir2)
             plt.show(block=False)
             plt.pause(1)
         except Exception as e:  
             print(f"Error while plotting: {e}") 
             
     def _show_help(self): 
-        """Opens the EventAnalyser_help.txt file in the default text viewer.""" 
+        """Opens the CDA_help.txt file in the default text viewer.""" 
         try: 
             # Locate the help file within the cavecalc.gui package using importlib.resources 
-            with importlib.resources.path(cavecalc.gui, 'EventAnalyser_help.txt') as help_file_path: 
+            with importlib.resources.path(cavecalc.gui, 'CDA_help.txt') as help_file_path: 
                 help_file_path_str = str(help_file_path)  # Convert PosixPath to string
             
                 # Open the file with the default application
@@ -491,23 +491,23 @@ class CCInputGUI(object):
             
             # Create a dictionary for variable tooltips 
             tooltips_variables = {
-                #EventAnalyser
+                #CDA
                 'soil_d13C': 'Sets the stbale carbon isotopic composition of the soil-water and soil-gas. Impacts speleothem d13C', 
                 'soil_pCO2': 'Sets the concentrations of CO2 witin the soil. Alters the extent of bedrock dissolution, and amount of degassing steps. Impacts d13C, d44Ca, DCP, and X/Ca', 
                 'cave_pCO2': 'Sets the concentration of cave air CO2. Alters the amount of degassing and prior carbonate precipitation. Impacts d13C, d44Ca and X/Ca', 
-                'gas_volume': 'Stes the conditions of bedrock dissolution. More open-system conditions is given by a higher gas volume. Impacts DCP and d13C', 
+                'gas_volume': 'Sets the conditions of bedrock dissolution. More open-system conditions is given by a higher gas volume. Impacts DCP and d13C', 
                 'temperature': 'Alters temperature of the cave environment. Impacts fractionation factors of d18O, d13C, and partitioninng coefficients of X/Ca ', 
                 'atm_d18O': 'Sets the rainfall (‰, SMOW) value infilitrating into the karst. Impacts d18O',
                 
                 #Other
-                'atm_O2': 'Sets the atmospheric O2',
-                'atm_pCO2': 'Alters the mixing line between the soil end-member. Impacts d13C',
-                'atm_d13C': 'Alters the mixing line between the soil end-member. Impacts d13C',
-                'atm_R14C': 'Alters the amount of radiocarbon activity by the atmosphere. Impacts DCP',
-                'soil_O2': 'Sets the percentage of O2 gas within the soil. Alters the amount of pyrite oxidation. Impacts DCP and d13C',
-                'soil_R14C': 'Sets the radiocarbon activity of the soil. Impacts DCP',
+                'atm_O2': 'Sets the atmospheric O2 (given as a decimal fraction)',
+                'atm_pCO2': 'Provides the concentration of atmospheric pCO2. If atmo_exchange > 0, will impact soil-water equilibriation',
+                'atm_d13C': 'Provides the stable carbon isotope composition of atmospheric pCO2. If atmo_exchange > 0, will impact d13C after soil-water equilibriation',
+                'atm_R14C': 'Sets the radiocarbon activity of atmospheric 14C',
+                'soil_O2': 'Sets the percentage of O2 gas within the soil (given as a decimal fraction). If bedrock_pyrite > 0, will impact the amount of pyrite oxidation',
+                'soil_R14C': 'Sets the radiocarbon activity within the soil. Impacts DCP',
                 # Soil Gas Mixing
-                'atmo_exchange': 'Sets the amount of atmospheric excahnge with the soil, impacting d13C, DCP, d44Ca, and X/Ca',
+                'atmo_exchange': 'Sets the amount of atmospheric excahnge with the soil, impacting soil-water equilibriation',
                 'init_O2':     'A mix of the soil and atm O2. Defines the final soilwater gas O2',  
                 'init_R14C':	'A mix of the soil and atm R14C. Defines final soilwater gas R14C',  	
                 'init_d13C':	'A mix of the soil and atm d13C. Defines final soilwater gas d13C',  	
@@ -522,9 +522,9 @@ class CCInputGUI(object):
                 
                 'bedrock_BaCa': 'Alters the amount of Ba provided by the bedrock. Impacts Ba/Ca',
                 'bedrock_Ca':  'Alters the amount of Ca provided by the bedrock. Impacts X/Ca',
-                'bedrock_MgCa':  'Alters the amount of Ca provided by the bedrock. Impacts Mg/Ca',
-                'bedrock_SrCa': 'Alters the amount of Ca provided by the bedrock. Impacts Sr/Ca',
-                'bedrock_UCa':  'Alters the amount of Ca provided by the bedrock. Impacts U/Ca',
+                'bedrock_MgCa':  'Alters the amount of Mg provided by the bedrock. Impacts Mg/Ca',
+                'bedrock_SrCa': 'Alters the amount of Sr provided by the bedrock. Impacts Sr/Ca',
+                'bedrock_UCa':  'Alters the amount of U provided by the bedrock. Impacts U/Ca',
                 'bedrock_d44Ca':  'Alters the d44Ca of the bedrock. Impacts d44Ca',
                 'bedrock_d13C':  'Alters the d13C of the bedrock. Impacts d13C',
                 'bedrock_d18O':  'Alters the d18O of the bedrock. Impacts d18O',
@@ -537,13 +537,13 @@ class CCInputGUI(object):
                 'reprecip': 'Controls whether re-precipitation can occur. Impacts d13C, d44Ca and X/Ca',
                 
                 # Cave Air   
-                'cave_d13C': 'Alters the cave air d13C that is equilibriated with the solution d13C. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
+                'cave_d13C': 'Alters the stable carbon isotope composition of cave air. NOTE: Default mode does not allow for equilibriaiton with the cave air. To do so, change Degassing/Precipitation Mode to single_step_degassing',
                 'cave_R14C':  'Alters the radiocarbon value of cave air that is equilibriated with the solution R14C. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
                 'cave_d18O':  'Alters the cave air d18O that is equilibriated with the solution d18O. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
                 'cave_air_volume': 'Alters the extent of equilibriation with the cave air. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
 
                 'kinetics_mode': 'Alters fundamental aspects of speleothem chemistry. Refer to Owen et al., 2018: CaveCalc: A new model for speleothem chemistry & isotopes',
-                'precipitate_mineralogy': 'Alters the precipitate mineralogy. Impacts d13C, d18O, X/Ca, and to a lesser extent, d44Ca',
+                'precipitate_mineralogy': 'Alters the precipitate mineralogy. Impacts d13C, d18O, X/Ca, and d44Ca',
           
                 
                 'co2_decrement': 'Fraction of CO2(aq) removed on each degassing step. Alters the resolution of the evolution of d13C, d44Ca, and X/Ca',
@@ -606,24 +606,24 @@ class CCInputGUI(object):
                     f.grid(row=i, column=1)
                 i += 1
                 
-            # Add the buttons for "EventAnalyser Mode" only if it matches this section 
-            if header_text == 'EventAnalyser Settings': 
+            # Add the buttons for "CDA Mode" only if it matches this section 
+            if header_text == 'CDA Settings': 
               
                 # Create a frame for file paths
                 file_paths_frame = Frame(frame)
                 file_paths_frame.grid(row=i + 2, column=0, columnspan=3, pady=5)
                 
                 # Add heading
-                heading = Label(file_paths_frame, text="Plot EventAnalyser results vs measured data", font="-size 12 -weight bold")
+                heading = Label(file_paths_frame, text="Plot CDA results vs measured data", font="-size 12 -weight bold")
                 heading.grid(row=0, column=0, columnspan=2, pady=10)
 
 
-                # Use FileFindWidget for EventAnalyser path
-                Label(file_paths_frame, text="EventAnalyser results path:").grid(row=2, column=0, sticky=W)
-                FileFindWidget(file_paths_frame, value=self.event_analyser_path, mode='dir').grid(row=2, column=1)
+                # Use FileFindWidget for CDA path
+                Label(file_paths_frame, text="CDA results path:").grid(row=2, column=0, sticky=W)
+                FileFindWidget(file_paths_frame, value=self.CDA_path, mode='dir').grid(row=2, column=1)
 
                 # Button to trigger plotting
-                Button(file_paths_frame, text="Plot", command=self._plot_event_analyser).grid(row=3, columnspan=3)
+                Button(file_paths_frame, text="Plot", command=self._plot_CDA).grid(row=3, columnspan=3)
 
                 # Button to open help file
                 Button(file_paths_frame, text="Help", command=self._show_help).grid(row=5, column=0, columnspan=3, pady=10)
@@ -658,7 +658,7 @@ class CCInputGUI(object):
         #'Scripting Options': 'Sets CaveCalc mode, the amount of CO2 removed per degassing step, and defines the supersaturation limit.', 
         #'Additional PHREEQC output': 'Define isotopes, molalities and toals of additional PHREEQC outputs.',
         #'File IO Settings': 'File Input/Output settings.',
-        #'EventAnalyser Mode': 'Define input file path, tolerance levels. Run and plot EventAnalyser.'  
+        #'CDA Mode': 'Define input file path, tolerance levels. Run and plot CDA.'  
         #}
         
         px = 5 # padding between frames
@@ -753,13 +753,13 @@ class CCInputGUI(object):
         ('Aragonite/Calcite Mode', 5),
         ('Scripting Options', 2),
         ('Additional PHREEQC output', 3),
-        ('EventAnalyser Settings', 1),
+        ('CDA Settings', 1),
         ]
 
         current_row = 1
         for section_name, layout_number in sections: 
             # Determine button color
-            button_color = 'red' if section_name in ['Aragonite/Calcite Mode', 'EventAnalyser Mode'] else 'black'
+            button_color = 'red' if section_name in ['Aragonite/Calcite Mode', 'CDA Mode'] else 'black'
 
             # Add toggle button
             self.toggle_buttons[section_name] = Button(F3, text=f"▼ {section_name}", command=lambda s=section_name: toggle_expand_collapse(s))
@@ -785,8 +785,8 @@ class CCInputGUI(object):
         RunButton = Button(F3, text="Run CaveCalc only!", command=lambda: self._run_models()) 
         RunButton.grid(row=i, column=0, sticky=W, padx=0, pady=(35, 1))
         
-        RunEventAnalyserButton = Button(F3, text="Run CaveCalc with EventAnalyser!", command=self.run_models_eventanalyser) 
-        RunEventAnalyserButton.grid(row=i + 1, column=0, sticky=W, padx=0, pady=1) 
+        RunCDAButton = Button(F3, text="Run CaveCalc with CDA!", command=self.run_models_CDA) 
+        RunCDAButton.grid(row=i + 1, column=0, sticky=W, padx=0, pady=1) 
         
      
         # Add link to output GUI
@@ -799,9 +799,9 @@ class CCInputGUI(object):
         self.F3 = F3
     
     
-    def open_event_analyser_gui(self):
-        """Open the EventAnalyser GUI window."""
-        EventAnalyserGUI(Toplevel(self.master), self)   
+    def open_CDA_gui(self):
+        """Open the CDA GUI window."""
+        CDAGUI(Toplevel(self.master), self)   
         
     def _run_models(self):
         
@@ -852,8 +852,8 @@ class CCInputGUI(object):
         p.rainfall_calculator()
         print("Done.")
         
-    def run_models_eventanalyser(self): 
-        """Run the EventAnalyser models with additional checks."""
+    def run_models_CDA(self): 
+        """Run the CDA models with additional checks."""
     
         # Copy settings
         s = self.settings.copy()
@@ -862,7 +862,7 @@ class CCInputGUI(object):
         user_filepath = s.get('user_filepath').get()  # Access 'user_filepath' from settings
         if not user_filepath: 
             # Show warning popup if user_filepath is empty
-            messagebox.showwarning("Warning", "User needs to specify input file in EventAnalyser Settings") 
+            messagebox.showwarning("Warning", "User needs to specify input file in CDA Settings") 
             return  # Exit the method if user_filepath is not specified
     
         out_dir = s.pop('out_dir').get()  # Pop out_dir from settings
@@ -885,36 +885,36 @@ class CCInputGUI(object):
         p.save()
         print("Done.")     
         
-class EventAnalyserGUI(object):
-    """The EventAnalyser GUI window."""
+class CDAGUI(object):
+    """The CDA GUI window."""
     
      
     def __init__(self, master, cc_input_gui):
         self.master = master
-        self.master.title('EventAnalyser')
-        self.event_analyser_input_path = StringVar()
-        self.event_analyser_path = StringVar()
+        self.master.title('CDA')
+        self.CDA_input_path = StringVar()
+        self.CDA_path = StringVar()
         self.file_paths_frame()  # Add the file paths frame
-        self.construct_inputs()  # Add the EventAnalyser inputs
+        self.construct_inputs()  # Add the CDA inputs
         
     def file_paths_frame(self): 
-        """Frame for inputting file paths for EventAnalyser data.""" 
+        """Frame for inputting file paths for CDA data.""" 
         F2 = Frame(self.master)
         
         # Add heading
-        heading = Label(F2, text="Plot EventAnalyser results vs measured data", font="-size 12 -weight bold")
+        heading = Label(F2, text="Plot CDA results vs measured data", font="-size 12 -weight bold")
         heading.grid(row=0, column=0, columnspan=2, pady=10)
 
-        # Use FileFindWidget for EventAnalyser input path
+        # Use FileFindWidget for CDA input path
         Label(F2, text="Users input file:").grid(row=1, column=0, sticky=W)
-        FileFindWidget(F2, value=self.event_analyser_input_path, mode='Load').grid(row=1, column=1)
+        FileFindWidget(F2, value=self.CDA_input_path, mode='Load').grid(row=1, column=1)
 
-        # Use FileFindWidget for EventAnalyser path
-        Label(F2, text="EventAnalyser.xlsx results Path:").grid(row=2, column=0, sticky=W)
-        FileFindWidget(F2, value=self.event_analyser_path, mode='Load').grid(row=2, column=1)
+        # Use FileFindWidget for CDA path
+        Label(F2, text="CDA.xlsx results Path:").grid(row=2, column=0, sticky=W)
+        FileFindWidget(F2, value=self.CDA_path, mode='Load').grid(row=2, column=1)
 
         # Button to trigger plotting
-        Button(F2, text="Plot", command=self._plot_event_analyser).grid(row=3, columnspan=3)
+        Button(F2, text="Plot", command=self._plot_CDA).grid(row=3, columnspan=3)
         
         # Button to open help file
         Button(F2, text="Help", command=self._show_help).grid(row=3, column=2, columnspan=3, pady=10)
@@ -928,10 +928,10 @@ class EventAnalyserGUI(object):
        if filename: 
            path_variable.set(filename)      
     
-    def _plot_event_analyser(self): 
+    def _plot_CDA(self): 
         """Opens the plotting window with the user-provided file paths."""
-        dir1 = self.event_analyser_input_path.get()
-        dir2 = self.event_analyser_path.get()
+        dir1 = self.CDA_input_path.get()
+        dir2 = self.CDA_path.get()
 
         if not dir1 or not dir2:
             print("Both file paths are required!")
@@ -940,17 +940,17 @@ class EventAnalyserGUI(object):
         try: 
             evaluator = Evaluate()
             print("Plotting...")
-            evaluator.plot_eventanalyser(dir1, dir2)
+            evaluator.plot_CDA(dir1, dir2)
             plt.show(block=False)
             plt.pause(1)
         except Exception as e:  
             print(f"Error while plotting: {e}") 
             
     def _show_help(self): 
-        """Opens the EventAnalyser_help.txt file in the default text viewer.""" 
+        """Opens the CDA_help.txt file in the default text viewer.""" 
         try: 
             # Locate the help file within the cavecalc.gui package using importlib.resources 
-            with importlib.resources.path(cavecalc.gui, 'EventAnalyser_help.txt') as help_file_path: 
+            with importlib.resources.path(cavecalc.gui, 'CDA_help.txt') as help_file_path: 
                 help_file_path_str = str(help_file_path)  # Convert PosixPath to string
             
                 # Open the file with the default application
@@ -998,9 +998,9 @@ class CCAnalyseGUI(object):
         self.dnum.set(0)
         self.settings_report = {}
         
-        # File paths for the EventAnalyser
-        self.event_analyser_input_path = StringVar()
-        self.event_analyser_path = StringVar()
+        # File paths for the CDA
+        self.CDA_input_path = StringVar()
+        self.CDA_path = StringVar()
         
         self.load_outputs_frame()
         self.save_buttons_frame()

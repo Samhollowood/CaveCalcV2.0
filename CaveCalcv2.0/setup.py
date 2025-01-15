@@ -24,7 +24,9 @@ if sys.argv[1] == 'install':
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'matplotlib'])
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'phreeqpy'])
 
-setup(  name =          'cavecalcv2.0',
+
+
+setup(  name =          'cavecalc',
         description =   'Cave Geochemical Modelling',
         author =        'Samuel Hollowood',
         author_email =  'samuel.hollowood@bnc.ox.ac.uk',
@@ -34,7 +36,7 @@ setup(  name =          'cavecalcv2.0',
         package_data =  {'cavecalc.data' : ['*.dat']},
         scripts =       ['scripts/cc_input_gui.py', 'scripts/cc_output_gui.py'],
         install_requires = [ 'scipy', 'numpy', 'matplotlib', 'inflection',
-                             'seaborn']   )
+                             'seaborn','pandas','phreeqpy']   )
         
 # install phreeqpy separately for non-Windows users.
 # phreeqpy doesn't work properly in install_requires

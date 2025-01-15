@@ -16,11 +16,12 @@ import pandas as pd
 import multiprocessing as mp
 import pickle
 # my modules
-import cavecalc.caves_Uranium as ccv
+import cavecalc.caves as ccv
 import cavecalc.util as ccu
 from cavecalc.setter import SettingsObject, SettingsMaker
 from copy import deepcopy
 import gc
+import cavecalc.analyse as cca
 
 def run_a_model(SO):
     """Run a single cavecalc model.
@@ -224,7 +225,132 @@ class ForwardModels(object):
         finally:
             os.chdir(ret_dir)
             
+  
             
+    def save(self):
+        """Save results and settings data to .pkl files. 
+        
+        The resulting files (results.pkl and settings.pkl) may be read using 
+        the cavecalc.analyse module.
+        
+        results.pkl contains a list of dicts. Each dict contains the output of
+        a single model. settings.pkl contains a similar list of 
+        SettingsObjects, one for each model run.
+        """
+        
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
+            pickle.dump(self.input, f)
+            
+        with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
+            pickle.dump(self.results, f)
+            
+            # Extract user_filepath from input settings
+        extracted_values = {}
+        for setting in self.input:
+            if hasattr(setting, "dict"):  # Ensure the object has a dict method
+                setting_dict = setting.dict()
+                extracted_values['user_filepath'] = setting_dict.get('user_filepath')
+        
+        # Check if user_filepath exists and is a string
+        user_filepath = extracted_values.get('user_filepath')
+        if isinstance(user_filepath, str):
+            try:
+                # Perform additional logic for cavecalc.analyse
+                e = cca.Evaluate()
+                dir1 = user_filepath
+                dir2 = os.path.join(self.output_dir,'CDA Results')  # Example for dir2
+                plot = e.plot_CDA(dir1, dir2)
+                print("Plotting completed successfully.")
+            except Exception as err:
+                print(f"Error during plotting: {err}")
+            
+           
+    
+
+        
+    def _debug(self, i):
+        """Runs the specified model and saves the pq_input_log file for 
+        debugging. The input log file may be run directly by PHREEQC.
+        
+        Args:
+            i: Index position in self.input to re-run in debug mode.
+        """
+        s_debug = self.input[i]
+        s_debug.set(phreeqc_log_file=True)
+        
+        dbug = ccv.Simulator(s_debug, id=i)
+        dbug.run()
+ 
+'''      
+    def Stal_save(self, excel_filename='model_outputs.xlsx'):
+        """Extracts the last index of each key (variable) from the model outputs,
+        as well as the settings, and saves them into an Excel file with two sheets.
+        
+        Args:
+            excel_filename (str): The name of the Excel file to save the results to.
+                                  Defaults to 'model_output.xlsx'.
+        Returns:
+            None. The data is saved to an Excel file in the specified directory.
+        """
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
+            pickle.dump(self.input, f)
+            
+        with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
+            pickle.dump(self.results, f)
+
+        # Load the results from the saved pickle file
+        results_path = os.path.join(self.output_dir, 'results.pkl')
+        if not os.path.exists(results_path):
+            raise FileNotFoundError(f"No results file found at {results_path}. Run models and save results before extracting values.")
+        
+        with open(results_path, 'rb') as f:
+            results = pickle.load(f)
+
+        # Load the settings from the saved pickle file
+        settings_path = os.path.join(self.output_dir, 'settings.pkl')
+        if not os.path.exists(settings_path):
+            raise FileNotFoundError(f"No settings file found at {settings_path}. Run models and save settings before extracting values.")
+        
+        with open(settings_path, 'rb') as f:
+            settings = pickle.load(f)
+
+        # Extract the last values from each model's output
+        last_values = []
+        for model_output in results:
+            model_dict = model_output[0]
+            model_last_values = {key: values[-1] for key, values in model_dict.items()}
+            last_values.append(model_last_values)
+        results_df = pd.DataFrame(last_values)
+        results_df.insert(0, 'Model', [f'{i+1}' for i in range(len(last_values))])
+
+        # Extract the settings from each SettingsObject
+        settings_list = []
+        for setting in settings:
+            settings_dict = setting.dict()  # Assuming `dict()` method exists for SettingsObject
+            settings_list.append(settings_dict)
+        settings_df = pd.DataFrame(settings_list)
+        settings_df.insert(0, 'Model', [f'{i+1}' for i in range(len(settings_list))])
+
+        # Save both DataFrames to separate sheets in the same Excel file
+        excel_path = os.path.join(self.output_dir, excel_filename)
+        with pd.ExcelWriter(excel_path) as writer:
+            settings_df.to_excel(writer, sheet_name='Settings', index=False)
+            results_df.to_excel(writer, sheet_name='Results', index=False)
+        
+              
+
+        print(f"Excel file '{excel_filename}' has been created successfully with 'Settings' and 'Results' sheets in the directory '{self.output_dir}'.")
+        
+'''
+
+
+'''
+          
     def rainfall_calculator(self):
         """Extracts specific settings and loads user file to perform rainfall calculations.
         
@@ -337,104 +463,4 @@ class ForwardModels(object):
             output_df.to_excel(output_file, index=False, sheet_name='Rainfall Calculations')
 
             print(f"Output written to {output_file}")
-            
-    def save(self):
-        """Save results and settings data to .pkl files. 
-        
-        The resulting files (results.pkl and settings.pkl) may be read using 
-        the cavecalc.analyse module.
-        
-        results.pkl contains a list of dicts. Each dict contains the output of
-        a single model. settings.pkl contains a similar list of 
-        SettingsObjects, one for each model run.
-        """
-        
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-        with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
-            pickle.dump(self.input, f)
-            
-        with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
-            pickle.dump(self.results, f)
-            
-           
-    
-
-        
-    def _debug(self, i):
-        """Runs the specified model and saves the pq_input_log file for 
-        debugging. The input log file may be run directly by PHREEQC.
-        
-        Args:
-            i: Index position in self.input to re-run in debug mode.
-        """
-        s_debug = self.input[i]
-        s_debug.set(phreeqc_log_file=True)
-        
-        dbug = ccv.Simulator(s_debug, id=i)
-        dbug.run()
- 
-'''      
-    def Stal_save(self, excel_filename='model_outputs.xlsx'):
-        """Extracts the last index of each key (variable) from the model outputs,
-        as well as the settings, and saves them into an Excel file with two sheets.
-        
-        Args:
-            excel_filename (str): The name of the Excel file to save the results to.
-                                  Defaults to 'model_output.xlsx'.
-        Returns:
-            None. The data is saved to an Excel file in the specified directory.
-        """
-
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-        with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
-            pickle.dump(self.input, f)
-            
-        with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
-            pickle.dump(self.results, f)
-
-        # Load the results from the saved pickle file
-        results_path = os.path.join(self.output_dir, 'results.pkl')
-        if not os.path.exists(results_path):
-            raise FileNotFoundError(f"No results file found at {results_path}. Run models and save results before extracting values.")
-        
-        with open(results_path, 'rb') as f:
-            results = pickle.load(f)
-
-        # Load the settings from the saved pickle file
-        settings_path = os.path.join(self.output_dir, 'settings.pkl')
-        if not os.path.exists(settings_path):
-            raise FileNotFoundError(f"No settings file found at {settings_path}. Run models and save settings before extracting values.")
-        
-        with open(settings_path, 'rb') as f:
-            settings = pickle.load(f)
-
-        # Extract the last values from each model's output
-        last_values = []
-        for model_output in results:
-            model_dict = model_output[0]
-            model_last_values = {key: values[-1] for key, values in model_dict.items()}
-            last_values.append(model_last_values)
-        results_df = pd.DataFrame(last_values)
-        results_df.insert(0, 'Model', [f'{i+1}' for i in range(len(last_values))])
-
-        # Extract the settings from each SettingsObject
-        settings_list = []
-        for setting in settings:
-            settings_dict = setting.dict()  # Assuming `dict()` method exists for SettingsObject
-            settings_list.append(settings_dict)
-        settings_df = pd.DataFrame(settings_list)
-        settings_df.insert(0, 'Model', [f'{i+1}' for i in range(len(settings_list))])
-
-        # Save both DataFrames to separate sheets in the same Excel file
-        excel_path = os.path.join(self.output_dir, excel_filename)
-        with pd.ExcelWriter(excel_path) as writer:
-            settings_df.to_excel(writer, sheet_name='Settings', index=False)
-            results_df.to_excel(writer, sheet_name='Results', index=False)
-        
-              
-
-        print(f"Excel file '{excel_filename}' has been created successfully with 'Settings' and 'Results' sheets in the directory '{self.output_dir}'.")
-        
-'''
+ '''

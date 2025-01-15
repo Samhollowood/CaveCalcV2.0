@@ -344,13 +344,14 @@ class PostProcessor(object):
         
         self.s = Simulator
         self.calculate_f()
+        self.UCa_mmol_to_mol()
+        self.VSMOW_to_VPDB()
         self.calculate_XCa()
         self.tidy()
         self.calculate_radiocarbon()
-        self.set_none()
-        self.VSMOW_to_VPDB()
+        self.set_none()  
         self.results_df = pd.DataFrame()
-        self.EventAnalyser()     
+        self.CDA()     
 
     
 
@@ -372,8 +373,33 @@ class PostProcessor(object):
         c = self.s.output['C(mol/kgw)']
         self.s.output['f_ca'] = [x / init_ca for x in ca]
         self.s.output['f_c'] = [x / init_c for x in c]
-     
         
+        
+        
+    def UCa_mmol_to_mol(self):
+        """UCa mmol/mol to mol/mol
+        
+        The bedrock UCa cannot handle small values or 
+        ERROR: Elements in species have not been tabulated, 
+        C0.988943415[13C]0.011056585O2.993996620[18O]0.006003562.
+        
+        Thus UCa is modelled as mmol/mol and other X/Ca as mol/mol
+        This puts each X/Ca on the same scale"""
+        
+        if self.s.settings['precipitate_mineralogy'] == 'Calcite':
+            UCa_Calcite = self.s.output.get('U/Ca(mol/mol)_Calcite')
+            UCa = self.s.output.get('U/Ca(mol/mol)')
+            UCa_Calcite = [value * 0.001 if value is not None else None for value in (UCa_Calcite or [])]
+            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
+            self.s.output['U/Ca(mol/mol)_Calcite'] = UCa_Calcite
+            self.s.output['U/Ca(mol/mol)'] = UCa
+        elif self.s.settings['precipitate_mineralogy'] == 'Aragonite': 
+            UCa_Aragonite = self.s.output.get('U/Ca(mol/mol)_Aragonite')
+            UCa = self.s.output.get('U/Ca(mol/mol)')
+            UCa_Aragonite = [value * 0.001 if value is not None else None for value in (UCa_Aragonite or [])]
+            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
+            self.s.output['U/Ca(mol/mol)_Calcite'] = UCa_Aragonite
+            self.s.output['U/Ca(mol/mol)'] = UCa       
     
   
     
@@ -388,8 +414,7 @@ class PostProcessor(object):
             d18O = self.s.output.get('d18O_Aragonite', [])     
             d18O_PDB = [x * 0.97001 - 29.99 if x is not None else np.nan for x in d18O]
             self.s.output['d18O_PDB'] = d18O_PDB
-            
-            
+   
         
 
           
@@ -443,22 +468,16 @@ class PostProcessor(object):
 
            # self.s.output[x+'/Ca(mol/mol)_Calcite'] = precipitate_ratios[x]   
         
-    def EventAnalyser(self):
-        """Performs the EventAnalyser 
+    def CDA(self):
+        """Performs the CDA 
         
         Extract users input data 
-        Extracts model output data at each degassing step for current iteration
-        Define and extracts key input settings for current model iteration 
-        For each degassing step it calculates the residual (input data - modeled data) at each point in time-seris
+        Extracts the last index of the model data for current iteration
+        Define key input settings
+        Caclulates the residual (input data - modeled data) at each point in time-seris
         Checks whether residual falls within tolerance level
         If it does - there is a successful match 
-        Creates (or appends) data to 4 result csv file
-        
-        input_ranges.csv : updates the range of key input variables used 
-        tolerance.csv : stores the tolerance intervals used
-        matches.csv : stores input and output model data which result in matches with measured data
-        all_output.csv : provides residual of all comparisons between model outputs and measured data
-        
+        Appends input settings and residual values to CDA.xlsx
         
         """
         # Retrieve the output directory from settings 
@@ -471,16 +490,28 @@ class PostProcessor(object):
         # Ensure the directory exists; create it if it does not 
         os.makedirs(output_dir, exist_ok=True)
         
-        #Extact file path to users proxy data 
+        # Define the new folder name for CDA Results 
+        event_analyser_results_dir = os.path.join(output_dir, 'CDA Results') 
+        
+        # Check if the directory exists; if not, create it 
+        if not os.path.exists(event_analyser_results_dir): 
+            os.makedirs(event_analyser_results_dir)
+
+        
+        ## Paths for separate CSV files within the new folder 
+        tolerances_csv = os.path.join(event_analyser_results_dir, 'Tolerances.csv') 
+        input_ranges_csv = os.path.join(event_analyser_results_dir, 'Input_Ranges.csv') 
+        all_outputs_csv = os.path.join(event_analyser_results_dir, 'All_outputs.csv')
+        matches_csv = os.path.join(event_analyser_results_dir, 'Matches.csv')
+
         file_path = self.s.settings['user_filepath']
 
-        #Only contiiues with EventAnalyser if user proxy data is defined
         if not file_path:
             return
 
         try:
             # Load the users time-series excel file
-            df = pd.read_excel(file_path)
+            df = pd.read_csv(file_path)
             # Strip whitespace from the headers and normalize column names by removing special characters
             df.columns = df.columns.str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
 
@@ -509,8 +540,6 @@ class PostProcessor(object):
             print(f"Error reading Excel file: {e}")
             return
 
-
-        #Extract user-defined tolerance intervals
         tolerance =    self.s.settings['tolerance_d13C']
         d18O_tolerance = self.s.settings['tolerance_d18O']
         mg_tolerance = self.s.settings['tolerance_MgCa']
@@ -519,11 +548,11 @@ class PostProcessor(object):
         sr_tolerance = self.s.settings['tolerance_SrCa'] 
         ba_tolerance = self.s.settings['tolerance_BaCa']
         u_tolerance  = self.s.settings['tolerance_UCa'] 
-        results = []  #Initilises results dataframe to store matches
-        all_record = [] #Initilises all ouputs dataframe to store all data
-        match_found = False  #Ignore
+        results = [] 
+        all_record = []
+        match_found = False  # Flag to check if any match is found
 
-        # Define the mappings (calcite or aragonite mineralogy)
+        # Define the mappings
         keys_map = { 
             'Calcite': { 
                 'd13C': 'd13C_Calcite',
@@ -556,40 +585,40 @@ class PostProcessor(object):
         
     
         
-        # Retrieve and process spel values - a function of the precipitate mineralogy
+        # Retrieve and process spel values 
         keys = keys_map[mineralogy] 
         
-        # Determine the minimum length of the degassing steps for current iteration
+        # Determine the minimum length across model outputs to avoid index errors
         lengths = [len(self.s.output.get(keys[k], [])) for k in keys if keys[k] in self.s.output]
         num_data_points = min(lengths) if lengths else 0
         
-        #Scans through each degassing stepm extracting spel values
         for i in range(num_data_points):
            d13C_spel = self.s.output.get(keys['d13C'], [None])[i]
-           d18O_spel =  self.s.output.get(keys['d18O'], [None])[i]
+           #d18O_spel =  self.s.output.get(keys['d18O'], [None])[i]
            MgCa_spel =  self.s.output.get(keys['MgCa'], [None])[i]
            SrCa_spel =  self.s.output.get(keys['SrCa'],  [None])[i]
            BaCa_spel =  self.s.output.get(keys['BaCa'], [None])[i]
            UCa_spel = self.s.output.get(keys['UCa'],  [None])[i]
            dcp_spel =  self.s.output.get(keys['dcp'], [None])[i]
-           d44Ca_spel = self.s.output.get(keys['d44Ca'],  [None])[i]
+           d44Ca_spel = self.s.output.get(keys['d44Ca'],  [None])[i] 
            
 
-           # Convert d18O from the VSMOW to VPBD scale
+           d18O_spel =  self.s.output.get(keys['d18O'], [None])[i] 
+           # Convert d18O_spel if present
            d18O_spel = (d18O_spel * 0.97001) - 29.99 if d18O_spel is not None else None
-          
-           #Convert X/Ca from mol/mol to mmol/mol 
+           
+      
            MgCa_spel = MgCa_spel * 1000 if MgCa_spel is not None else None 
            SrCa_spel = SrCa_spel * 1000 if SrCa_spel is not None else None 
            BaCa_spel = BaCa_spel * 1000 if BaCa_spel is not None else None 
            UCa_spel = UCa_spel * 1000 if UCa_spel is not None else None 
            
-           # If precipitaiton has not occured, call spel value -999
+           # Skip to the next iteration if d13C_spel is None
            d13C_spel = -999 if d13C_spel is None else d13C_spel
            d18O_spel = -999 if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
+           d44Ca_spel = -999 if d44Ca_spel is None or d44Ca_spel != d44Ca_spel else d44Ca_spel
 
-           # Extract key input and output settings for the current iteration
-           #Will be saved to all_outputs.csv
+           # Extract key input settings for the current iteration
            soil_pCO2 = self.s.settings['soil_pCO2']
            d13Csoil = self.s.settings['soil_d13C']
            f_ca = self.s.output.get('f_ca',[])
@@ -599,13 +628,11 @@ class PostProcessor(object):
            cave_pCO2 = self.s.settings['cave_pCO2']
            gas_volume = self.s.settings['gas_volume']
            temp = self.s.settings['temperature']
-           rainfall_d18O = self.s.settings['atm_d18O']
            d13C_DIC = self.s.output.get('d13C',[])
            d13C_DIC = d13C_DIC[1]
+           rainfall_d18O = self.s.settings['atm_d18O']
         
-        
-           # Define the keys to extract input settings for the current iteration
-           #Will be saved to matches.csv
+           # Define the keys to keep from self.s.settings **ADD atmo_exhange** 
            desired_keys = [ 
                'atm_O2', 'atm_d18O', 'atm_pCO2', 'atm_d13C', 'atm_R14C',
                'soil_O2', 'soil_R14C', 'soil_d13C', 'soil_pCO2',  
@@ -615,21 +642,22 @@ class PostProcessor(object):
                'bedrock_mineral', 'bedrock_pyrite',  
                'gas_volume', 'reprecip', 'cave_pCO2','cave_R14C','cave_d13C', 'temperature', 'kinetics_mode', 'precipitate_mineralogy']
 
-           # Iterate through each time interval within users data 
+           # Iterate through the data points
            for index in range(len(age_data)): 
                # Handle d13C_value and calculate its residual
                d13C_value = d13C_data[index] if d13C_data and index < len(d13C_data) else np.nan
                residual = d13C_spel - d13C_value if d13C_value is not np.nan else np.nan
+     
             
-               # Base dictionary with common keys for matches.csv  
+               # Base dictionary with common keys for CDA.xlsx  
                base_record = {  
                    'Age': age_data[index],  
                    'd13C': d13C_value, 
                    'CaveCalc d13C': d13C_spel, 
                    'd13C residual': residual, 
                    'fCa': f_ca, 
-                   'Ca2+ (mol/kgw)': ca,
-                   'd13C_init': d13C_DIC
+                   'd13C_init': d13C_DIC,
+                   'Ca (mol/kgw)': ca,
                    } 
                
                # Update base_record with all settings from self.s.settings
@@ -638,37 +666,31 @@ class PostProcessor(object):
                base_record.update(filtered_settings)
                  
                
-               
-               # Compute residuals for all proxies
-               #If proxy is nont give it is given a None
                d18O_residual  = d18O_spel - d18O_data[index] if d18O_data else None
                MgCa_residual = MgCa_spel - MgCa_data[index] if MgCa_data else None
                dcp_residual = dcp_spel - dcp_data[index] if dcp_data else None
-               d44Ca_residual = d44Ca_spel - d44Ca_data[index] if d44Ca_data else None 
+               d44Ca_residual = d44Ca_spel - d44Ca_data[index] if d44Ca_spel is not None and d44Ca_data and d44Ca_data[index] is not None else None 
                SrCa_residual = SrCa_spel - SrCa_data[index] if SrCa_data else None
                BaCa_residual = BaCa_spel - BaCa_data[index] if BaCa_data else None
                UCa_residual = UCa_spel - UCa_data[index] if UCa_data else None
             
                # Check if residuals are within tolerance
-               #This checks whether the residual (modeled - measured) is within the 
-               #user defined tolerance intervals
                residual_check = abs(residual) <= tolerance if d13C_data else True
                d18O_check = abs(d18O_residual) <= d18O_tolerance if d18O_data else True
                MgCa_check = abs(MgCa_residual) <= mg_tolerance if MgCa_data else True
                dcp_check = abs(dcp_residual) <= dcp_tolerance if dcp_data else True
-               d44Ca_check = abs(d44Ca_residual) <= d44Ca_tolerance if d44Ca_data else True 
+               d44Ca_check = abs(d44Ca_residual) <= d44Ca_tolerance if d44Ca_data is not None else True
                SrCa_check = abs(SrCa_residual) <= sr_tolerance if SrCa_data else True
                BaCa_check = abs(BaCa_residual) <= ba_tolerance if BaCa_data else True
                UCa_check = abs(UCa_residual) <= u_tolerance if UCa_data else True
             
-               #If they are, then append neccessary model output and measured data to matches.csv
                if residual_check and MgCa_check and dcp_check and d44Ca_check and SrCa_check and BaCa_check and UCa_check and d18O_check: 
                    extended_record = base_record.copy() 
                    if d18O_data:  
                        extended_record.update({
                    'd18O': d18O_data[index],
                    'CaveCalc d18O': d18O_spel,
-                   'd18O Residual': d18O_residual
+                   'd18O Residual': d18O_residual,
                        })
     
                    if MgCa_data: 
@@ -689,7 +711,7 @@ class PostProcessor(object):
                    
                 
                 
-           # Prepare tolerance level DataFrame
+           # Prepare tolerance DataFrame
            tolerance_data = { 
                'Proxy': [
                    'd13C', 'd18O', 'MgCa', 'DCP', 'd44Ca', 'SrCa', 'BaCa', 'UCa' ], 
@@ -708,33 +730,21 @@ class PostProcessor(object):
            input_ranges_df = pd.DataFrame(input_ranges_data)
         
            
-           # Iterate through users measured data. Same as above but no residual checks
-           #All data here goes to all_output.csv
+           # Iterate through the data points
            for index in range(len(age_data)):  
                # Handle d13C_value
                d13C_value = d13C_data[index] if d13C_data and index < len(d13C_data) else np.nan
                
-               # Base dictionary for all_output.csv which stores key input variables
-               #May consider it to be the same as matches.csv
+               # Base dictionary with common keys for CDA.xlsx 
                all_records = { 
-                'Age': age_data[index], 
-                'd13C': d13C_value,
-                'CaveCalc d13C': d13C_spel,
-                'd13C residual': d13C_value - d13C_spel,
-                'soil_pCO2 (ppmv)': soil_pCO2,
-                'Soil d13C': d13Csoil,
-                'cave_pCO2 (ppmv)': cave_pCO2,
-                'fCa': f_ca,
-                'Ca2+ (mol/kgw)': ca,
-                'gas volume (L/kg)': gas_volume,
+                'Age': age_data[index],  
+                'd13C': d13C_value, 
+                'CaveCalc d13C': d13C_spel, 
+                'd13C residual': residual, 
+                'fCa': f_ca, 
                 'd13C_init': d13C_DIC,
-                'T(°C)': temp    
+                'Ca (mol/kgw)': ca,  
                 } 
-               
-               # Update base_record with all settings from self.s.settings
-               # Filter and add desired settings to base_record 
-               filtered_settings = {key: self.s.settings[key] for key in desired_keys if key in self.s.settings} 
-               all_records.update(filtered_settings)
             
                # Extend the base record with all available data
                all_all_records = all_records.copy() 
@@ -786,29 +796,31 @@ class PostProcessor(object):
                     'UCa': UCa_data[index], 
                     'CaveCalc UCa': UCa_spel,
                     'UCa residual': UCa_data[index] -  UCa_spel,
-                })    
+                })
+                   
+               filtered_settings = {key: self.s.settings[key] for key in desired_keys if key in self.s.settings} 
+               all_all_records.update(filtered_settings)
 
                # Append the extended record to results
                all_record.append(all_all_records) 
+
+                 
          
             
-        # Paths for separate results CSV files 
-        tolerances_csv = 'Tolerances.csv' 
-        input_ranges_csv = 'Input_Ranges.csv' 
-        all_outputs_csv = 'All_outputs.csv' 
-        matches_csv = 'Matches.csv' 
+
         
 
-        # Convert the all outputs into a DataFrame
+        # Convert results to a DataFrame
         all_record_df = pd.DataFrame(all_record)
         
         # Handle 'All outputs' CSV 
         if not os.path.exists(all_outputs_csv):  
             all_record_df.to_csv(all_outputs_csv, index=False) 
-            print("EventAnalyser is initialised")
+            print("CDA is initialised")
         else: 
             # Append new data to 'All outputs' CSV 
             all_record_df.to_csv(all_outputs_csv, mode='a', header=False, index=False) 
+       
          
         # Handle 'Tolerances' CSV (Check if the file exists or create a new one) 
         if not os.path.exists(tolerances_csv):   
@@ -824,7 +836,7 @@ class PostProcessor(object):
             
             for variable in input_ranges_data['Variable']: 
                 if variable in existing_df['Variable'].values: 
-                    # Update min and max and  
+                    # Update min and max 
                     existing_df.loc[existing_df['Variable'] == variable, 'Minimum'] = min( 
                         existing_df.loc[existing_df['Variable'] == variable, 'Minimum'].dropna().tolist() + [eval(variable)] 
                         ) 
@@ -832,7 +844,7 @@ class PostProcessor(object):
                         existing_df.loc[existing_df['Variable'] == variable, 'Maximum'].dropna().tolist() + [eval(variable)]
                         ) 
                 else: 
-                      
+                    # Add new variable  
                     new_row = pd.DataFrame({
                 'Variable': [variable],
                 'Minimum': [eval(variable)],

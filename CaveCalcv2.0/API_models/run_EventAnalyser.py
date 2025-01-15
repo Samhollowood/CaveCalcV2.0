@@ -95,8 +95,7 @@ model.Stal_save()
 
 #Plotting EventAnalyser and generating summary file
 dir1 = s['user_filepath']  #Same as 'users_filepath' defined in s = {}
-dir2 = os.path.join(dir_event, 'EventAnalyser.xlsx')  # Results file location of EventAnalyser
+dir2 = os.path.join(dir_event)  # Results file location of EventAnalyser
 
 e = cca.Evaluate()
 plot = e.plot_eventanalyser(dir1, dir2)
-summary = e.generate_summary_statistics(dir1, dir2)

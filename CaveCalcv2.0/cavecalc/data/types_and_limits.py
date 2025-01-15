@@ -72,6 +72,5 @@ tolerance_MgCa = (0, None)
 tolerance_SrCa = (0, None)
 tolerance_BaCa =  (0, None)
 tolerance_UCa =  (0, None)
-d44Ca_modern = (None, None)
-rainfall_amount = (0,None)
+
 

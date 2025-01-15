@@ -468,7 +468,7 @@ class Evaluate(object):
      
         
  
-    def plot_eventanalyser(self,dir1,dir2): 
+    def plot_CDA(self,dir1,dir2): 
         """
         Extract headings and data from a file and return as a dictionary.
 
@@ -486,7 +486,7 @@ class Evaluate(object):
         # Load the 'Tolerances' CSV as df_tolerances
         df_tolerances = pd.read_csv(tolerances_csv)
         
-        df_test = pd.read_excel(dir1)        
+        df_test = pd.read_csv(dir1)        
         # Dynamically find the 'Age' column in both datasets 
         age_column_main = next((col for col in df_main.columns if 'age' in col.lower()), None)
         age_column_test = next((col for col in df_test.columns if 'age' in col.lower()), None)  
@@ -499,272 +499,165 @@ class Evaluate(object):
         'd13C': 'CaveCalc d13C','Mg/Ca': 'CaveCalc MgCa', 'DCP': 'CaveCalc DCP','d44Ca': 'CaveCalc d44Ca',
         'Sr/Ca': 'CaveCalc SrCa','Ba/Ca': 'CaveCalc BaCa','U/Ca': 'CaveCalc UCa', 'd18O': 'CaveCalc d18O'}  
                
-        # Extract unique values for bedrock and soil XCa (Mg, Sr, Ba, U) 
-        # Define possible trace metals to check 
-        # Identify and handle `bedrock_` columns dynamically
-        bedrock_columns = [col for col in df_main.columns if col.startswith('bedrock_')] 
-        
-        # Create a dictionary for non-zero bedrock values, formatting metal names properly 
-        bedrock_XCa_values = { 
-            col.split('bedrock_')[1]: df_main[col][(df_main[col] != 0) & (df_main[col].notnull())].unique() 
-            for col in bedrock_columns
-            }
-        
-        # Filter out unwanted keys like 'mineral' 
-        bedrock_XCa_values = {metal: values for metal, values in bedrock_XCa_values.items() if metal not in ['mineral']}
+        # Extract and format trace metal values 
+        trace_metals = ['Mg', 'Sr', 'Ba', 'U', 'd44'] 
+        bedrock_XCa_values = {metal: df_main.get(f'bedrock_{metal}Ca', pd.Series(dtype='float64')).dropna().unique() for metal in trace_metals}
+        soil_XCa_values = {metal: df_main.get(f'soil_{metal}', pd.Series(dtype='float64')).dropna().unique() for metal in trace_metals}
 
-        # Format unique values
+        # Format trace metals
         format_XCa_text = lambda XCa_values, unit: ', '.join(
-           f"{metal.replace('Ca', '/Ca')}: {', '.join(map(str, values))} {unit}" if metal != 'd44Ca'
-           else f"{metal}: {', '.join(map(str, values))} ‰"
-           for metal, values in XCa_values.items() if values.size > 0
+        f"{metal.replace('Ca', '/Ca')}: {', '.join(map(str, values))} {unit}" if metal != 'd44Ca'
+        else f"{metal}: {', '.join(map(str, values))} ‰"
+        for metal, values in XCa_values.items() if values.size > 0 and all(value != 0 for value in values) 
         )
-        bedrock_XCa_text = format_XCa_text(bedrock_XCa_values, "mmol/mol") 
-        
-        # Specify the soil columns of interest 
-        soil_columns_of_interest = ['soil_Ba', 'soil_U', 'soil_d44Ca', 'soil_Mg', 'soil_Sr'] 
-        
-        # Create a dictionary for non-zero soil values, formatting metal names properly 
-        soil_XCa_values = { col.split('soil_')[1]: df_main[col][(df_main[col] != 0) & (df_main[col].notnull())].unique()  
-                         for col in soil_columns_of_interest if col in df_main.columns 
-                         } 
-        
-        # Filter out unwanted keys like 'mineral' 
-        soil_XCa_values = {metal: values for metal, values in soil_XCa_values.items() if metal not in ['mineral']}
-       
-        # Format unique soil values 
-        soil_format_X_text = lambda X_values, unit: ', '.join( 
-            f"{metal}: {', '.join(map(str, values))} {unit}" for metal, values in X_values.items() if values.size > 0 
-            ) 
-        
-        # Create text representation for soil_X values 
-        soil_XCa_text = soil_format_X_text(soil_XCa_values, "mmol/mol")
-
-
+    
+        # Get formatted texts
+        bedrock_XCa_text = format_XCa_text(bedrock_XCa_values, "mmol/mol")
+        soil_XCa_text = format_XCa_text(soil_XCa_values, "mmol/kgw")
         
         # Initialize the dictionary to store extracted data and create plots  
         figures = []  
         
-        # Create subplots for each variable from the EventAnalyser.xlsx file
-        variables = ['soil_d13C', 'soil_pCO2', 'cave_pCO2', 'd13C_init',]
-        num_vars = len(variables)
-        
-        # Define the custom labels for the variables 
+       # Initialize variables and labels
+        variables = ['soil_d13C', 'soil_pCO2', 'cave_pCO2', 'd13C_init']
         custom_labels = {
-    'soil_d13C': 'Soil d13C',
-    'soil_pCO2': 'Soil gas pCO2 (ppmv)',
-    'cave_pCO2': 'Cave air pCO2 (ppmv)',
-    'd13C_init': 'd13C initial solution' 
+            'soil_d13C': 'Soil d13C',
+            'soil_pCO2': 'Soil gas pCO2 (ppmv)',
+            'cave_pCO2': 'Cave air pCO2 (ppmv)',
+            'd13C_init': 'd13C initial solution'
         }
-
-        # Determine the number of rows and columns for the subplot grid
-        num_cols = 2  # Number of columns in the grid
-        num_rows = int(np.ceil(num_vars / num_cols))  # Calculate the number of rows needed  
-        
-        # Create a figure with a grid of subplots
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows)) 
-        
-        # Adjust the spacing between subplots 
-        plt.subplots_adjust(hspace=0.25)  # Adjust wspace for horizontal space, hspace for vertical space
-
-        
-        # Titles for the subplots [A], [B], [C], [D] 
-        subplot_titles = [r'[A]', r'[B]', r'[C]', r'[D]'] 
-        
-        # Custom subtitles for each subplot 
-        subtitles = [ 
-            'Viable soil d13C, constrained by matches between modeled and measured CaCO3', 
-            'Viable soil gas pCO2, constrained by matches between modeled and measured CaCO3', 
-            'Viable cave air pCO2, constrained by matches between modeled and measured CaCO3', 
+        subplot_titles = [r'[A]', r'[B]', r'[C]', r'[D]']
+        subtitles = [
+            'Viable soil d13C, constrained by matches between modeled and measured CaCO3',
+            'Viable soil gas pCO2, constrained by matches between modeled and measured CaCO3',
+            'Viable cave air pCO2, constrained by matches between modeled and measured CaCO3',
             'd13C initial solution outputs from viable soil d13C, soil gas pCO2, and gas-to-water ratio'
         ]
-        
-        # Flatten the axs array for easy iteration if it's a 2D array
-        axs = axs.flatten()  
-        
-        for i, var in enumerate(variables):  
-            if var in df_main.columns: 
-                # Compute min and max values 
-                age_values = df_main[age_column_main] 
-                var_values = df_main[var] 
-                
-                # Prepare data for custom boxplot 
-                data_for_boxplot = [] 
-                for age in age_values.unique(): 
-                    age_mask = df_main[age_column_main] == age
-                    data_for_boxplot.append(var_values[age_mask])
 
-                # Plot the boxplot with appropriate settings
-                axs[i].boxplot(data_for_boxplot, positions=age_values.unique(), widths=50, patch_artist=True,
-                       boxprops=dict(facecolor='none', color='black'),
-                       medianprops=dict(color='black'),
-                       whiskerprops=dict(color='black'),
-                       capprops=dict(color='black'),
-                       flierprops=dict(marker='o', color='black', markersize=5))
+        # Set up subplots
+        num_vars = len(variables)
+        num_cols = 2
+        num_rows = int(np.ceil(num_vars / num_cols))
+        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows))
+        plt.subplots_adjust(hspace=0.25)
+        axs = axs.flatten()
 
+        # Loop through each variable and plot
+        for i, var in enumerate(variables):
+            if var in df_main.columns:
+                age_values = df_main[age_column_main].dropna()
+                var_values = df_main[var].dropna()
                 
-                # Custom box plot that spans the full range of data 
-                for age in age_values.unique(): 
-                    age_mask = df_main[age_column_main] == age
-                    age_min = var_values[age_mask].min()
-                    age_max = var_values[age_mask].max()
+                # Group data by age for boxplot
+                grouped_data = df_main.groupby(age_column_main)[var].apply(list)
+                positions = grouped_data.index
+                data_for_boxplot = grouped_data.tolist()
                 
-                # Overlay scatter plot on top of the custom box plot
-                # Set darkblue color for d13C_init, darkgreen for others 
-                color = 'darkblue' if var == 'd13C_init' else 'darkgreen' 
-                # Set marker to 's' only for d13C_init, otherwise 'o' 
-                marker = 's' if var == 'd13C_init' else 'o'
+                # Compute box plot width and plot
+                box_width = (positions.max() - positions.min()) / (len(positions) * 4)
+                axs[i].boxplot(data_for_boxplot, positions=positions, widths=box_width, patch_artist=True,
+                               boxprops=dict(facecolor='none', color='black'),
+                               medianprops=dict(color='black'),
+                               whiskerprops=dict(color='black'),
+                               capprops=dict(color='black'),
+                               flierprops=dict(marker='o', color='black', markersize=5),
+                               showfliers=False)
                 
-                # Create the scatter plot 
+                # Overlay scatter plot
+                color, marker = ('darkblue', 's') if var == 'd13C_init' else ('darkgreen', 'o')
                 axs[i].scatter(df_main[age_column_main], df_main[var], marker=marker, color=color, s=50, label='Modeled Data')
                 
+                # Titles and labels
                 axs[i].set_xlabel('Age')
                 axs[i].set_ylabel(custom_labels[var])
+                axs[i].text(0.02, 1.01, subplot_titles[i], transform=axs[i].transAxes, fontsize=12, fontweight='bold', ha='center')
                 
-                # Set the main bold title [A], [B], [C], [D] 
-                axs[i].text(0.02, 1.01, subplot_titles[i], transform=axs[i].transAxes, 
-                    fontsize=12, fontweight='bold', ha='center') 
-    
-                # Add custom subtitle for each subplot
-                subtitle = subtitles[i]  # Get the corresponding subtitle
-                max_length = 100  # Define a character limit before breaking into two lines  
-                if len(subtitle) > max_length:  
-                    # Split the subtitle into two parts  
-                    first_line = subtitle[:max_length] 
-                    second_line = subtitle[max_length:] 
-                    
-                    # Display the first line at the usual position
-                    axs[i].text(0.05, 1.06, first_line, transform=axs[i].transAxes, 
-                        fontsize=10, fontweight='normal', ha='left')
-                    # Display the second line slightly lower to avoid overlap
-                    axs[i].text(0.05, 1.01, second_line, transform=axs[i].transAxes, 
-                        fontsize=10, fontweight='normal', ha='left') 
-                else: 
-                    # subtitle is short, display it on a single line  
-                    axs[i].text(0.05, 1.01, subtitle, transform=axs[i].transAxes, 
-                        fontsize=10, fontweight='normal', ha='left')
-                
-                
-                                
-            else:  
-                axs[i].axis('off')  # Turn off axis for unused subplots 
-                
-
-
-        # Add a red rectangle around the entire figure
-        fig.subplots_adjust(left=0.05, right=0.95, top=0.87, bottom=0.30)
-        rect_flow_path = patches.FancyBboxPatch( 
-            (0.05, 0.05), 0.90, 0.90,  # (x, y, width, height) in figure coordinates 
-            transform=fig.transFigure,  # Use figure coordinates 
-            boxstyle="round,pad=0.05",  # You can adjust padding here 
-            edgecolor='red',  # Border color 
-            linewidth=5,  # Border widt 
-            fill=False  # No fill, just the border 
-            ) 
-        # Add the patch to the figure 
-        fig.patches.append(rect_flow_path)        
-        
-        # Adjust subplot positions to shift them down
-        fig.subplots_adjust(top=0.77, bottom=0.07)  # Adjust the top and bottom margins
-        
-        # Add faint text to the top left corner 
-        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5)
-        
-        
-        # Set the main title
-        fig.suptitle('CO2 Processes', fontsize=16, fontweight='bold',y=0.98)
-         
+                # Subtitle handling with line breaks if necessary
+                subtitle = subtitles[i]
+                if len(subtitle) > 100:
+                    first_line, second_line = subtitle[:100], subtitle[100:]
+                    axs[i].text(0.05, 1.06, first_line, transform=axs[i].transAxes, fontsize=10, ha='left')
+                    axs[i].text(0.05, 1.01, second_line, transform=axs[i].transAxes, fontsize=10, ha='left')
+                else:
+                    axs[i].text(0.05, 1.01, subtitle, transform=axs[i].transAxes, fontsize=10, ha='left')
+            else:
+                axs[i].axis('off')  # Turn off unused subplots
       
-        # Create custom legend items 
-        from matplotlib.lines import Line2D 
-        legend_elements = [ 
-            Line2D([0], [0], marker='o', color='darkgreen', label='User Inputs', markersize=10, linestyle='None'), 
-            Line2D([0], [0], marker='s', color='darkblue', label='Model Outputs', markersize=10, linestyle='None') 
-            ] 
-        
-        # Add a legend with 1 row and 2 columns, right below the text 
+        # Add faint text to the top left corner and main title
+        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5)
+        fig.suptitle('CO2 Processes', fontsize=16, fontweight='bold', y=0.98)
+
+        # Create and add custom legend
+        from matplotlib.lines import Line2D
+        legend_elements = [
+            Line2D([0], [0], marker='o', color='darkgreen', label='Model Inputs', markersize=10, linestyle='None'),
+            Line2D([0], [0], marker='s', color='darkblue', label='Model Outputs', markersize=10, linestyle='None')
+        ]
         fig.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, 0.96), ncol=2, fontsize=12, frameon=False)
 
-        
-        # Position for the 'User miscellaneous input' heading 
-        fig.text(0.50, 0.90, 'User miscellaneous inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
+        # Position for the 'User miscellaneous input' heading
+        fig.text(0.50, 0.90, 'User miscellaneous inputs', ha='center', va='center', fontsize=10, fontweight='bold')
         miscellaneous_values_y_position = 0.88
-        
-        # Load the input ranges DataFrame 
-        input_ranges = os.path.join(dir2, 'Input_Ranges.csv')       
 
-        input_ranges_df = pd.read_csv(input_ranges) 
-        
-        
-        # Filter for specific miscellaneous inputs with custom labels 
-        miscellaneous_inputs = {'temp': 'T', 'cave_pCO2': 'cave air pCO2'} 
-        for input_var, label in miscellaneous_inputs.items(): 
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var] 
-            if not row.empty: 
-                variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-                fig.text(0.50, miscellaneous_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
-                miscellaneous_values_y_position -= 0.025  # Adjust position for next input
+        # Load and filter input ranges
+        input_ranges_df = pd.read_csv(os.path.join(dir2, 'Input_Ranges.csv'))
+        miscellaneous_inputs = {'temp': 'T', 'cave_pCO2': 'cave air pCO2'}
 
-     
-        # Position for the 'User soil inputs' heading 
-        fig.text(0.20, 0.95, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
+        # Display miscellaneous input ranges
+        for input_var, label in miscellaneous_inputs.items():
+            row = input_ranges_df[input_ranges_df['Variable'] == input_var]
+            if not row.empty:
+                fig.text(0.50, miscellaneous_values_y_position, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", ha='center', va='center', fontsize=10)
+                miscellaneous_values_y_position -= 0.025
+
+        # Position for the 'User soil inputs' heading
+        fig.text(0.20, 0.95, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold')
         soil_values_y_position = 0.93
-                    
-        # Display soil X/Ca values and additional soil inputs with custom labels 
-        soil_inputs = {'soil_pCO2': 'soil-gas pCO2', 'd13Csoil': 'd13Cₛₒᵢₗ'}  # Custom labels with subscript 
-        for input_var, label in soil_inputs.items(): 
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var] 
-            if not row.empty:  
-                variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-                fig.text(0.20, soil_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
-                soil_values_y_position -= 0.025  # Adjust position for next input
 
-           
-        # Display soil values 
-        for index, value in enumerate(soil_XCa_text.split(', ')):  
-            fig.text(0.20, soil_values_y_position, f"{value}", ha='center', va='center', fontsize=10, color='black')
-            soil_values_y_position -= 0.025  # Adjust position for next input
-                   
-            
-        # Position for the 'Available measurements' heading 
-        fig.text(0.80, 0.95, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')  # Adjusted y-position for heading 
-        available_measurements_y_position = 0.95
-        num_columns = 3  # Number of columns for annotations 
-        spacing_x = 0.05  # Horizontal spacing between columns 
-        spacing_y = 0.025  # Vertical spacing between rows
-        
-        # Map the relevant column names in the main dataset to match the test dataset columns  
+        # Display soil input ranges
+        soil_inputs = {'soil_pCO2': 'soil-gas pCO2', 'd13Csoil': 'd13Cₛₒᵢₗ'}
+        for input_var, label in soil_inputs.items():
+            row = input_ranges_df[input_ranges_df['Variable'] == input_var]
+            if not row.empty:
+                fig.text(0.20, soil_values_y_position, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", ha='center', va='center', fontsize=10)
+                soil_values_y_position -= 0.025
+
+        # Display soil values
+        for value in soil_XCa_text.split(', '):
+            fig.text(0.20, soil_values_y_position, value, ha='center', va='center', fontsize=10)
+            soil_values_y_position -= 0.025
+
+        # Position for the 'Available measurements' heading
+        fig.text(0.80, 0.95, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')
+        available_measurements_y_position = 0.92
+        num_columns, spacing_x, spacing_y = 3, 0.05, 0.025
+
+        # Display available measurements
         column_mapping_main = {
-    'd13C': 'CaveCalc d13C',
-    'Mg/Ca': 'CaveCalc MgCa',
-    'DCP': 'CaveCalc DCP',
-    'd44Ca': 'CaveCalc d44Ca',
-    'Sr/Ca': 'CaveCalc SrCa',
-    'Ba/Ca': 'CaveCalc BaCa',
-    'U/Ca': 'CaveCalc UCa',
-    'd18O': 'CaveCalc d18O' 
-         } 
-    
-        # Loop through the column mapping  
-        for index, (proxy, column) in enumerate(column_mapping_main.items()): 
-            # Calculate row and column position 
-            row_index = index // num_columns 
-            col_index = index % num_columns
+            'd13C': 'CaveCalc d13C', 'Mg/Ca': 'CaveCalc MgCa', 'DCP': 'CaveCalc DCP', 'd44Ca': 'CaveCalc d44Ca',
+            'Sr/Ca': 'CaveCalc SrCa', 'Ba/Ca': 'CaveCalc BaCa', 'U/Ca': 'CaveCalc UCa', 'd18O': 'CaveCalc d18O'
+        }
+        for index, (proxy, column) in enumerate(column_mapping_main.items()):
+            x_position, y_position = 0.75 + (index % num_columns) * spacing_x, available_measurements_y_position - (index // num_columns) * spacing_y
+            if column not in df_main.columns or df_main[column].isnull().all():
+                fig.text(x_position, y_position, proxy, ha='center', va='center', fontsize=10)
 
-            # Calculate x and y positions 
-            x_position = 0.75 + col_index * spacing_x 
-            y_position = available_measurements_y_position - row_index * spacing_y
+        # Adjust subplot and add red rectangle around figure
+        fig.subplots_adjust(left=0.05, right=0.95, top=0.77, bottom=0.10)
+        rect_flow_path = patches.FancyBboxPatch(
+            (0.05, 0.05), 0.90, 0.90, transform=fig.transFigure, boxstyle="round,pad=0.05", edgecolor='red', linewidth=5, fill=False
+        )
+        fig.patches.append(rect_flow_path)
 
-            if column not in df_main.columns or df_main[column].isnull().all(): 
-                # If the column is missing or all values are NaN, annotate that the data is unavailable  
-                fig.text(x_position, y_position, f"{proxy}", ha='center', va='center', fontsize=10, color='black') 
-
-        plt.show(block=False) 
-        figures.append(fig) 
+       
+        plt.show(block=False)
+        figures.append(fig)
+  
         
+  
         
         # Plot for Flow Path Hydrology
-        variables_flow_path = ['gas_volume', 'f_{ca}']
+        variables_flow_path = ['gas_volume', 'fCa']
         
         # Titles for the subplots [A], [B], [C], [D] 
         subplot_titles = [r'[A]', r'[B]'] 
@@ -775,6 +668,7 @@ class Evaluate(object):
             'Viable fca outputs constrained by matches between modeled and measured CaCO3'
    
         ]
+        
 
         # Determine the number of rows and columns for the subplot grid
         num_cols_flow_path = 2  # Number of columns in the grid (including an extra column for d44Ca)
@@ -798,8 +692,15 @@ class Evaluate(object):
                     age_mask = df_main[age_column_main] == age 
                     data_for_boxplot.append(var_values[age_mask]) 
                     
+                    
+                # Compute dynamic width for the boxplot 
+                subplot_width = positions.max() - positions.min()  # Effective range of x-axis 
+                num_ages = len(positions)  # Number of unique ages 
+                box_width = subplot_width / (num_ages * 4)  # Scale width dynamically; tweak divisor for spacing
+
+                    
                 # Plot the boxplot with a smaller width 
-                axs_flow_path[i].boxplot(data_for_boxplot, positions=age_values.unique(), widths=30, patch_artist=True,  # Reduced width
+                axs_flow_path[i].boxplot(data_for_boxplot, positions=age_values.unique(),widths=box_width, patch_artist=True,  # Reduced width
                                  boxprops=dict(facecolor='none', color='black'),
                                  medianprops=dict(color='black'),
                                  whiskerprops=dict(color='black'),
@@ -817,7 +718,7 @@ class Evaluate(object):
                 color = 'darkgreen' if var == 'gas_volume' else 'darkblue'  # Use dark green for gas volume
  
                 # Set marker to 's' only for fca, otherwise 'o' 
-                if var == 'f_{ca}' :
+                if var == 'fCa' :
                     marker = 's'
                 else:
                     marker = 'o'
@@ -827,9 +728,9 @@ class Evaluate(object):
 
                 axs_flow_path[i].set_xlabel('Age')
                 # Set the y-label with the specific changes for gas volume and fca 
-                if var == 'gas_volume':  
+                if var == 'gas volume (L/kg)':  
                     axs_flow_path[i].set_ylabel('gas-to-water ratio (L/kg)')  # Updated label 
-                elif var == 'f_{ca}': 
+                elif var == 'fCa': 
                         axs_flow_path[i].set_ylabel('fCa')  # Updated label for f_c 
                 else:  
                     axs_flow_path[i].set_ylabel(var)
@@ -857,45 +758,7 @@ class Evaluate(object):
                     # If subtitle is short, display it on a single line   
                     axs_flow_path[i].text(0.05, 1.01, subtitle, transform=axs_flow_path[i].transAxes,  
                                           fontsize=10, fontweight='normal', ha='left')
-                
-                   
-               
-
-        '''
-        # Plot f_ca vs d13C and optionally MgCa or d44Ca with dual y-axes 
-        if 'f_{ca}' in df_main.columns and 'CaveCalc d13C' in df_main.columns: 
-            ax_twin = axs_flow_path[2].twinx()  # Create a twin axis sharing the same x-axis 
-            axs_flow_path[2].scatter(df_main['f_{ca}'], df_main['CaveCalc d13C'], marker='o', color='darkgreen', s=50, label='d13C') 
-            
-            # Check if MgCa exists and add it to the secondary y-axis 
-            if 'CaveCalc MgCa' in df_main.columns:  
-                ax_twin.scatter(df_main['f_{ca}'], df_main['CaveCalc MgCa'], marker='o', color='darkblue', s=50, label='MgCa')
-                ax_twin.set_ylabel('MgCa$_{CaCO3}$ (mmol/mol)', color='darkblue')
-                ax_twin.tick_params(axis='y', labelcolor='darkblue')
-
-            # Check if d44Ca exists and add it to the secondary y-axis (whether or not MgCa exists)
-            if 'CaveCalc d44Ca' in df_main.columns:  
-                if 'CaveCalc MgCa' not in df_main.columns:  # If MgCa is not plotted, use ax_twin for d44Ca  
-                    ax_twin.scatter(df_main['f_{ca}'], df_main['CaveCalc d44Ca'], marker='o', color='darkblue', s=50, label='d44Ca') 
-                    ax_twin.set_ylabel('d44Ca$_{spel}$', color='darkblue')
-                    ax_twin.tick_params(axis='y', labelcolor='darkblue') 
-                else:  # If MgCa exists, create a third axis for d44Ca 
-                    ax_twin3 = ax_twin.twinx()  # Create another twin axis sharing the same x-axis
-                    ax_twin3.scatter(df_main['f_{ca}'], df_main['CaveCalc d44Ca'], marker='o', color='purple', s=50, label='d44Ca')
-                    ax_twin3.spines['right'].set_position(('outward', 60))  # Move the third y-axis outward
-                    ax_twin3.set_ylabel('d44Ca$_{spel}$', color='purple')
-                    ax_twin3.tick_params(axis='y', labelcolor='purple') 
-            
-            axs_flow_path[2].set_xlabel('f$_{ca}$') 
-            axs_flow_path[2].set_ylabel('d13C$_{spel}$', color='darkgreen') 
-            axs_flow_path[2].tick_params(axis='y', labelcolor='darkgreen') 
-            
-            # Reverse the direction of the x-axis 
-            axs_flow_path[2].invert_xaxis() 
-        
-        else: 
-            axs_flow_path[2].axis('off')  # Turn off axis for unused subplot
-        '''
+                                        
 
         #Add a blue rectangle around the entire figure
         fig.subplots_adjust(left=0.08, right=0.92, top=0.79, bottom=0.13)
@@ -918,7 +781,7 @@ class Evaluate(object):
         # Define handles and labels for the legend  
         handles = [plt.Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10), 
                    plt.Line2D([0], [0], marker='s', color='darkblue', linestyle='None', markersize=10)]
-        labels = ['User inputs', 'Model ouputs'] 
+        labels = ['Model inputs', 'Model ouputs'] 
         
         fig.legend(handles, labels, loc='lower center', ncol=3, fontsize=10, bbox_to_anchor=(0.5, 0.90),frameon=False)
                                 
@@ -947,7 +810,7 @@ class Evaluate(object):
         
         # Position for the 'Available measurements' heading 
         fig.text(0.80, 0.96, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')  # Adjusted y-position for heading 
-        available_measurements_y_position = 0.96
+        available_measurements_y_position = 0.93
         num_columns = 3  # Number of columns for annotations 
         spacing_x = 0.05  # Horizontal spacing between columns 
         spacing_y = 0.025  # Vertical spacing between rows
@@ -987,12 +850,18 @@ class Evaluate(object):
  
         df_all_outputs = pd.read_csv(outputs_csv)
         df_all_outputs = df_all_outputs[df_all_outputs['CaveCalc d13C'] != -999]
-        relative_offset_fraction = 0.05  # Adjust this value to control the offset proportionally        
+        relative_offset_fraction = 0.05  # Adjust this value to control the offset proportionally 
+        
+
+        # Strip, lowercase, and remove non-alphanumeric characters from column names, except for the first column (assumed to be 'age') 
+        df_test.columns = [df_test.columns[0]] + df_test.columns[1:].str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True).tolist()
+
+
         
         # Map the relevant column names in the main dataset to match the test dataset columns 
         column_mapping_main = {
-       'd13C': 'CaveCalc d13C','mgca': 'CaveCalc MgCa', 'dcp': 'CaveCalc DCP','d44Ca': 'CaveCalc d44Ca',
-       'srca': 'CaveCalc SrCa','baca': 'CaveCalc BaCa','uca': 'CaveCalc UCa', 'd18O': 'CaveCalc d18O'}  
+       'd13c': 'CaveCalc d13C','mgca': 'CaveCalc MgCa', 'dcp': 'CaveCalc DCP','d44ca': 'CaveCalc d44Ca',
+       'srca': 'CaveCalc SrCa','baca': 'CaveCalc BaCa','uca': 'CaveCalc UCa', 'd18o': 'CaveCalc d18O'}  
        
         
         # Define the number of columns and rows for the subplots
@@ -1010,9 +879,9 @@ class Evaluate(object):
                
         # Define a dictionary for axis labels 
         axis_labels = { 
-            'd13C': 'd13C$_{CaCO3}$ (‰, VPDB)', 
-            'd18O': 'd18O$_{CaCO3}$ (‰, VPDB)', 
-            'd44Ca': 'd44Ca$_{CaCO3}$ (‰)', 
+            'd13c': 'd13C$_{CaCO3}$ (‰, VPDB)', 
+            'd18o': 'd18O$_{CaCO3}$ (‰, VPDB)', 
+            'd44ca': 'd44Ca$_{CaCO3}$ (‰)', 
             'mgca': 'Mg/Ca$_{CaCO3}$ (mmol/mol)', 
             'dcp': 'DCP$_{CaCO3}$ (%)', 
             'srca': 'Sr/Ca$_{CaCO3}$ (mmol/mol)', 
@@ -1021,7 +890,7 @@ class Evaluate(object):
             }
         
         df_main = df_main[df_main['CaveCalc d13C'] != -999]
-        df_test = df_test[df_test['d13C'] != -999]
+
      
         
         
@@ -1153,11 +1022,10 @@ class Evaluate(object):
         fig.text(0.50, 0.91, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
         bedrock_values_y_position = 0.89
                 
-        # Display soil values 
+        # Display bedrock values 
         for index, value in enumerate(bedrock_XCa_text.split(', ')):  
-            fig.text(0.50, bedrock_values_y_position, f"{value}", ha='center', va='center', fontsize=10, color='black')
-            bedrock_values_y_position -= 0.025  # Adjust position for next input
-                  
+            fig.text(0.50, bedrock_values_y_position - index * 0.025, f"{value}", ha='center', va='center', fontsize=10, color='black') 
+               
          # Add gas_volume under bedrock inputs 
         row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume'] 
         if not row.empty:   
@@ -1177,12 +1045,14 @@ class Evaluate(object):
                 variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
                 fig.text(0.20, soil_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
                 soil_values_y_position -= 0.025  # Adjust position for next input
-                
+
+            
         # Display soil values 
         for index, value in enumerate(soil_XCa_text.split(', ')):  
             fig.text(0.20, soil_values_y_position, f"{value}", ha='center', va='center', fontsize=10, color='black')
             soil_values_y_position -= 0.025  # Adjust position for next input
                    
+            
         
         plt.show(block=False) 
         figures.append(fig) 
@@ -1190,7 +1060,7 @@ class Evaluate(object):
         return figures
 
     
-    
+'''    
     def generate_summary_statistics(self,dir1, dir2): 
         """ 
         Generate a summary statistics file comparing user data to CaveCalc data. 
@@ -1207,7 +1077,7 @@ class Evaluate(object):
         df_cavecalc = pd.read_excel(dir2)
 
 
-        output_file = f'EventAnalyser_summary_statistics.txt'
+        output_file = f'CDA_summary_statistics.txt'
         
         # Define the columns to analyze for CaveCalc
         columns_to_analyze = ['CaveCalc d13C', 'CaveCalc DCP', 'CaveCalc d44Ca', 'CaveCalc MgCa', 'CaveCalc SrCa', 'CaveCalc BaCa', 'CaveCalc UCa']
@@ -1247,7 +1117,7 @@ class Evaluate(object):
                 f.write("\n") 
             
             # List of variables to observe
-            variables = ['soil_pCO2 (ppmv)', 'Soil d13C', 'cave_pCO2 (ppmv)', 'f_{ca}', 'gas volume (L/kg)', 'd13C_init', 'T(°C)']
+            variables = ['soil_pCO2 (ppmv)', 'Soil d13C', 'cave_pCO2 (ppmv)', 'fCa}', 'gas volume (L/kg)', 'd13C_init', 'T(°C)']
             
            # Dictionary to track ranges for each variable
             ranges_by_age = {var: {} for var in variables}
@@ -1298,21 +1168,21 @@ class Evaluate(object):
             if {'soil_pCO2 (ppmv)', 'Soil d13C', 'cave_pCO2 (ppmv)', 'd13C_init'} <= significant_variables: 
                 f.write("\nCO2 environmnental processes are impacting measured data.\n")
         
-            if {'soil_pCO2 (ppmv)', 'f_{ca}'} <= significant_variables: 
+            if {'soil_pCO2 (ppmv)', 'fCa'} <= significant_variables: 
                 f.write("\nPCarbP (progressive degassing and precipitation) along the flow path is impacting measured data.\n") 
             
             if 'gas volume (L/kg)' in significant_variables: 
                 f.write("\nChanges bedrock dissolution conditions are impacting measured data.\n")
         
-            if {'soil_pCO2 (ppmv)', 'Soil d13C', 'd13C_init', 'f_{ca}'} <= significant_variables:
+            if {'soil_pCO2 (ppmv)', 'Soil d13C', 'd13C_init', 'fCa'} <= significant_variables:
                 f.write("\nA combination of soil processes and PCarbP (progressive degassing and precipitation) along the flow path is impacting measured data.\n")
         
-            if {'gas volume (L/kg)', 'f_{ca}'} <= significant_variables:
+            if {'gas volume (L/kg)', 'fCa'} <= significant_variables:
                 f.write("\nA combination of dissolution conditions and PCarbP (progressive degassing and precipitation) along the flow path is impacting measured data.\n")                   
        
 
         print(f"Summary statistics file created: {output_file}") 
-
+'''
        
  
     
