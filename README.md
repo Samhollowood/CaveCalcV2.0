@@ -38,7 +38,7 @@ Here, I provide steps on how to install cavecalc from github:
 
 Clone the repository:
 ```shell
-git clone git@github.com:Samhollowood/CaveCalcV2.0.git
+git clone https://github.com/Samhollowood/CaveCalcV2.0.git
 ```
 
 Go to directory:
