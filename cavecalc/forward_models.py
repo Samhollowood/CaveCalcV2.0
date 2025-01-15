@@ -263,6 +263,8 @@ class ForwardModels(object):
                 dir2 = os.path.join(self.output_dir,'CDA Results')  # Example for dir2
                 plot = e.plot_CDA(dir1, dir2)
                 print("Plotting completed successfully.")
+            except Exception as err:
+                print(f"CDA not initialised so no CDA plots")
 
             
            
