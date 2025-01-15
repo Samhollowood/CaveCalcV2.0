@@ -246,8 +246,8 @@ class ForwardModels(object):
         with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
             pickle.dump(self.results, f)
 
-         # Print the output directory
-         print(f"Results and settings have been saved in: {self.output_dir}")
+        # Print the output directory
+        print(f"Results and settings have been saved in: {self.output_dir}")
             
             # Extract user_filepath from input settings
         extracted_values = {}
