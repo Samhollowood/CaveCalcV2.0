@@ -95,7 +95,7 @@ s =  {#Atmospheric  Gas End-member
        
      }
 
-dir_model = './...../' # directory to save model output 
+dir_model = './run_models_output/' # directory to save model output 
 
 # Run model and EventaAnalyser
 model = ForwardModels(settings=s, output_dir= dir_model)
