@@ -1,0 +1,81 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs26 \cf0 EventAnalyser Mode Help \
+\
+
+\f1\b0 Do not hesitate to contact samuel.hollowood@bnc.ox.ac.uk for any questions, debugging or guidance.
+\f0\b \
+\
+General\
+1.1 How do I use the EventAnalyser?\
+1.2 What are the tolerance levels? What levels should I use?\
+1.3. What proxies can I include in the EventAnalyser?\
+1.4 Why can\'92t the EventAnalyser read my data?\
+1.5 How do I know when there is match?\
+1.6 Why am I getting no matches? \
+1.7 I have finished my first set of model runs, but want to investigate with another run?\
+\
+Plotting\
+2.1 How do I plot the data?\
+2.2 How am I able to interpret the plotted data?\
+2.3 How can I run the summary text file, and what does it tell me?\
+
+\f1\b0\fs24 \
+
+\f0\b 1.1 How do I use the EventAnalyser?\
+
+\f1\b0 The EventAnalyser may be run via the GUI or a python API.\
+\
+On the GUI, the variables associated with the EventAnalyser are found around a black box, under EventAnalyser mode (bottom right of the GUI). Users should set up the non-default variables before model runs (the other variables within the GUI)\
+\
+To activate the EventAnalyser during model runs, the user has to simply place the file path to the excel file in which their proxy data is stored (file path must include the .xlsx file at the end). Tolerance levels may be left untouched. When the user clicks Run! On the GUI, the EventAnalyser mode is now initialised. \
+\
+On the python API, the EventAnalyser can be run using the example from run_models_with_EventAnalyser.py. Non-default settings may be changed via the variable s = \{\} which is found directly after importing the necessary modules.\
+\
+
+\f0\b 1.2 What are the tolerance levels? What levels should I use?\
+
+\f1\b0 The tolerance levels are the plus/minus (\'b1) values from the measured data in which proxy model outputs will be accepted. For example, a measured d13C = -4\'89 and a d13C tolerance of 0.5\'89 will result in all CaveCalcv2.0 runs simulating stalagmite values between -4.5\'89 to -3.5\'89 being accepted.\
+\
+The decision of the tolerance levels is up to the user, but statistical methods such as the standard deviation, variance, and upper and lower confidence levels should be considered.\
+\
+
+\f0\b 1.3 What proxies can I include in the EventAnalyser?\
+
+\f1\b0 Up to all 8 proxies CaveCalcv2.0 can simulate can be included in the users file file. There is flexibility in the amount. For example, the user may run the EventAnaylser with just d13C data in a time-series. The user may also run the EventAnalyser with d13C, Mg/Ca and Sr/Ca data in a time-series. It really depends on the amount of proxies that have been measured.\
+\
+
+\f0\b 1.4 Why can\'92t the EventAnalyser read my data?\
+
+\f1\b0 The likelihood is that CaveCalcv2.0 is unable to read the columns within the dataset. CaveCalcv2.0 is designed to read the proxy variable under multiple (but not all) different definitions. For example, the Mg/Ca proxy data may be defined in a column as `mgca, MgCa, Mg/Ca, or even Mg/Ca (mmol/mol)\'92. The EventAnalyser reads the column headings, converts them to lowercase and apply a substring search.\
+\
+If the EventAnalyser mode cannot read the proxy data then please contact samuel.hollowood@bnc.ox.ac.uk for a diagnosis \
+
+\f0\b \
+1.5 How do I know when there is a match?\
+
+\f1\b0 The completion of models are shown on the python terminal. If there is a match between the model output and the measured data, the EventAnalyser will display a \'91Match! Results appended to EventAnalyser.xlsx\'92. Note the first match in the model will print \'93Match! Created new file EventAnalyser.xlsx and saved results." `s it creates the EventAnalyser.xlsx file which will subsequently be appended. If an EventAnalyser.xlsx file already exists, then it will append to that file 
+\f0\b \
+\
+1.6 Why am I getting no matches?\
+
+\f1\b0 Common causes of obtaining no matches are (i) the tolerance levels are too small, (ii) the current set of input parameters to not result in carbonate precipitation, or (iii) the input parameters to do not represent the users cave system.\
+\
+For example, there would be no matches with trace metals or d44Ca if the bedrock value is not defined. This is because the default bedrock value is 0. Therefore we encourage users to use their own bedrock measurements, or since not many bedrock values are available, to estimate their bedrock value.\
+\
+For example, if the user has Mg/Ca data but no bedrock measurements, they may assume the bedrock value is the minimum Mg/Ca within the entire time-series (not just what is input in the EventAnalyser). Or they may apply a scaling factor B (from 0.5 to 1):\
+Mg/Ca_bedrock = B*Mg/Ca_min\
+\
+The minimum Mg/Ca min is used since D(Mg) << 1.  So users should note that if investigating U/Ca for aragonite, then the U/Ca_bedrock should be the U/Ca_max (since D(U) >> 1).\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf0 1.7 I have a finished my first set of model runs, but want to continually investigate with another run?\
+
+\f1\b0 The user may archive the first EventAnalyser.xlsx from a first set of model runs, but there is no requirement too. If the user wants to continually investigate under a different set of input parameters, they may run this model, and the matches will be automatically appended to the previous EventAnalyser.xlsx. \
+}
