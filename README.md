@@ -1,4 +1,4 @@
-# CaveCalcV2.0: A software tool for forward modelling speleothem chemistry and the evolution of isotopic and elemental systems
+# CaveCalcV2.0: A software tool for forward modelling speleothem chemistry.
 version 1 (https://github.com/Rob-Owen/cavecalc)
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/HEAD?urlpath=tree)
