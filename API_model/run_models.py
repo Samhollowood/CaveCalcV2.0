@@ -102,4 +102,7 @@ model = ForwardModels(settings=s, output_dir= dir_model)
 model.run_models()
 model.save()
 
+# Save model outputs as .csvs
+e = cca.Evaluate()
+
 
