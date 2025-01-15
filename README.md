@@ -16,7 +16,7 @@ version 1 (https://github.com/Rob-Owen/cavecalc)
 
 
 ## Introduction
-This repository is the official implementation of [_CaveCalcV2.0: A software tool for forward modelling speleothem chemistry and the evolution of isotopic and elemental systems_](), in preperation for submission into [Computers & Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences).
+This repository is the official implementation of [_CaveCalcV2.0: A software tool for forward modelling speleothem chemistry._](), in preperation for submission into [Computers & Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences).
 
 We present a newly updated CaveCalcV2.0 forward modelling tool for simulating speleothem chemistry with new examples, and installation processes.
 
