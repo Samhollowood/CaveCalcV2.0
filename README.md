@@ -2,7 +2,7 @@
 version 1 (https://github.com/Rob-Owen/cavecalc)
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/HEAD?urlpath=tree)
-![GitHub License](MIT)
+![GitHub License](https://img.shields.io/github/license/Samhollowood/CaveCalcV2.0)
 ![GitHub Release](https://img.shields.io/github/v/release/Samhollowood/CaveCalcV2.0)
 
 ## Table of Contents
