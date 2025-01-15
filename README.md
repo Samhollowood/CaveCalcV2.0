@@ -25,7 +25,7 @@ Updates include:
 (2) Speleothem aragonite precipitation
 (3) U/Ca as a proxy 
 
-This repository provides the source code (/cavecalc), examples (/examples), API model run examples (/API_model), and scripts for opening the Graphical User Interface (/scripts)
+This repository provides the source code (`cavecalc/`), examples (`examples/`), API model run examples (`API_models/`), and scripts for opening the Graphical User Interface (/scripts)
 
 ## Installation
 There is a full installation guide in the manual () if users need guidance on installing python, and manually configuring the COM server in PHREEQC (Windows Only).
@@ -71,4 +71,30 @@ cd scripts
 python cc_input_gui.py
 ```
 
+
+
+## Usage
+Examples of running single models, multiple models, and models with the CDA initialised are provided in the manual (). Users can run models via the run_models.py in `API_models/` or the CDA in run_CDA.py also in 
+`API_models/`. The python scripts have inputs set as the default, change them as you please.
+
+
+## Citing this work
+If you use CaveCalcV2.0 please site .....
+
+## Contributing, questions, and issues
+If you have any suggestions, improvements, questions, or comments - please create an issue, submit a pull request, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
+
+## License
+This project is licensed under the MIT license
+
+## References and Acknowledgements
+
+This repository uses the following open-source software libraries:
+
+
+
+
+
+
+Samuel J. Hollowood is funded by a UKRI NERC DTP Award (NE/S007474/1) and gratefully acknowledges their support.
 
