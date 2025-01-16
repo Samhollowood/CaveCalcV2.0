@@ -29,10 +29,9 @@ from matplotlib import pyplot as plt
 'Important note before running'
 'Change `users_filepath'
 'Change dir_event'
-'Define dir1'
-'Define dir2'
 
-'STEP 1: Define the settings for the EventAnalyser'        
+
+'STEP 1: Define the settings for the CDA'        
 s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'soil_pCO2': [260,410,600,1000,2000,3000,4000,5000,6000,8000], #NON-DEFAULT - example of placing values in a list
       
@@ -73,30 +72,25 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       #cave air 
       'cave_pCO2': [260,410,1500,2500,4500,5550,6500],
       
-      #EventAnalyser Mode
+      #CDA Mode
       'user_filepath': "path/to/data",       # Please change for EventAnalyser mode
-      'tolerance_d13C': 100,      #DEFAULT | Tolerance level for d13C (‰, VPDB)
-      'tolerance_d18O': 100,      #DEFAULT | Tolerance level for d18O (‰, VPDB)
-      'tolerance_DCP':  100,      #DEFAULT | Tolerance level for DCP (%)
-      'tolerance_d44Ca': 100,     #DEFAULT | Tolerance level for d44Ca (‰, 915a)
-      'tolerance_MgCa': 100,      #DEFAULT | Tolerance level for MgCa (mmol/mol)
-      'tolerance_SrCa': 100,      #DEFAULT | Tolerance level for SrCa (mmol/mol)
-      'tolerance_BaCa': 100,      #DEFAULT | Tolerance level for BaCa (mmol/mol)
-      'tolerance_UCa': 100,       #DEFAULT | Tolerance level for UCa (mmol/mol)
+      'tolerance_d13C': 0.5,      #DEFAULT | Tolerance level for d13C (‰, VPDB)
+      'tolerance_d18O': 0.5,      #DEFAULT | Tolerance level for d18O (‰, VPDB)
+      'tolerance_DCP':  1.5,      #DEFAULT | Tolerance level for DCP (%)
+      'tolerance_d44Ca': 0.5,     #DEFAULT | Tolerance level for d44Ca (‰, 915a)
+      'tolerance_MgCa': 0.3,      #DEFAULT | Tolerance level for MgCa (mmol/mol)
+      'tolerance_SrCa': 0.3,      #DEFAULT | Tolerance level for SrCa (mmol/mol)
+      'tolerance_BaCa': 0.3,      #DEFAULT | Tolerance level for BaCa (mmol/mol)
+      'tolerance_UCa': 0.3,       #DEFAULT | Tolerance level for UCa (mmol/mol)
 
      }
 
 dir_event = './run_event_test/' # directory to save model output and EventAnalyser.xlsx
 
-# Run model and EventaAnalyser
+# Run model and CDA
 model = ForwardModels(settings=s, output_dir= dir_event)
 model.run_models()
 model.save()
 
-#Plotting EventAnalyser and generating summary file
-dir1 = s['user_filepath']  #Same as 'users_filepath' defined in s = {}
-dir2 = os.path.join(dir_event, 'CDA Results')  # Results file location of EventAnalyser
 
-e = cca.Evaluate()
-plot = e.plot_CDA(dir1, dir2)
 
