@@ -567,6 +567,11 @@ class Evaluate(object):
                 color, marker = ('darkblue', 's') if var == 'd13C_init' else ('darkgreen', 'o')
                 axs[i].scatter(df_main[age_column_main], df_main[var], marker=marker, color=color, s=50, label='Modeled Data')
                 
+                x_min, x_max = df_main[age_column_main].min(), df_main[age_column_main].max() 
+                x_range = x_max - x_min 
+                x_offset = x_range * 0.05  # Apply offset proportionally
+                axs[i].set_xlim(x_min - x_offset, x_max + x_offset )  # Set xlim with a margin for offset
+
                 # Titles and labels
                 axs[i].set_xlabel('Age')
                 axs[i].set_ylabel(custom_labels[var])
@@ -679,6 +684,8 @@ class Evaluate(object):
 
         # Flatten the axs array for easy iteration if it's a 2D array
         axs_flow_path = axs_flow_path.flatten()  
+        
+        
     
         for i, var in enumerate(variables_flow_path):   
             if var in df_main.columns:  
@@ -692,13 +699,14 @@ class Evaluate(object):
                     age_mask = df_main[age_column_main] == age 
                     data_for_boxplot.append(var_values[age_mask]) 
                     
-                    
+
                 # Compute dynamic width for the boxplot 
                 subplot_width = positions.max() - positions.min()  # Effective range of x-axis 
                 num_ages = len(positions)  # Number of unique ages 
                 box_width = subplot_width / (num_ages * 4)  # Scale width dynamically; tweak divisor for spacing
+                
+                
 
-                    
                 # Plot the boxplot with a smaller width 
                 axs_flow_path[i].boxplot(data_for_boxplot, positions=age_values.unique(),widths=box_width, patch_artist=True,  # Reduced width
                                  boxprops=dict(facecolor='none', color='black'),
@@ -724,8 +732,12 @@ class Evaluate(object):
                     marker = 'o'
                 
                 axs_flow_path[i].scatter(df_main[age_column_main], df_main[var], marker=marker, color=color, s=50, label='Modeled Data')
-                
+                x_min, x_max = df_main[age_column_main].min(), df_main[age_column_main].max() 
+                x_range = x_max - x_min 
+                x_offset = x_range * 0.05  # Apply offset proportionally
+                axs_flow_path[i].set_xlim(x_min - x_offset, x_max + x_offset )  # Set xlim with a margin for offset
 
+                
                 axs_flow_path[i].set_xlabel('Age')
                 # Set the y-label with the specific changes for gas volume and fca 
                 if var == 'gas volume (L/kg)':  
@@ -738,7 +750,9 @@ class Evaluate(object):
                 # Corrected title plotting line 
                 axs_flow_path[i].text(0.02, 1.01, subplot_titles[i], transform=axs_flow_path[i].transAxes,  
                                       fontsize=12, fontweight='bold', ha='center')
-                          
+                
+                
+            
                 # Add custom subtitle for each subplot
                 subtitle = subtitles[i]  # Get the corresponding subtitle
                 max_length = 70  # Define a character limit before breaking into two lines   
