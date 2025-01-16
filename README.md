@@ -47,6 +47,11 @@ Go to directory:
 cd CaveCalcV2.0
 ```
 
+If you would like to install into anaconda (optional):
+```shell
+conda activate base
+```
+
 Run:
 ```shell
 python setup.py install
