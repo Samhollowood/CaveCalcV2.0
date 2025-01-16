@@ -268,7 +268,7 @@ class ForwardModels(object):
                 plot = e.plot_CDA(dir1, dir2)
                 print("Plotting completed successfully.")
             except Exception as err:
-                print(f"CDA not initialised so no CDA plots")
+                print(f"CDA not initialised or no matches = No CDA plots")
 
             
            
