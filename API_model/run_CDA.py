@@ -83,7 +83,7 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
 
      }
 
-dir_event = './run_event_test/' # directory to save model output and EventAnalyser.xlsx
+dir_event = './run_CDA/' # directory to save model output and EventAnalyser.xlsx
 
 # Run model and CDA
 model = ForwardModels(settings=s, output_dir= dir_event)
