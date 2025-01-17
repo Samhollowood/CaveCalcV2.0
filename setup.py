@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import shutil
+import re 
 
 try:
     from setuptools import setup
