@@ -23,6 +23,19 @@ install_requires = [
 if sys.platform.lower() == 'win32':
     install_requires.append('pywin32')
 
+# Remove any existing cavecalc package
+try:
+    print("Checking for existing cavecalc installations...")
+    existing_install = subprocess.check_output(
+        [sys.executable, '-m', 'pip', 'show', 'cavecalc'], universal_newlines=True
+    )
+    if existing_install:
+        print("Found existing cavecalc installation. Removing...")
+        subprocess.check_call([sys.executable, '-m', 'pip', 'uninstall', '-y', 'cavecalc'])
+        print("Old cavecalc version removed.")
+except subprocess.CalledProcessError:
+    print("No existing cavecalc installation found.")
+
 setup(
     name='cavecalc',
     description='Cave Geochemical Modelling',
