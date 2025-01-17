@@ -11,8 +11,13 @@ import pandas as pd
 import copy
 import matplotlib
 from sys import platform
-if platform != 'win32':
-    matplotlib.use('TkAgg') # necessary for mac
+
+# Check platform and set backend accordingly
+if platform == 'win32' or platform == 'darwin':  # macOS is 'darwin' in platform
+    matplotlib.use('TkAgg')  # Use TkAgg on Windows and macOS
+else:
+    matplotlib.use('Agg')  # Use Agg backend for headless environments (Linux/Binder)
+
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
