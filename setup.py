@@ -115,7 +115,7 @@ if sys.platform.lower() == 'win32':
         print(f"Error during phreeqpy configuration: {e}")
 
 # For Linux
-elif sys.platform.lower() == 'linux':
+if sys.platform.lower() == 'linux':
     try:
         print("Configuring phreeqpy for Linux...")
 
