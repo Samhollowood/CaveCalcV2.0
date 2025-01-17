@@ -114,5 +114,56 @@ if sys.platform.lower() == 'win32':
     except Exception as e:
         print(f"Error during phreeqpy configuration: {e}")
 
+# For Linux
+elif sys.platform.lower() == 'linux':
+    try:
+        print("Configuring phreeqpy for Linux...")
+
+        # Locate phreeqpy installation
+        output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
+        phreeqpy_path = None
+        for line in output.splitlines():
+            if line.startswith('Location:'):
+                phreeqpy_path = line.split('Location: ')[1]
+                break
+
+        if not phreeqpy_path:
+            raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
+
+        # Paths to IPhreeqc files
+        iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
+        iphreeqc_so_path = os.path.join(iphreeqc_path, 'libiphreeqc.so.0.0.0')
+        iphreeqc_backup_path = os.path.join(iphreeqc_path, 'libiphreeqc_backup.so')
+        iphreeqc_phreeqc3_path = os.path.join(iphreeqc_path, 'phreeqc3')
+
+        # Find all libiphreeqc-<version>.so files (with dynamic version)
+        so_files = [f for f in os.listdir(iphreeqc_phreeqc3_path) if re.match(r'libiphreeqc-\d+\.\d+\.\d+\.so', f)]
+        if not so_files:
+            raise FileNotFoundError("No libiphreeqc-<version>.so file found in phreeqc3 directory.")
+
+        # Assuming we want the first found file (or you can implement version sorting if needed)
+        iphreeqc_versioned_so_path = os.path.join(iphreeqc_phreeqc3_path, so_files[0])
+
+        # Check if the phreeqc3 directory exists
+        if not os.path.exists(iphreeqc_phreeqc3_path):
+            raise FileNotFoundError(f"phreeqc3 directory not found at {iphreeqc_phreeqc3_path}")
+
+        # If the backup file already exists, delete it
+        if os.path.exists(iphreeqc_backup_path):
+            os.remove(iphreeqc_backup_path)
+            print(f"Deleted existing {iphreeqc_backup_path}")
+
+        # Rename the current libiphreeqc.so.0.0.0 to backup (if it exists)
+        if os.path.exists(iphreeqc_so_path):
+            os.rename(iphreeqc_so_path, iphreeqc_backup_path)
+            print(f"Renamed {iphreeqc_so_path} to {iphreeqc_backup_path}")
+
+        # Copy the versioned libiphreeqc.so to libiphreeqc.so
+        shutil.copy(iphreeqc_versioned_so_path, iphreeqc_so_path)
+        print(f"Copied {iphreeqc_versioned_so_path} to {iphreeqc_so_path}")
+
+    except Exception as e:
+        print(f"An error occurred while configuring phreeqpy for Linux: {e}")
+
 print("Cavecalc installation complete. Run example1.py to test.")
 
