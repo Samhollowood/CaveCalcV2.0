@@ -5,7 +5,7 @@ try:
 except ImportError:
     tkinter_available = False
     import streamlit as st
-    from cavecalc.gui.gui_web import StreamlitCCInputGUI  # Adjust this import for your Streamlit GUI
+    from cavecalc.gui.gui_web import CCInputStreamlit  # Adjust this import for your Streamlit GUI
 
 def run_tkinter():
     """Run Tkinter GUI."""
