@@ -31,7 +31,7 @@ This repository provides the source code (`cavecalc/`), examples (`examples/`), 
 ## Installation
 There is a full installation guide in the manual () if users need guidance on installing python, and manually configuring the COM server in PHREEQC (Windows Only).
 
-It is important to note that in the setup.py I have automated this configuration and thus Windows usres no longer need to do this step manually. Nonetheless it is still provided if users have difficutly with the set-up.
+NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server for Windows and Linux users
 
 Here, I provide steps on how to install cavecalc from github:
 
