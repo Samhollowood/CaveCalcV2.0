@@ -1133,21 +1133,34 @@ def save_csv(dictionary, filename):
     should be provided as a dict of lists. Dict keys give column headers and
     lists give column values. All lists must be of equal length.
     
-    In the resulting .csv, columnns are arranged alphabetically by header.
+    In the resulting .csv, columns are arranged alphabetically by header.
     
     Args:
         dictionary: The dictionary to write to file.
+        filename: The name of the file to save the data to.
     """
     
-    r = OrderedDict(sorted(dictionary.items()))
-    a, b = zip(*[(k,v) for (k,v) in r.items()])
-    c = zip(*b)
+    # Sort the dictionary items alphabetically by key
+    sorted_dict = OrderedDict(sorted(dictionary.items()))
     
-    with open(filename,'w', newline='') as f:
-        writer = csv.writer(f,dialect='excel')
-        writer.writerow(a)
-        for row in c:
+    # Extract headers and values
+    headers = list(sorted_dict.keys())
+    values = list(sorted_dict.values())
+    
+    # Determine the number of rows
+    num_rows = len(values[0]) if values else 0
+    
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f, dialect='excel')
+        
+        # Write headers
+        writer.writerow(headers)
+        
+        # Write values
+        for i in range(num_rows):
+            row = [values[j][i] if i < len(values[j]) else '' for j in range(len(headers))]
             writer.writerow(row)
+            
             
             
 
