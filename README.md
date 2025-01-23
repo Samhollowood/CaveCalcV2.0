@@ -68,10 +68,7 @@ python example1.py
 
 Open the GUI by:
 ```shell
-cd ..
-```
-```shell
-cd scripts
+cd CaveCalcV2.0/scripts
 ```
 ```shell
 python cc_input_gui.py
