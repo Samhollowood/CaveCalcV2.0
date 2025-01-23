@@ -404,17 +404,40 @@ class PostProcessor(object):
   
     
     def VSMOW_to_VPDB(self):
-        """Converts d18O(VSMOW) to d18O(PDB)"""
-        
-        if self.s.settings['precipitate_mineralogy'] == 'Calcite':
-            d18O = self.s.output.get('d18O_Calcite', []) 
-            d18O_PDB = [x * 0.97001 - 29.99 if x is not None else np.nan for x in d18O]
-            self.s.output['d18O_PDB'] = d18O_PDB
-        elif self.s.settings['precipitate_mineralogy'] == 'Aragonite':  
-            d18O = self.s.output.get('d18O_Aragonite', [])     
-            d18O_PDB = [x * 0.97001 - 29.99 if x is not None else np.nan for x in d18O]
-            self.s.output['d18O_PDB'] = d18O_PDB
-   
+        # Ensure data is loaded
+        if not self.s.output:
+            print("Warning: self.s.output is empty!")
+            return
+
+
+        # Get mineralogy setting
+        mineralogy = self.s.settings.get('precipitate_mineralogy', "").strip()
+
+
+        # Access d18O data based on mineralogy
+        if mineralogy == 'Calcite':
+            d18O = self.s.output.get('I_R(18O)_Calcite', [])
+        elif mineralogy == 'Aragonite':
+            d18O = self.s.output.get('I_R(18O)_Aragonite', [])
+        else:
+            print("Unsupported mineralogy setting:", mineralogy)
+            return
+
+        # Check if d18O was found
+        if not d18O:
+            print(f"Warning: {mineralogy} data not found in self.s.output!")
+            return
+
+        # Process data, skipping the first two indices
+        d18O_PDB = []
+        for i, x in enumerate(d18O):
+            if i < 2:
+                d18O_PDB.append(np.nan)
+            else:
+                d18O_PDB.append(x * 0.97001 - 29.99 if x is not None else np.nan)
+
+        # Save results back to self.s.output
+        self.s.output['d18O_PDB'] = d18O_PDB
         
 
           
