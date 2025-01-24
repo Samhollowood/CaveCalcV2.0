@@ -10,9 +10,9 @@ as part as a .py script
 
 The settings of the model can be found via s = {}.
 
-Please change the values to suit your study.
+Please change/add inputs to suit your study. Refer to manual for full list of available inputs
 
-Refer to the manual or contact me for any more information/debugging/guidance.
+Contact me for any more information/debugging/guidance.
 """
 
 'Import modules'
@@ -27,7 +27,7 @@ import cavecalc.analyse as cca
 'STEP 1: Define the settings for the CDA'        
 s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'soil_pCO2': [260,410,600,1000,2000,3000,4000,5000,6000,8000], #NON-DEFAULT - example of placing values in a list
-      'atm_d18O': -10 #DEFAULT | rainwater isotopic compositionn in VSMOW
+      'atm_d18O': -10 #DEFAULT | rainwater isotopic composition in VSMOW
       
       #Soil metals
       'soil_Ba':              0,    	#DEFAULT | soil water Ba concentration (mmol/kg water)
