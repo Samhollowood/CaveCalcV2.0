@@ -47,9 +47,9 @@ Follow these steps to install CaveCalcV2.0 (
 NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server):
 
 1. Clone the repository:
-   ```shell
-   git clone https://github.com/Samhollowood/CaveCalcV2.0.git
-   ```
+```shell
+git clone https://github.com/Samhollowood/CaveCalcV2.0.git
+```
    
 2. Go to directory:
 ```shell
