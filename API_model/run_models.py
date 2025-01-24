@@ -6,7 +6,7 @@ Created on Fri Aug 23 14:55:49 2024
 @author: samhollowood - please contact samuel.hollowood@bnc.ox.ac.uk for any questions
 
 This code is used to provide a user with an easy way to run models 
-as part as a .py script 
+as part as a .py script. This produces a .csv output of each model.
 
 The settings of the model can be found via s = {}. Most inputs are in their default values
 
