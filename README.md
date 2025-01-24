@@ -7,6 +7,7 @@ version 1 (https://github.com/Rob-Owen/cavecalc)
 
 ## Table of Contents
 - [Introduction](#introduction)
+- [Features](#features)  
 - [Installation](#installation)
 - [Usage](#usage)
 - [Output](#output)
@@ -17,48 +18,55 @@ version 1 (https://github.com/Rob-Owen/cavecalc)
 - [References and Acknowledgements](#references-and-acknowledgements)
 
 
-## Introduction
-This repository is the official implementation of [_CaveCalcV2.0: A software tool for forward modelling speleothem chemistry._](), in preperation for submission into [Computers & Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences).
+## **Introduction**
+CaveCalcV2.0 is an updated forward modeling tool for simulating speleothem chemistry. It introduces several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
 
-We present a newly updated CaveCalcV2.0 forward modelling tool for simulating speleothem chemistry with new examples, and installation processes.
+- Source code: `/cavecalc/`  
+- Example scripts: `/examples/`  
+- API model run examples: `/API_models/`  
+- Scripts for the Graphical User Interface (GUI): `/scripts/`  
 
-Updates include:
-(1) The new Carbonate Data Analyser (CDA) mode
-(2) Speleothem aragonite precipitation
-(3) U/Ca as a proxy 
+**Key updates include:**
+1. The new Carbonate Data Analyzer (CDA) mode.  
+2. Speleothem aragonite precipitation.  
+3. U/Ca as a proxy.
 
-This repository provides the source code (`cavecalc/`), examples (`examples/`), API model run examples (`API_models/`), and scripts for opening the Graphical User Interface (/scripts)
+## **Features**
 
-## Installation
-There is a full installation guide in the manual () if users need guidance on installing python, and manually configuring the COM server in PHREEQC (Windows Only).
+- **Forward modeling of speleothem chemistry** with updated tools and examples.  
+- **Carbonate Data Analyzer (CDA):** A mode for analysing and matching measured data with model outputs.  
+- **Aragonite precipitation modeling** in speleothems.  
+- **Flexible plotting capabilities** for visualizing outputs.  
+- Supports **Python 3.0 and above** (tested with Python 3.10.12).  
 
-NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server for Windows and Linux users
 
-Here, I provide steps on how to install cavecalc from github:
 
-**This code has been tested using Python 3.10.12. CaveCalc cannot run on Python2.7. Please use a version of Python3 (recomended >3.5).**
+## **Installation**
 
-Clone the repository:
-```shell
-git clone https://github.com/Samhollowood/CaveCalcV2.0.git
-```
+Follow these steps to install CaveCalcV2.0 (
+NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server for Windows and Linux users):
 
-Go to directory:
+1. Clone the repository:
+   ```shell
+   git clone https://github.com/Samhollowood/CaveCalcV2.0.git
+   ```
+   
+2. Go to directory:
 ```shell
 cd CaveCalcV2.0
 ```
 
-If you would like to install into anaconda (optional):
+3. If you would like to install into anaconda (optional):
 ```shell
 conda activate base
 ```
 
-Run:
+4. Install the CaveCalcV2.0 package:
 ```shell
 python setup.py install
 ```
 
-Verify installation by running example:
+5. Verify installation by running example:
 ```shell
 cd examples/
 ```
@@ -66,10 +74,9 @@ cd examples/
 python example1.py
 ```
 
-
-Open the GUI by:
+6. Open the GUI by:
 ```shell
-cd CaveCalcV2.0/scripts
+cd ../scripts
 ```
 ```shell
 python cc_input_gui.py
@@ -82,11 +89,11 @@ python cc_input_gui.py
 More in-depth examples of running single models, multiple models, and models with the Carbonate Data Analyser (CDA) are provided in the **manual** (). Users can run models via the `run_models.py` script in the `API_models/` directory or the CDA using `run_CDA.py` in the same location. Both scripts come with default model inputs, which can be edited as needed. Integrated development environments (IDEs) like **Spyder** and **Jupyter Notebook** are recommended for easily editing `.py` scripts. For further guidance, refer to the **manual** (), which includes a table of all the available model inputs, their model names, realistic ranges, and their influence on speleothem chemistry.
 
 ### Defining Inputs for the CDA
-
-Some inputs in the settings dictionary `s = {}` must be explicitly defined before running the CDA mode (`run_CDA.py`). Specifically:
+Before running the CDA mode, specify the following in the settings dictionary ( `s = {}`) within `API_models/run_CDA.py` :
 
 - **`user_filepath`**: Define this key in the settings dictionary and set it to the path of your measured speleothem data file.
 - **`tolerance_X`**: Where X is d13C, d18O, d44Ca, MgCa, SrCa, BaCa, or UCa. You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
+- **model inputs**: These are standard model inputs as per standard CaveCalc model runs (Owens et al., 2018). These can be changed/added in the run_CDA.py
 
 ### Optional: Defining Output Directory
 For both standard model runs and the CDA, you can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
