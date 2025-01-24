@@ -228,35 +228,82 @@ class ForwardModels(object):
   
             
     def save(self):
-        """Save results and settings data to .pkl files. 
-        
-        The resulting files (results.pkl and settings.pkl) may be read using 
-        the cavecalc.analyse module.
-        
-        results.pkl contains a list of dicts. Each dict contains the output of
-        a single model. settings.pkl contains a similar list of 
-        SettingsObjects, one for each model run.
         """
-        
+        Save results and settings data to a single .csv file.
+
+        Each key in the results becomes a column header, and if a value is a list, 
+        each item in the list is saved as a new row, duplicating the corresponding settings.
+        """
+        # Ensure the output directory exists
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
+
+        # Save input settings and results as pickle files
         with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
             pickle.dump(self.input, f)
-            
+
         with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
             pickle.dump(self.results, f)
+
+        # Load results and settings from pickle files
+        results_path = os.path.join(self.output_dir, 'results.pkl')
+        settings_path = os.path.join(self.output_dir, 'settings.pkl')
+
+        if not os.path.exists(results_path) or not os.path.exists(settings_path):
+            raise FileNotFoundError("Results or settings pickle files not found. Save them first before extracting values.")
+
+        with open(results_path, 'rb') as f:
+            results = pickle.load(f)
+
+        with open(settings_path, 'rb') as f:
+            settings = pickle.load(f)
+
+        # Prepare a list for expanded rows
+        expanded_rows = []
+        model_index = 1
+
+        # Loop through results and settings together
+        for model_output, setting in zip(results, settings):
+            model_dict = model_output[0]  # Assuming each model_output is a tuple where the first element is a dictionary
+            settings_dict = setting.dict()  # Assuming `dict()` method exists for settings objects
+
+            # Expand list outputs into separate rows
+            row_template = settings_dict.copy()  # Base row with settings
+            row_template["Model"] = f"Model_{model_index}"
+
+            # Create rows for each key in model_dict
+            max_list_length = max((len(value) if isinstance(value, list) else 1 for value in model_dict.values()))
+            for i in range(max_list_length):
+                row = row_template.copy()
+                for key, value in model_dict.items():
+                    if isinstance(value, list):
+                        # Use the i-th item of the list if it exists, otherwise leave as blank
+                        row[key] = value[i] if i < len(value) else None
+                    else:
+                        # Non-list values are the same for all rows
+                        row[key] = value
+                expanded_rows.append(row)
+
+            model_index += 1
+
+        # Convert expanded rows to a DataFrame
+        combined_df = pd.DataFrame(expanded_rows)
+
+        # Save the combined DataFrame to a CSV file
+        combined_csv_path = os.path.join(self.output_dir, 'settings_results.csv')
+        combined_df.to_csv(combined_csv_path, index=False)
 
         # Print the full absolute output directory path
         full_output_dir = os.path.abspath(self.output_dir)
         print(f"Results and settings have been saved in: {full_output_dir}")
-            
-            # Extract user_filepath from input settings
+
+        # Handle user_filepath logic if it exists in settings
         extracted_values = {}
         for setting in self.input:
-            if hasattr(setting, "dict"):  # Ensure the object has a dict method
+            if hasattr(setting, "dict"):
                 setting_dict = setting.dict()
                 extracted_values['user_filepath'] = setting_dict.get('user_filepath')
-        
+
         # Check if user_filepath exists and is a string
         user_filepath = extracted_values.get('user_filepath')
         if isinstance(user_filepath, str):
@@ -264,13 +311,12 @@ class ForwardModels(object):
                 # Perform additional logic for cavecalc.analyse
                 e = cca.Evaluate()
                 dir1 = user_filepath
-                dir2 = os.path.join(self.output_dir,'CDA Results')  # Example for dir2
-                plot = e.plot_CDA(dir1, dir2)
+                dir2 = os.path.join(self.output_dir, 'CDA Results')  # Example for dir2
+                e.plot_CDA(dir1, dir2)
                 print("Plotting completed successfully.")
-            except Exception as err:
-                print(f"CDA not initialised or no matches = No CDA plots")
+            except Exception:
+                print("CDA not initialized or no matches: No CDA plots generated.")
 
-            
            
     
 
@@ -288,184 +334,3 @@ class ForwardModels(object):
         dbug = ccv.Simulator(s_debug, id=i)
         dbug.run()
  
-'''      
-    def Stal_save(self, excel_filename='model_outputs.xlsx'):
-        """Extracts the last index of each key (variable) from the model outputs,
-        as well as the settings, and saves them into an Excel file with two sheets.
-        
-        Args:
-            excel_filename (str): The name of the Excel file to save the results to.
-                                  Defaults to 'model_output.xlsx'.
-        Returns:
-            None. The data is saved to an Excel file in the specified directory.
-        """
-
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-        with open(os.path.join(self.output_dir, 'settings.pkl'), 'wb') as f:
-            pickle.dump(self.input, f)
-            
-        with open(os.path.join(self.output_dir, 'results.pkl'), 'wb') as f:
-            pickle.dump(self.results, f)
-
-        # Load the results from the saved pickle file
-        results_path = os.path.join(self.output_dir, 'results.pkl')
-        if not os.path.exists(results_path):
-            raise FileNotFoundError(f"No results file found at {results_path}. Run models and save results before extracting values.")
-        
-        with open(results_path, 'rb') as f:
-            results = pickle.load(f)
-
-        # Load the settings from the saved pickle file
-        settings_path = os.path.join(self.output_dir, 'settings.pkl')
-        if not os.path.exists(settings_path):
-            raise FileNotFoundError(f"No settings file found at {settings_path}. Run models and save settings before extracting values.")
-        
-        with open(settings_path, 'rb') as f:
-            settings = pickle.load(f)
-
-        # Extract the last values from each model's output
-        last_values = []
-        for model_output in results:
-            model_dict = model_output[0]
-            model_last_values = {key: values[-1] for key, values in model_dict.items()}
-            last_values.append(model_last_values)
-        results_df = pd.DataFrame(last_values)
-        results_df.insert(0, 'Model', [f'{i+1}' for i in range(len(last_values))])
-
-        # Extract the settings from each SettingsObject
-        settings_list = []
-        for setting in settings:
-            settings_dict = setting.dict()  # Assuming `dict()` method exists for SettingsObject
-            settings_list.append(settings_dict)
-        settings_df = pd.DataFrame(settings_list)
-        settings_df.insert(0, 'Model', [f'{i+1}' for i in range(len(settings_list))])
-
-        # Save both DataFrames to separate sheets in the same Excel file
-        excel_path = os.path.join(self.output_dir, excel_filename)
-        with pd.ExcelWriter(excel_path) as writer:
-            settings_df.to_excel(writer, sheet_name='Settings', index=False)
-            results_df.to_excel(writer, sheet_name='Results', index=False)
-        
-              
-
-        print(f"Excel file '{excel_filename}' has been created successfully with 'Settings' and 'Results' sheets in the directory '{self.output_dir}'.")
-        
-'''
-
-
-'''
-          
-    def rainfall_calculator(self):
-        """Extracts specific settings and loads user file to perform rainfall calculations.
-        
-        Returns:
-            dict: A dictionary containing extracted values for 'bedrock_d44Ca',
-                  'd44Ca_modern', 'rainfall_amount', 'user_filepath', 'data', 'rs', and 'f_paleo'.
-        """
-        # Initialize a dictionary to hold the extracted values
-        extracted_values = {
-            'bedrock_d44Ca': None,
-            'd44Ca_modern': None,
-            'rainfall_amount': None,
-            'user_filepath': None,  # To hold the user's file path
-            'data': None            # To hold the loaded data from the user file
-        }
-
-        # Loop through the input settings to find the required settings
-        for setting in self.input:
-            setting_dict = setting.dict()
-
-            # Extract the user_filepath and other required settings
-            extracted_values['user_filepath'] = setting_dict.get('user_filepath')
-            extracted_values['bedrock_d44Ca'] = setting_dict.get('bedrock_d44Ca')
-            extracted_values['d44Ca_modern'] = setting_dict.get('d44Ca_modern')
-            extracted_values['rainfall_amount'] = setting_dict.get('rainfall_amount')
-            extracted_values['database'] = setting_dict.get('database')
-            extracted_values['precipitate_mineralogy'] = setting_dict.get('precipitate_mineralogy')
-            extracted_values['temperature'] = setting_dict.get('temperature')
-            output_dir = setting_dict.get('out_dir')  # Output directory
-            # If output_dir is provided, use it; otherwise, default to the current working directory 
-            output_dir = output_dir or os.getcwd()
-            extracted_values['out_dir'] = output_dir  # Store it in extracted_values
-
-
-        # Load the user's time-series Excel file if a filepath is provided
-        if extracted_values['user_filepath']:
-            try:
-                # Load the Excel file
-                df = pd.read_excel(extracted_values['user_filepath'])
-                # Strip whitespace from the headers and normalize column names by removing special characters
-                df.columns = df.columns.str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
-
-                # Extract relevant columns
-                age_column = [col for col in df.columns if 'age' in col]
-                d44Ca_column = [col for col in df.columns if 'd44ca' in col]
-
-                # Collect data from the first found column or set to None if not found
-                extracted_values['data'] = {
-                    'age_data': df[age_column[0]].dropna().tolist() if age_column else None,
-                    'd44Ca_data': df[d44Ca_column[0]].dropna().tolist() if d44Ca_column else None,
-                }
-
-            except Exception as e:
-                raise ValueError(f"Error loading file: {e}")
-
-        # Check if any required settings were not found and raise an error
-        missing_keys = [key for key, value in extracted_values.items() if value is None]
-        if missing_keys:
-            raise ValueError(f"The following settings were not found in the input settings: {', '.join(missing_keys)}")
-
-        # Create a database reader instance
-        db = ccu.DBReader(str(extracted_values['database']))
-
-        # Calculate alpha based on the precipitate mineralogy
-        if extracted_values['precipitate_mineralogy'] == 'Calcite':
-            alpha = db.get_alpha('44Ca', r'Calcite/Ca(aq)', extracted_values['temperature'] + 273.15)
-        elif extracted_values['precipitate_mineralogy'] == 'Aragonite':
-            alpha = db.get_alpha('44Ca', r'Aragonite/Ca(aq)', extracted_values['temperature'] + 273.15)
-        else:
-            raise ValueError("Invalid precipitate mineralogy specified.")
-
-        # Calculate the rs values based on d44Ca_data
-        if extracted_values['data']['d44Ca_data'] is not None:
-            d44Ca_data = extracted_values['data']['d44Ca_data']
-            rs = [(d44Ca / 1000) + 1 for d44Ca in d44Ca_data]  # Store the rs values
-
-            # Calculate f_paleo as an array based on rs values and alpha
-            ro = extracted_values['bedrock_d44Ca'] / 1000 + 1  
-            f_paleo = [(r / (alpha * ro)) ** (1 / (alpha - 1)) for r in rs]
-
-            r_modern = extracted_values['d44Ca_modern']/1000 + 1
-            # Calculate f_modern using d44Ca_modern
-            f_modern = (r_modern / (alpha * ro)) ** (1 / (alpha - 1))
-
-            # Calculate rainfall_paleo using the extracted rainfall amount
-            rainfall_paleo = [(extracted_values['rainfall_amount'] * f) / f_modern for f in f_paleo]
-
-            # Update extracted_values with calculated rs, f_paleo, f_modern, and rainfall_paleo
-            extracted_values['rs'] = rs
-            extracted_values['f_paleo'] = f_paleo
-            extracted_values['f_modern'] = f_modern
-            extracted_values['rainfall_paleo'] = rainfall_paleo
-            
-            # Prepare DataFrame for output
-            output_df = pd.DataFrame({
-               'age': extracted_values['data']['age_data'],
-               'd44Ca_data': d44Ca_data,
-               'f_paleo': f_paleo,
-               'rainfall_paleo': rainfall_paleo
-            })
-
-            # Ensure the output directory exists
-            if not os.path.exists(extracted_values['out_dir']):
-                os.makedirs(extracted_values['out_dir'])
-
-            # Define the output file path
-            output_file = os.path.join(extracted_values['out_dir'], 'rainfall_calculator.xlsx')
-
-            # Write DataFrame to an Excel file
-            output_df.to_excel(output_file, index=False, sheet_name='Rainfall Calculations')
-
-            print(f"Output written to {output_file}")
- '''
