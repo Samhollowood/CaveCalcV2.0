@@ -119,6 +119,14 @@ For the first match with the measured data, it will print:
 Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
 ```
 
+
+## Post-processng
+Automatically, CaveCalc saves it model inputs and output as settings.pkl and results.pkl in the output directory. These may be converted to .csv and .mat files for post-processing. The script run_models.py includes the function to convert the results.pkl file to a .csv.
+
+If users are running the CDA mode, then path/to/out_dir/CDA Results/All_outputs.csv contains a .csv file of all the model input and output that was compared with the measured data, providing residuals for each.
+
+CaveCalc also has capabilities of plotting model output.
+
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
 
