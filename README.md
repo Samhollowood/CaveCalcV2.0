@@ -76,29 +76,46 @@ python cc_input_gui.py
 
 
 
-## Usage
-Examples of running single models, multiple models, and models with the CDA initialised are provided in the manual (). Users can run models via the run_models.py in `API_models/` or the CDA in run_CDA.py also in 
-`API_models/`. The python scripts have inputs set as the default, change them as you please.
+# Usage
 
-Users can run the .py script on the terminal. But, before running these scripts, make sure you edit some inputs within the settings dictionary, s = {}.
-Integrated development environments (IDE) like Spyder and Jupyter Notebook provide easy access to edit .py script.
-If you wish to use the Carbonate Data Analyser (CDA) mode via Python API (run_CDA.py), users must define `user_filepath` with s = {}, which should be replaced with the path to their measured speleothem data. 
-Optionally, if you want he model output to be saved into a specific directory, please define `out_dir` in the settings dictionary s = {}.
+Examples of running single models, multiple models, and models with the Carbonate Data Analyser (CDA) are provided in the **manual** (). Users can run models via the `run_models.py` script in the `API_models/` directory or the CDA using `run_CDA.py` in the same location. Both scripts come with default model inputs, which can be edited as needed. Integrated development environments (IDEs) like **Spyder** and **Jupyter Notebook** are recommended for easily editing `.py` scripts. For further guidance, refer to the **manual** (), which includes a table of all the available model inputs, their model names, realistic ranges, and their influence on speleothem chemistry.
 
-Then running:
+## Defining Inputs for the CDA
+
+Some inputs in the settings dictionary `s = {}` must be explicitly defined before running the CDA mode (`run_CDA.py`). Specifically:
+
+- **`user_filepath`**: Define this key in the settings dictionary and set it to the path of your measured speleothem data file.
+- **Tolerance intervals**: You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
+
+## Optional: Defining Output Directory
+For both standard model runs and the CDA, you can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
+
+## Running the Scripts
+To run the CDA mode:
 ```shell
 cd CaveCalcV2.0/API_models/
-```
-```shell
 python run_CDA.py
 ```
-or if you are not wanting to use the CDA, the `user_filepath` does not need to be expliciity defined, only the `out_dir` and run:
+
+If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the `out_dir` in the settings dictionary and run:
+
 ```shell
 python run_models.py
 ```
 
-Models may also be run via the Graphical User Interface (GUI). There are fields in the GUI where users can input the file path to their measured data, as well as define an output directory.
+### When the CDA is functioning correctly:
 
+It will print:
+
+```shell
+CDA is initialised
+```
+It will then create a CDA Results folder in the output directory, which will store match in a .csv file.
+For the first match with the measured data, it will print:
+
+```shell
+Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
+```
 
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
