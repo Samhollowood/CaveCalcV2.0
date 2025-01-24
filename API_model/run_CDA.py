@@ -21,7 +21,7 @@ import cavecalc.analyse as cca
 
 
 'Important note before running'
-'Change users_filepath and out_dir in the settings dictionary s = {}
+'Change users_filepath and out_dir in the settings dictionary s = {}'
 
 
 'STEP 1: Define the settings for the CDA'        
