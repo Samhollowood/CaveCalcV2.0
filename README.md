@@ -86,7 +86,7 @@ More in-depth examples of running single models, multiple models, and models wit
 Some inputs in the settings dictionary `s = {}` must be explicitly defined before running the CDA mode (`run_CDA.py`). Specifically:
 
 - **`user_filepath`**: Define this key in the settings dictionary and set it to the path of your measured speleothem data file.
-- **Tolerance intervals**: You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
+- **`tolerance_X`**: Where X is d13C, d18O, d44Ca, MgCa, SrCa, BaCa, or UCa. You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
 
 ### Optional: Defining Output Directory
 For both standard model runs and the CDA, you can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
