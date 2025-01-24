@@ -139,7 +139,7 @@ When running **CaveCalcV2.0**, three outputs are generated:
 3. **`settings_results.csv`**  
    A CSV file that consolidates both the input settings and the model outputs in a single, readable format.
 
-However, if the CDA is initialised, it will create a CDA Results folder:
+If the CDA is initialised, it will create a CDA Results folder:
 ```shell
 cd /path/to/out_dir/CDA Results/
 ```
