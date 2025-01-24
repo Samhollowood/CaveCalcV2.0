@@ -25,48 +25,14 @@ import cavecalc.analyse as cca
 
 
 'STEP 1: Define the settings for the CDA'        
-s =  {#Atmospheric Gas End-Member
-      'atmo_exhange': 0 #DEFAULT | Amount of mixing with atmosphere 
-      'atm_d18O': -10,  #DEFAULT | Rainfall d18O (‰,SVMOW)
-      'atm_pCO2': 270,  #DEFAULT | atmospheric pCO2 (ppmv)
-      'atm_d13C': -7,   #DEFAULT | atmospheric CO2 d13C (‰,VPDB)
-      
-      #Soil Gas End-member 
-      'soil_O2': 0,      #DEFAULT | soil end-member O2 (%)
-      'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
-      'soil_pCO2': [260,410,600,1000,2000,3000,4000,5000,6000,8000], #NON-DEFAULT - example of placing values in a list
-      'soil_R14C': 100, #DEFAULT | activity of radiocarbon in the soil (pmc)
-      
-      #Soil metals
-      'soil_Ba':              0,    	#DEFAULT | soil water Ba concentration (mmol/kg water)
-      'soil_Ca':              0,    	#DEFAULT | water Ca concentration (mmol/kg water)
-      'soil_Mg':              0,    	#DEFAULT | soil water Mg concentration (mmol/kg water)
-      'soil_Sr':              0,    	#DEFAULT | soil water Sr concentration (mmol/kg water)
-      'soil_U':               0,       #DEFAULT | soil water U concentration (mmol/kg water)
-      'soil_d44Ca':           0,       #DEFAULT | soil water Ca d44Ca (‰, 915a)
+s =  {#Environmental model inputs
+      'soil_d13C': [-18,-21,-25],
+      'soil_pCO2': [260, 600, 1000, 2000, 5000, 8000],
+      'gas_volume': [0, 100, 200, 300, 400, 500],
+      'cave_pCO2': [260, 600, 4500]',
+      'temperature': [5,15,25],
 
-      # Bedrock Chemistry *PLEASE CHANGE IF TRACE METALS ARE WITHIN EVENANALYSER*
-      'bedrock_BaCa':         0,            #DEFAULT | bedrock Ba/Ca (mmol/mol)
-      'bedrock_MgCa':         0,            #DEFAULT | bedrock Mg/Ca (mmol/mol)
-      'bedrock_SrCa':         0,            #DEFAULT | bedrock Sr/Ca (mmol/mol)
-      'bedrock_UCa':          0,            #DEFAULT | bedrock U/Ca (mmol/mol)
-      'bedrock_d13C':         0,            #DEFAULT | bedrock d13C (‰, VPDB)
-      'bedrock_d18O':         0,            #DEFAULT | bedrock d18O (‰, VSMOW)
-      'bedrock_d44Ca':        0,            #DEFAULT | Bedrock d44Ca (‰, SRM 915a)
-      'bedrock_mineral':      'Calcite',  #DEFAULT |  Bedrock mineralogy ('Calcite','Dolomite', or 'Aragonite)
-
-      #Aragonite/Calcite Mode 
-      'precipitate_mineralogy': 'Calcite', #DEFAULT | Speleothem mineralogy ('Calcite' or 'Aragonite')
-
-      # Bedrock Dissolution Conditions
-      'gas_volume':		   [0,50,100,150,200,250,300,350,400,450,500],	#NON-DEFAULT  Volume of soil gas present during bedrock dissolution (L/kg water)
-     
-      # General
-      'temperature':          [5,10,15,20],     #NON-DEFAULT | Temperature(°C)
-      'kinetics_mode':       'multi_step_degassing',   #DEFAULT | Specifies how to run the model (see types_and_limits.py for options)
-
-      #cave air 
-      'cave_pCO2': [260,410,1500,2500,4500,5550,6500], #NON-DEFAULT | Ranges of cave air pCO2 (ppmv)
+      #And any other environmental model inputs (see run_models.py)
       
       #CDA Mode
       'user_filepath': "path/to/data",       # Please change to run CDA. Provide path to measured data
