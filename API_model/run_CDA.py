@@ -27,6 +27,7 @@ import cavecalc.analyse as cca
 'STEP 1: Define the settings for the CDA'        
 s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'soil_pCO2': [260,410,600,1000,2000,3000,4000,5000,6000,8000], #NON-DEFAULT - example of placing values in a list
+      'atm_d18O': -10 #DEFAULT | rainwater isotopic compositionn in VSMOW
       
       #Soil metals
       'soil_Ba':              0,    	#DEFAULT | soil water Ba concentration (mmol/kg water)
