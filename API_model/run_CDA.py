@@ -25,9 +25,17 @@ import cavecalc.analyse as cca
 
 
 'STEP 1: Define the settings for the CDA'        
-s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
+s =  {#Atmospheric Gas End-Member
+      'atmo_exhange': 0 #DEFAULT | Amount of mixing with atmosphere 
+      'atm_d18O': -10,  #DEFAULT | Rainfall d18O (‰,SVMOW)
+      'atm_pCO2': 270,  #DEFAULT | atmospheric pCO2 (ppmv)
+      'atm_d13C': -7,   #DEFAULT | atmospheric CO2 d13C (‰,VPDB)
+      
+      #Soil Gas End-member 
+      'soil_O2': 0,      #DEFAULT | soil end-member O2 (%)
+      'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'soil_pCO2': [260,410,600,1000,2000,3000,4000,5000,6000,8000], #NON-DEFAULT - example of placing values in a list
-      'atm_d18O': -10 #DEFAULT | rainwater isotopic composition in VSMOW
+      'soil_R14C': 100, #DEFAULT | activity of radiocarbon in the soil (pmc)
       
       #Soil metals
       'soil_Ba':              0,    	#DEFAULT | soil water Ba concentration (mmol/kg water)
@@ -58,10 +66,10 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'kinetics_mode':       'multi_step_degassing',   #DEFAULT | Specifies how to run the model (see types_and_limits.py for options)
 
       #cave air 
-      'cave_pCO2': [260,410,1500,2500,4500,5550,6500],
+      'cave_pCO2': [260,410,1500,2500,4500,5550,6500], #NON-DEFAULT | Ranges of cave air pCO2 (ppmv)
       
       #CDA Mode
-      'user_filepath': "path/to/data",       # Please change for EventAnalyser mode
+      'user_filepath': "path/to/data",       # Please change to run CDA. Provide path to measured data
       'tolerance_d13C': 0.5,      #DEFAULT | Tolerance level for d13C (‰, VPDB)
       'tolerance_d18O': 0.5,      #DEFAULT | Tolerance level for d18O (‰, VPDB)
       'tolerance_DCP':  1.5,      #DEFAULT | Tolerance level for DCP (%)
@@ -72,7 +80,7 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'tolerance_UCa': 0.3,       #DEFAULT | Tolerance level for UCa (mmol/mol)
 
       #output directory
-      'out_dir' = './path/to/CDA'
+      'out_dir' = './path/to/CDA' #Change to an output directory you like
 
      }
 
