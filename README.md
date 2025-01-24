@@ -44,7 +44,7 @@ CaveCalcV2.0 is an updated forward modeling tool for simulating speleothem chemi
 ## **Installation**
 
 Follow these steps to install CaveCalcV2.0 (
-NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server for Windows and Linux users):
+NOTE: A key difference to installation on CaveCalcV2.0 to CaveCalc is that the installation script automatically configures and compiles the system-specific .dll/.so file for interaction with the IPhreeqc COM server):
 
 1. Clone the repository:
    ```shell
