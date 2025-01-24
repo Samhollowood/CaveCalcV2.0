@@ -16,14 +16,8 @@ variable will cause several models to be ran.
 """
 
 'Import modules'
-import pandas as pd
-import numpy as np
-import pickle
-import os
 from cavecalc.forward_models import ForwardModels
 import cavecalc.analyse as cca
-from matplotlib import pyplot as plt
-
 
 
 'STEP 1: Define the settings'        
@@ -66,8 +60,7 @@ s =  {#Atmospheric  Gas End-member
       'bedrock_mineral':      'Calcite',  #DEFAULT |  Bedrock mineralogy ('Calcite','Dolomite', or 'Aragonite)
 
       #Aragonite/Calcite Mode 
-      'precipitate_mineralogy': 'Calcite', #DEFAULT | Speleothem mineralogy ('Calcite' or 'Aragonite')
-      
+      'precipitate_mineralogy': 'Calcite', #DEFAULT | Speleothem mineralogy ('Calcite' or 'Aragonite')    
 
       # Bedrock Dissolution Conditions
       'bedrock':              10,   #DEFAULT | moles bedrock (defaults to excess)
@@ -87,7 +80,6 @@ s =  {#Atmospheric  Gas End-member
        # General
       'temperature':          20,     #DEFAULT | Temperature(°C)
       'kinetics_mode':       'multi_step_degassing',   #DEFAULT | Specifies how to run the model (see types_and_limits.py for options)
-
 
       #Scripting Options
       'co2_decrement':        0.5,    #DEFAULT | Fraction of CO2(aq) removed on each degassing step
