@@ -80,6 +80,25 @@ python cc_input_gui.py
 Examples of running single models, multiple models, and models with the CDA initialised are provided in the manual (). Users can run models via the run_models.py in `API_models/` or the CDA in run_CDA.py also in 
 `API_models/`. The python scripts have inputs set as the default, change them as you please.
 
+Users can run the .py script on the terminal. But, before running these scripts, make sure you edit some inputs within the settings dictionary, s = {}.
+Integrated development environments (IDE) like Spyder and Jupyter Notebook provide easy access to edit .py script.
+If you wish to use the Carbonate Data Analyser (CDA) mode via Python API (CDA_model.py), users must define `user_filepath` with s = {}, which should be replaced with the path to their measured speleothem data. 
+Optionally, if you want he model output to be saved into a specific directory, please define `out_dir` in the settings dictionary s = {}.
+
+Then running:
+```shell
+cd CaveCalcV2.0/API_models/
+```
+```shell
+python CDA_model.py
+```
+or if you are not wanting to use the CDA, the `user_filepath` does not need to be expliciity defined, only the `out_dir` and run:
+```shell
+python run_model.py
+```
+
+Models may also be run via the Graphical User Interface (GUI). There are fields where users can input the file path to their measured data, as well as define an output directory.
+
 
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
