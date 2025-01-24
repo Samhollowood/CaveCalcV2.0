@@ -86,7 +86,7 @@ python cc_input_gui.py
 
 ## Usage
 
-More in-depth examples of running single models, multiple models, and models with the Carbonate Data Analyser (CDA) are provided in the **manual** (). Users can run models via the `run_models.py` script in the `API_models/` directory or the CDA using `run_CDA.py` in the same location. Both scripts come with default model inputs, which can be edited as needed. Integrated development environments (IDEs) like **Spyder** and **Jupyter Notebook** are recommended for easily editing `.py` scripts. For further guidance, refer to the **manual** (), which includes a table of all the available model inputs, their model names, realistic ranges, and their influence on speleothem chemistry.
+More in-depth examples of running single models, multiple models, and models with the Carbonate Data Analyser (CDA) are provided in the **manual** (). Users can run models via the `run_models.py` script in the `API_models/` directory or the CDA using `run_CDA.py` in the same location. `run_models.py` comes with default model inputs, whereas `run_CDA.py` contains a select number of inputs that vary in a range (to help guide the user on the CDA). For each, inputs can be added, removed and edited. Integrated development environments (IDEs) like **Spyder** and **Jupyter Notebook** are recommended for easily editing `.py` scripts. For further guidance, refer to the **manual** (), which includes a table of all the available model inputs, their model names, realistic ranges, and their influence on speleothem chemistry.
 
 ### Defining Inputs for the CDA
 Before running the CDA mode, specify the following in the settings dictionary ( `s = {}`) within `API_models/run_CDA.py` :
