@@ -10,6 +10,7 @@ version 1 (https://github.com/Rob-Owen/cavecalc)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Output](#output)
+- [Plotting](#plotting)
 - [Citing this work](#citing-this-work)
 - [Contributing, questions, and issues](#contributing-questions-and-issues)
 - [License](#license)
@@ -150,6 +151,37 @@ containing:
 
 4. **`Input_ranges.csv`**  
    A CSV file that stores the range of model inputs used in the CDA modle runs
+
+
+## Plotting
+CaveCalc comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running the model. To do this, add the following lines to the bottom of the run_CDA.py or run_models.py script:
+
+```python
+import cavecalc.analyse as cca
+
+
+e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
+e1 = e.filter_by_index(0, n=True) #Filters out first model step
+e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Different lines will be coloured depending on the soil_pCO2, and added to the legend
+```
+Users can observe all the model output keys in the manual.
+
+There is also an option to plot by points (not lines):
+```python
+import cavecalc.analyse as cca
+
+e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
+e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the solution in equilibriium (final index i.e. point_index=-1
+```
+
+By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users need to add the following lines to their `.py` script after setting up the model runs:
+
+```python
+import cavecalc.analyse as cca
+
+e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
+plot = e.plot_CDA(s['user_flowpath'], s['out_dir'])
+```
 
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
