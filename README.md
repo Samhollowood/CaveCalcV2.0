@@ -120,7 +120,7 @@ Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
 ```
 
 
-### Output
+## Output
 When running **CaveCalcV2.0**, three outputs are generated:
 
 1. **`settings.pkl`**  
