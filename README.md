@@ -103,6 +103,8 @@ If you do not wish to use the CDA, there is no need to define `user_filepath`. S
 python run_models.py
 ```
 
+The code for run_models.py saves each model output as a seperate .csv file.
+
 ### When the CDA is functioning correctly:
 
 It will print:
