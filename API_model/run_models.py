@@ -39,7 +39,7 @@ s =  {#Atmospheric  Gas End-member
       'init_O2':     'mix',     #DEFAULT | actual soil gas O2 content (%)
       'init_R14C':		'mix',	#DEFAULT | actual soil gas R14C* (pmc)
       'init_d13C':		'mix',	#DEFAULT | actual soil gas d13C* (‰, VPDB)
-      'init_pCO2':		'mix',	#DEFAULT | actual soil gas pCO2* (ppmv). 'atm' to equilibrate with atmospheric, 'soil' to equilibrate with soil_pCO2 (after atmospheric mixing)
+      'init_pCO2':		'mix',	#DEFAULT | actual soil gas pCO2* (ppmv)
  
       #Soil metals
       'soil_Ba':              0,    	#DEFAULT | soil water Ba concentration (mmol/kg water)
