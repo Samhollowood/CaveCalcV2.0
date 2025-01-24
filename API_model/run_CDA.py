@@ -5,14 +5,14 @@ Created on Fri Aug 23 14:55:49 2024
 
 @author: samhollowood - please contact samuel.hollowood@bnc.ox.ac.uk for any questions
 
-This code is used to provide a user with an easy way to rnn the Event Analyser mode 
+This code is used to provide a user with an easy way to run the CDA mode 
 as part as a .py script 
 
-The settings of the model can be found via s = {}. Most
+The settings of the model can be found via s = {}.
 
-Please change the values to suit your study. Multiple values in a list for one
-variable will cause several models to be ran.
+Please change the values to suit your study.
 
+Refer to the manual or contact me for any more information/debugging/guidance.
 """
 
 'Import modules'
@@ -48,19 +48,13 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
 
       #Aragonite/Calcite Mode 
       'precipitate_mineralogy': 'Calcite', #DEFAULT | Speleothem mineralogy ('Calcite' or 'Aragonite')
-      'database':              'calcite.dat',   #DEFAULT | database file. calcite.dat or araognite.dat
 
       # Bedrock Dissolution Conditions
       'gas_volume':		   [0,50,100,150,200,250,300,350,400,450,500],	#NON-DEFAULT  Volume of soil gas present during bedrock dissolution (L/kg water)
      
-      #Additional d18O controls?
-      'PCarbP_d18O':         False,  #DEFAULT | Allow flow path progressive degassing and precipitation to impact d18O
-      'flow_path_influence': 100,    #DEFAULT | What % along the flow path is this impact significant for
-       
       # General
       'temperature':          [5,10,15,20],     #NON-DEFAULT | Temperature(°C)
       'kinetics_mode':       'multi_step_degassing',   #DEFAULT | Specifies how to run the model (see types_and_limits.py for options)
-      'kinetic_fractionation': False,    #DEFAULT |Allows for kinetic fractionation to impact d13C_Calcite
 
       #cave air 
       'cave_pCO2': [260,410,1500,2500,4500,5550,6500],
