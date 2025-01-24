@@ -92,19 +92,18 @@ Some inputs in the settings dictionary `s = {}` must be explicitly defined befor
 For both standard model runs and the CDA, you can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
 
 ### Running the Scripts
-To run the CDA mode:
+After settings the model inputs, importing the measured data, and settings the tolerance intervals, to run the CDA mode:
 ```shell
 cd CaveCalcV2.0/API_models/
 python run_CDA.py
 ```
 
-If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the `out_dir` in the settings dictionary and run:
+If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the models inputs and optionally, `out_dir`, in the settings dictionary and run:
 
 ```shell
 python run_models.py
 ```
 
-The code for run_models.py saves each model output as a seperate .csv file.
 
 ### When the CDA is functioning correctly:
 
