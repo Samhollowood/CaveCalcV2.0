@@ -9,7 +9,7 @@ version 1 (https://github.com/Rob-Owen/cavecalc)
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Post-processing](#post-processing)
+- [Output](#output)
 - [Citing this work](#citing-this-work)
 - [Contributing, questions, and issues](#contributing-questions-and-issues)
 - [License](#license)
@@ -120,12 +120,19 @@ Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
 ```
 
 
-## Post-processng
-Automatically, CaveCalc saves it model inputs and output as settings.pkl and results.pkl in the output directory. These may be converted to .csv and .mat files for post-processing. The script run_models.py includes the function to convert the results.pkl file to a .csv.
+### Output
+When running **CaveCalcV2.0**, three outputs are generated:
 
-If users are running the CDA mode, then path/to/out_dir/CDA Results/All_outputs.csv contains a .csv file of all the model input and output that was compared with the measured data, providing residuals for each.
+1. **`settings.pkl`**  
+   A pickle file that stores all the input settings for the model.
 
-CaveCalc also has capabilities of plotting model output.
+2. **`results.pkl`**  
+   A pickle file that contains all the model results.
+
+3. **`settings_results.csv`**  
+   A CSV file that consolidates both the input settings and the model outputs in a single, readable format.
+
+These files are essential for documenting the simulation parameters and results for further analysis or replication of the model runs.
 
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
