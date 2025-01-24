@@ -16,17 +16,12 @@ variable will cause several models to be ran.
 """
 
 'Import modules'
-import pandas as pd
-import numpy as np
-import pickle
-import os
 from cavecalc.forward_models import ForwardModels
 import cavecalc.analyse as cca
-from matplotlib import pyplot as plt
+
 
 'Important note before running'
-'Change `users_filepath'
-'Change dir_event'
+'Change users_filepath and out_dir in the settings dictionary s = {}
 
 
 'STEP 1: Define the settings for the CDA'        
@@ -81,12 +76,13 @@ s =  {'soil_d13C': -25,  #DEFAULT | end-member soil gas d13C (‰, VPDB)
       'tolerance_BaCa': 0.3,      #DEFAULT | Tolerance level for BaCa (mmol/mol)
       'tolerance_UCa': 0.3,       #DEFAULT | Tolerance level for UCa (mmol/mol)
 
+      #output directory
+      'out_dir' = './path/to/CDA'
+
      }
 
-dir_event = './run_CDA/' # directory to save model output and EventAnalyser.xlsx
-
 # Run model and CDA
-model = ForwardModels(settings=s, output_dir= dir_event)
+model = ForwardModels(settings=s, output_dir= s['out_dir'])
 model.run_models()
 model.save()
 
