@@ -134,6 +134,20 @@ When running **CaveCalcV2.0**, three outputs are generated:
 
 These files are essential for documenting the simulation parameters and results for further analysis or replication of the model runs.
 
+However, if the CDA is initialised, it will create a CDA Results folder, containing:
+
+1. **`Matches.csv`**  
+   A CSV file that stores the inputs and outputs of all matches with the measured data (and the residual)
+
+2. **`All_outputs.csv`**  
+   A CSV file that stores all inputs and outputs of the CDA model runs (and the residuals)
+
+3. **`Tolerance.csv`**  
+   A CSV file that stores the tolerance intervals used for the measured proxy data in the CDA
+
+4. **`Input_ranges.csv`**  
+   A CSV file that stores the range of model inputs used in the CDA modle runs
+
 ## Citing this work
 If you use CaveCalcV2.0 please site .....
 
