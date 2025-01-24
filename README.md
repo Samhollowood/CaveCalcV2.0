@@ -112,7 +112,7 @@ It will print:
 ```shell
 CDA is initialised
 ```
-It will then create a CDA Results folder in the output directory, which will store match in a .csv file.
+It will then create a CDA Results folder in the output directory, which will store matches in a .csv file.
 For the first match with the measured data, it will print:
 
 ```shell
