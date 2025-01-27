@@ -61,11 +61,6 @@ cd CaveCalcV2.0
 conda activate base
 ```
 
-3. (a) Or if you would like to create a local environment through anaconda (optional):
-```shell
-conda create -n cavecalc_env 
-conda activate cavecalc_env
-```
 
 4. Install the CaveCalcV2.0 package:
 ```shell
