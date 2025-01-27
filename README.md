@@ -35,12 +35,12 @@ CaveCalcV2.0 is an updated forward modeling tool for simulating speleothem chemi
 
 ## **Features**
 
-- **Forward modeling of speleothem chemistry** with updated tools and examples.  
+- **Forward modeling of speleothem chemistry** with updated tools and examples.
+- - **Easier installation** for Windows and Linux users. 
 - **Carbonate Data Analyzer (CDA):** A mode for analysing and matching measured data with model outputs.  
 - **Aragonite precipitation modeling** in speleothems.
-- **Easier installation** for Windows and Linux users
-- **Readable output** in .csv format, with no need to understand processing of pickle files 
-- **Flexible plotting capabilities** for visualizing outputs.  
+- **Readable output** model output now produces a .csv format, with no need to understand processing of pickle files 
+- **Flexible plotting capabilities** for visualizing model and CDA outputs.  
 - Supports **Python 3.0 and above** (tested with Python 3.10.12).  
 
 
