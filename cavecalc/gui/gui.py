@@ -1004,7 +1004,7 @@ class CCAnalyseGUI(object):
         
         self.load_outputs_frame()
         self.save_buttons_frame()
-        self.file_paths_frame()  # Adding the file path input frame
+        #self.file_paths_frame()  # Adding the file path input frame
         
        
         
