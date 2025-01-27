@@ -185,7 +185,7 @@ e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
 e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the solution in equilibriium (final index i.e. point_index=-1
 ```
 
-By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users need to add the following lines to their `run_CDA.py` script after setting up the model runs:
+By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users can apply this example to any archived CDA Data:
 
 ```python
 import cavecalc.analyse as cca
