@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import copy
 import matplotlib
+import sys
 from sys import platform
 
 # Check platform and set backend accordingly
