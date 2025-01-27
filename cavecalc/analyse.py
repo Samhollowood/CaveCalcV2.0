@@ -16,7 +16,10 @@ from sys import platform
 if platform == 'win32' or platform == 'darwin':  # macOS is 'darwin' in platform
     matplotlib.use('TkAgg')  # Use TkAgg on Windows and macOS
 else:
-    matplotlib.use('Agg')  # Use Agg backend for headless environments (Linux/Binder)
+    if 'ipykernel' in sys.modules:  # Check if running in Jupyter (Binder or WSL2)
+        matplotlib.use('nbAgg')  # Use nbAgg backend for Jupyter Notebooks
+    else:
+        matplotlib.use('Agg')  # Use Agg backend for headless environments (Linux/Binder)
 
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
