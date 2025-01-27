@@ -412,6 +412,8 @@ class Evaluate(object):
                 ax.legend(prop={'size':6})
             else:
                 ax.plot(m[x_key], m[y_key], *args, **kwargs)
+
+         plt.show()              
             
 
         return ax
@@ -473,6 +475,8 @@ class Evaluate(object):
             for lab, x, y in zip(labels, x_vals, y_vals):
                 ax.annotate('%s=%s' % (label_with, lab),
                             xy=(x, y), fontsize=8)
+
+        plt.show()                     
         return ax 
      
         
