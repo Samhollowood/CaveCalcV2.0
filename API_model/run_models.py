@@ -84,13 +84,13 @@ s =  {#Atmospheric  Gas End-member
       #Scripting Options
       'co2_decrement':        0.5,    #DEFAULT | Fraction of CO2(aq) removed on each degassing step
       'calcite_sat_limit':    1,      #DEFAULT | Only used if kinetics_mode = 'ss'. CaCO3 only precipitates when saturation index exceeds this value. 
-       
+
+      #Output directory 
+      'out_dir': './run_models_output/',
      }
 
-dir_model = './run_models_output/' # directory to save model output 
-
 # Run model and EventaAnalyser
-model = ForwardModels(settings=s, output_dir= dir_model)
+model = ForwardModels(settings=s, output_dir= s['out_dir'])
 model.run_models()
 model.save()
 
