@@ -190,10 +190,20 @@ e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = '
 By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users can apply this example to any archived CDA Data:
 
 ```python
+# Import modules
 import cavecalc.analyse as cca
 
-e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
-plot = e.plot_CDA(s['user_flowpath'], s['out_dir'])
+# Initialize the Evaluate class
+e = cca.Evaluate()
+
+# Define path to measured data and archived output directory
+user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA
+run,→
+out_dir = 'path/to/out_dir' # Path to the archived output directory
+containing CDA results,→
+
+# Plot CDA results
+plot = e.plot_CDA(user_filepath, out_dir
 ```
 
 ## Citing this work
