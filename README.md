@@ -100,6 +100,8 @@ Before running the CDA mode, specify the following in the settings dictionary ( 
 - **`tolerance_X`**: Where X is d13C, d18O, d44Ca, MgCa, SrCa, BaCa, or UCa. You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
 - **model inputs**: These are standard model inputs as per standard CaveCalc model runs (Owens et al., 2018). These can be changed/added in the run_CDA.py
 
+ `Example.input.csv` contains a template where you can fill in your data, and add/remove proxies not in the investigation.
+
 ### Optional: Defining Output Directory
 For both standard model runs and the CDA, you can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
 
