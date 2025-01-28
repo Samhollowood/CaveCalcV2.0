@@ -14,14 +14,14 @@ import sys
 from sys import platform
 
 # Check platform and set backend accordingly
-if platform == 'win32' or platform == 'darwin':  # macOS is 'darwin' in platform
-    matplotlib.use('TkAgg')  # Use TkAgg on Windows and macOS
+if platform in ['win32', 'darwin', 'linux']:  # Windows, macOS, or Linux
+    matplotlib.use('TkAgg')  # Use TkAgg for GUI support
 else:
-    if 'ipykernel' in sys.modules:  # Check if running in Jupyter (Binder or WSL2)
+    if 'ipykernel' in sys.modules:  # Check if running in Jupyter (e.g., Binder or WSL2)
         matplotlib.use('nbAgg')  # Use nbAgg backend for Jupyter Notebooks
     else:
-        matplotlib.use('Agg')  # Use Agg backend for headless environments (Linux/Binder)
-
+        matplotlib.use('Agg')  # Use Agg backend for headless environments
+        
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
