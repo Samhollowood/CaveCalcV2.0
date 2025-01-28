@@ -208,7 +208,7 @@ plot = e.plot_CDA(user_filepath, out_dir)
 If you use CaveCalcV2.0 please site .....
 
 ## Contributing, questions, and issues
-If you have any suggestions, improvements, questions, or comments - please create an issue, submit a pull request, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
+If you have any suggestions, improvements, questions, or comments - please create an issue, start a discussion, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
 
 ## License
 This project is licensed under the MIT license
