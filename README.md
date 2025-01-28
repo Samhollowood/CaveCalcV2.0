@@ -174,6 +174,7 @@ import cavecalc.analyse as cca
 
 
 e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
+e = load_data(s['out_dir']) #Load data from output directory, defined in the settings dictionary, s = {}
 e1 = e.filter_by_index(0, n=True) #Filters out first model step
 e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Different lines will be coloured depending on the soil_pCO2, and added to the legend
 ```
@@ -184,6 +185,7 @@ There is also an option to plot by points (not lines):
 import cavecalc.analyse as cca
 
 e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
+e = load_data(s['out_dir']) #Load data from output directory, defined in the settings dictionary, s = {}
 e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the solution in equilibriium (final index i.e. point_index=-1
 ```
 
