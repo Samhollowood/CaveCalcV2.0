@@ -177,7 +177,7 @@ e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
 e1 = e.filter_by_index(0, n=True) #Filters out first model step
 e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Different lines will be coloured depending on the soil_pCO2, and added to the legend
 ```
-Users can observe all the model output keys in the manual.
+This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each value of label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
 
 There is also an option to plot by points (not lines):
 ```python
