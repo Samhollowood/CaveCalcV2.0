@@ -197,13 +197,11 @@ import cavecalc.analyse as cca
 e = cca.Evaluate()
 
 # Define path to measured data and archived output directory
-user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA
-run,→
-out_dir = 'path/to/out_dir' # Path to the archived output directory
-containing CDA results,→
+user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA run,
+out_dir = 'path/to/out_dir' # Path to the archived output directory containing CDA results,
 
 # Plot CDA results
-plot = e.plot_CDA(user_filepath, out_dir
+plot = e.plot_CDA(user_filepath, out_dir)
 ```
 
 ## Citing this work
