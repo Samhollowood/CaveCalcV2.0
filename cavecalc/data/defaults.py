@@ -77,7 +77,7 @@ totals =       ""
 
 # File IO Settings
 phreeqc_log_file =      False           # If selected, a .phr file will be included in the output.
-out_dir =              "./cavecalc_output"  # Default save location
+out_dir =              "./cavecalc_output/"  # Default save location
 user_filepath = ""
 database =              'calcite.dat'   # database file
 phreeqc_log_file_name = 'log_{}.phr'    # The .phr file name (if saved). {} will be replaced by the model number. 
