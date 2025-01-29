@@ -503,11 +503,9 @@ class PostProcessor(object):
         Appends input settings and residual values to CDA.xlsx
         
         """
-        # Retrieve the output directory from settings 
-        output_dir = self.s.settings.get('out_dir', '')
         
         # If output_dir is provided, use it; otherwise, default to the current working directory 
-        output_dir = output_dir or os.getcwd() 
+        output_dir = getcwd() 
         
         
         # Ensure the directory exists; create it if it does not 
