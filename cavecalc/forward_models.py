@@ -95,38 +95,46 @@ class ForwardModels(object):
             settings_file: If no settings arg is given, settings may be loaded
                            from a file.
             output_dir: (Optional) Specify path to directory for saving files.
-                        By default files are saved to the current directory.
+                        By default, files are saved to the current directory.
         """
         
         self.done_input = []
         self.done_results = []
         
         # Get settings objects
-        if settings:    self.input = SettingsMaker(**settings).settings()
-        else:           self.input = SettingsMaker().settings()
-            
-        if output_dir:  
-            if not os.path.isdir(output_dir): 
-                os.mkdir(output_dir)
-            self.output_dir = output_dir
-        else: self.output_dir=os.getcwd()
+        if settings:    
+            self.input = SettingsMaker(**settings).settings()
+        else:           
+            self.input = SettingsMaker().settings()
+
+        # Check if output_dir is provided in settings, if not use default directory
+        self.output_dir = self.input.get('out_dir', None)
+
+        if self.output_dir:
+            if not os.path.isdir(self.output_dir):
+                os.mkdir(self.output_dir)  # Create the specified directory if it doesn't exist
+        else:
+            # Default to current working directory and create 'cavecalc_output' folder if it doesn't exist
+            default_dir = os.path.join(os.getcwd())
+            if not os.path.isdir(default_dir):
+                os.mkdir(default_dir)
+            self.output_dir = default_dir
+
+
 
     def _check_previous_saves(self, interactive=False, use_by_default=True):
         """Checks output directory for existing output and prompts the user
         to decide whether they want to use it or not."""
         
-        
         def dict_find(SO, list_of_SOs):
-        
-            for i,s in enumerate(list_of_SOs):
-            
+            for i, s in enumerate(list_of_SOs):
                 # check keys are equal
                 if SO.dict().keys() != s.dict().keys():
                     continue
-                    
+
                 # check all values are equal
                 equal = True
-                for k,v in SO.dict().items():
+                for k, v in SO.dict().items():
                     if v != s.dict()[k]:
                         equal = False
                 if equal:
@@ -149,7 +157,6 @@ class ForwardModels(object):
         done_input = []
         done_results = []
         
-        # for i,prev in enumerate(prev_inputs):
         for s in self.input:
             i = dict_find(s, prev_input)
             if i is None:
@@ -186,53 +193,36 @@ class ForwardModels(object):
             self.input = new_input
             self.done_input = done_input
             self.done_results = done_results
-    
+
     def run_models(self, mode='Serial', **kwargs):
         """Run models for all parameter sets loaded into the object. Output is
-        addded to self.results as a list of (r, id) tuples. See run_linear and
-        run_async for method. Parallel mode is not currently functional (on
-        Windows at least).
+        added to self.results as a list of (r, id) tuples."""
         
-        Args:
-            mode: 'Serial' (default) or 'Parallel'. Running models in parallel
-                  is faster but not recommended - results may be inaccurate, as
-                  Iphreeqc is not necessarily thread-safe in this 
-                  implementation.
-        Returns:
-            Nothing. Model results list is assigned to self.results. List 
-            indices in self.results correspond to indices in self.self.input.
-        """
-
         self._check_previous_saves(**kwargs)
         ret_dir = os.getcwd()
         print("Models to run:\t%s" % len(self.input))
+        
         try:
             os.chdir(self.output_dir)
-            if mode.capitalize() == 'Serial': # Run models in order
+            if mode.capitalize() == 'Serial':  # Run models in order
                 results = run_linear(self.input)
-            elif mode.capitalize() == 'Parallel': # Run models multithreaded
+            elif mode.capitalize() == 'Parallel':  # Run models multithreaded
                 print("Warning: Parallel operation accuracy not guaranteed.")
                 results = run_async(self.input)
             else:
                 raise ValueError("Mode not recognised. Use serial / parallel")
             self.results = results
             
-            
-            # add re-used output, if any
+            # Add re-used output, if any
             self.results.extend(self.done_results)
             self.input.extend(self.done_input)
             
         finally:
             os.chdir(ret_dir)
-            
-  
-            
+
     def save(self):
         """
         Save results and settings data to a single .csv file.
-
-        Each key in the results becomes a column header, and if a value is a list, 
-        each item in the list is saved as a new row, duplicating the corresponding settings.
         """
         # Ensure the output directory exists
         if not os.path.exists(self.output_dir):
@@ -277,10 +267,8 @@ class ForwardModels(object):
                 row = row_template.copy()
                 for key, value in model_dict.items():
                     if isinstance(value, list):
-                        # Use the i-th item of the list if it exists, otherwise leave as blank
                         row[key] = value[i] if i < len(value) else None
                     else:
-                        # Non-list values are the same for all rows
                         row[key] = value
                 expanded_rows.append(row)
 
@@ -296,7 +284,7 @@ class ForwardModels(object):
         # Print the full absolute output directory path
         full_output_dir = os.path.abspath(self.output_dir)
         print(f"Results and settings have been saved in: {full_output_dir}")
-
+        
         # Handle user_filepath logic if it exists in settings
         extracted_values = {}
         for setting in self.input:
