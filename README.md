@@ -115,7 +115,7 @@ A template (`Example.input.csv`) is provided for user data. Modify it by adding/
 ### Optional: Defining Output Directory
 By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
 
-### Running the Scripts
+### Running models
 After setting the model inputs, importing the measured data, and setting the tolerance intervals, to run the CDA mode:
 ```shell
 cd CaveCalcV2.0/API_models/
