@@ -92,28 +92,36 @@ python cc_input_gui.py
 
 ## Usage
 
-More in-depth examples of running single models, multiple models, and models with the Carbonate Data Analyser (CDA) are provided in the manual.pdf. Users can run models via the `run_models.py` script in the `API_models/` directory or the CDA using `run_CDA.py` in the same location. `run_models.py` comes with default model inputs, whereas `run_CDA.py` contains a select number of inputs that vary in a range (to help guide the user on the CDA). For each, inputs can be added, removed and edited. A full list on model inputs can be found in the manual, Table 2. Integrated development environments (IDEs) like **Spyder** and **Jupyter Notebook** are recommended for easily editing `.py` scripts. For further guidance, refer to the manual.pdf, which includes a table of all the available model inputs, their model names, realistic ranges, and their influence on speleothem chemistry.
+CaveCalcV2.0 allows users to run single models, multiple models, or models using the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. Users can run models via:
+
+- The **Graphical User Interface (GUI)**  
+- The `run_models.py` script (in `API_models/`)  
+- The `run_CDA.py` script (in `API_models/`)  
+
+`run_models.py` uses default model inputs, while `run_CDA.py` allows users contains a select number of inputs, over a range, intended to guide the user. Model inputs can be **added, removed, or modified**. A complete list of inputs is available in **manual.pdf**, Table 2.  
+
+Integrated development environments (**Spyder**, **Jupyter Notebook**) are recommended for editing `.py` scripts. Seperate `.py` scripts may be created locally by the user, using the `run_models.py`  or `run_CDA.py` as a template. 
+
 
 ### Defining Inputs for the CDA
-Before running the CDA mode, specify the following in the settings dictionary ( `s = {}`) within `API_models/run_CDA.py` :
+Before running the CDA mode, specify the following in the **settings dictionary** (`s = {}`) in `API_models/run_CDA.py`:
 
-- **`user_filepath`**: Define this key in the settings dictionary and set it to the path of your measured speleothem data file.
-- **`tolerance_X`**: Where X is d13C, d18O, d44Ca, MgCa, SrCa, BaCa, or UCa. You can modify the tolerance values or remove tolerance intervals proxies that are not part of your measured data.
-- **model inputs**: These are standard model inputs as per standard CaveCalc model runs (Owens et al., 2018). These can be changed/added in the run_CDA.py
+- **`user_filepath`**: Path to the measured speleothem data file.  
+- **`tolerance_X`**: Tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). Remove unused proxies.  
+- **Model Inputs**: Standard CaveCalc model inputs (Owens et al., 2018).  
 
- `Example.input.csv` contains a template where you can fill in your data, and add/remove proxies not in the investigation.
+A template (`Example.input.csv`) is provided for user data. Modify it by adding/removing proxies and data as needed.
 
 ### Optional: Defining Output Directory
-The default output direcotry when running models is under `CaveCalcV2.0/cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
+By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
 
 ### Running the Scripts
-After settings the model inputs, importing the measured data, and settings the tolerance intervals, to run the CDA mode:
+After setting the model inputs, importing the measured data, and setting the tolerance intervals, to run the CDA mode:
 ```shell
 cd CaveCalcV2.0/API_models/
 python run_CDA.py
 ```
-
-If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the models inputs and optionally, `out_dir`, in the settings dictionary and run:
+If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the model inputs and optionally, `out_dir`, in the settings dictionary and run:
 
 ```shell
 python run_models.py
