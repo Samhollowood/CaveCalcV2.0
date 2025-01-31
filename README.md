@@ -176,7 +176,7 @@ containing:
    A CSV file that stores the tolerance intervals used for the measured proxy data in the CDA
 
 4. **`Input_ranges.csv`**  
-   A CSV file that stores the range of model inputs used in the CDA modle runs
+   A CSV file that stores the range of model inputs used in the CDA model runs
 
 
 ## Plotting
@@ -187,8 +187,8 @@ import cavecalc.analyse as cca
 
 out_dir = 'path/to/output/' #Path to archived output data
 
-e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
-e = load_data(out_dir) #Load data from output directory, defined in the settings dictionary, s = {}
+e = cca.Evaluate()  # Initializes the Evaluate class
+e = load_data(out_dir) #Load data 
 e1 = e.filter_by_index(0, n=True) #Filters out first model step
 
 #Example plot of fCa on x-axis. d13C on y-axis (i.e. outputs). Different lines will be coloured depending on the soil_pCO2 (i.e. inputs), and added to the legend
@@ -202,10 +202,10 @@ import cavecalc.analyse as cca
 
 out_dir = 'path/to/output/' #Path to archived output data
 
-e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
-e = load_data(out_dir) #Load data from output directory, defined in the settings dictionary, s = {}
+e = cca.Evaluate()  # Initializes the Evaluate class
+e = load_data(out_dir) #Load data 
 
-#Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the equilibriium with cave air value (final index i.e. point_index=-1)
+#Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the equilibrium with cave air value (final index i.e. point_index=-1)
 e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2')
 ```
 
@@ -227,7 +227,7 @@ plot = e.plot_CDA(user_filepath, out_dir)
 ```
 
 ## Citing this work
-If you use CaveCalcV2.0 please site .....
+If you use CaveCalcV2.0 please cite .....
 
 ## Contributing, questions, and issues
 If you have any suggestions, improvements, questions, or comments - please create an issue, start a discussion, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
