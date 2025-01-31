@@ -157,6 +157,8 @@ When running **CaveCalcV2.0**, whether it be with the CDA, or without, three out
 3. A new **`settings_results.csv`**  
    This is a CSV file that consolidates both the input settings and the model outputs in a single, readable format. Users can now easily observe which input settings correspond to what output, and how the ouput evolves from the soil to the speleothem.
 
+There are several output keys, and the definition of each can be found in the manual.pdf, Table 3
+
 If the CDA is initialised, it will create a CDA Results folder:
 ```shell
 cd /path/to/out_dir/CDA Results/
