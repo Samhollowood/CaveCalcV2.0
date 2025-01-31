@@ -180,26 +180,33 @@ containing:
 
 
 ## Plotting
-CaveCalc comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running the model. To do this, add the following lines to the bottom of the run_CDA.py or run_models.py script:
+CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archive models to produce plots. To do this, add the following lines to the bottom of the run_CDA.py or run_models.py script:
 
 ```python
 import cavecalc.analyse as cca
 
+out_dir = 'path/to/output/' #Path to archived output data
 
 e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
-e = load_data(s['out_dir']) #Load data from output directory, defined in the settings dictionary, s = {}
+e = load_data(out_dir) #Load data from output directory, defined in the settings dictionary, s = {}
 e1 = e.filter_by_index(0, n=True) #Filters out first model step
-e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Different lines will be coloured depending on the soil_pCO2, and added to the legend
-```
-This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each value of label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
 
-There is also an option to plot by points (not lines):
+#Example plot of fCa on x-axis. d13C on y-axis (i.e. outputs). Different lines will be coloured depending on the soil_pCO2 (i.e. inputs), and added to the legend
+e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2')
+```
+This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each input value in label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
+
+There is also an option to plot by points:
 ```python
 import cavecalc.analyse as cca
 
+out_dir = 'path/to/output/' #Path to archived output data
+
 e = cca.Evaluate()  # Initializes the Evaluate class in analyse.py
-e = load_data(s['out_dir']) #Load data from output directory, defined in the settings dictionary, s = {}
-e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2') #Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the solution in equilibriium (final index i.e. point_index=-1
+e = load_data(out_dir) #Load data from output directory, defined in the settings dictionary, s = {}
+
+#Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the equilibriium with cave air value (final index i.e. point_index=-1)
+e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2')
 ```
 
 By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users can apply this example to any archived CDA Data:
@@ -213,7 +220,7 @@ e = cca.Evaluate()
 
 # Define path to measured data and archived output directory
 user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA run,
-out_dir = 'path/to/out_dir' # Path to the archived output directory containing CDA results,
+out_dir = 'path/to/out_dir/CDA Results/' # Path to the archived output directory containing CDA results,
 
 # Plot CDA results
 plot = e.plot_CDA(user_filepath, out_dir)
