@@ -112,7 +112,7 @@ Before running the CDA mode, specify the following in the **settings dictionary*
 - **`tolerance_X`**: Tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). Remove unused proxies.  
 - **Model Inputs**: Standard CaveCalc model inputs (Owens et al., 2018).  
 
-A template (`Example.input.csv`) is provided for user data. Modify it by adding/removing proxies and data as needed.
+A template (`Example.input.csv`) is provided for user data. Modify it by adding/removing proxies and data as needed. The CDA Settings field in the GUI allows users to import their measured data and define tolerance intervals.
 
 ### Optional: Defining Output Directory
 By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
