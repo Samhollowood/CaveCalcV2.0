@@ -115,7 +115,7 @@ Before running the CDA mode, specify the following in the **settings dictionary*
 A template (`Example.input.csv`) is provided for user data. Modify it by adding/removing proxies and data as needed.
 
 ### Optional: Defining Output Directory
-By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`).
+By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
 
 ### Running models
 After setting the model inputs, importing the measured data, and setting the tolerance intervals, to run the CDA mode:
