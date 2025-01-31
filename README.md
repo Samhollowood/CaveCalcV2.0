@@ -146,7 +146,7 @@ Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
 
 
 ## Output
-When running **CaveCalcV2.0**, three outputs are generated:
+When running **CaveCalcV2.0**, whether it be with the CDA, or without, three outputs are generated:
 
 1. **`settings.pkl`**  
    A pickle file that stores all the input settings for the model.
@@ -154,8 +154,8 @@ When running **CaveCalcV2.0**, three outputs are generated:
 2. **`results.pkl`**  
    A pickle file that contains all the model results.
 
-3. **`settings_results.csv`**  
-   A CSV file that consolidates both the input settings and the model outputs in a single, readable format.
+3. A new **`settings_results.csv`**  
+   This is a CSV file that consolidates both the input settings and the model outputs in a single, readable format. Users can now easily observe which input settings correspond to what output, and how the ouput evolves from the soil to the speleothem.
 
 If the CDA is initialised, it will create a CDA Results folder:
 ```shell
