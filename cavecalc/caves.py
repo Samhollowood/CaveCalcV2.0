@@ -617,129 +617,198 @@ class Carbonate(object):
         return eq_string
 
     def _get_calcite_phase(self):
-        
+        # Internal rounding function
         def dcqz(decimal):
-            d2 = decimal.quantize( Decimal(str(BEDROCK_PHASE_QZ_LEVEL)),
-                                   rounding=ROUND_HALF_UP)
+            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_HALF_UP)
             return d2
-            
+
+        # Get settings from class instance
         bed_44Ca = self.s.settings['bedrock_d44Ca']
         bed_13C = self.s.settings['bedrock_d13C']
         bed_18O = self.s.settings['bedrock_d18O']
         MgCa = Decimal(self.s.settings['bedrock_MgCa'] * 0.001)
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
-        UCa =  Decimal(self.s.settings['bedrock_UCa'])
-        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
-        b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
-        c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
-    
-        # metal totals
-        tCa = 1 / (1+MgCa+SrCa+BaCa+UCa)
-        tMg = dcqz(MgCa * tCa)
-        tSr = dcqz(SrCa * tCa)
-        tBa = dcqz(BaCa * tCa)
-        tU =  dcqz(UCa * tCa)
-        
-        # isotope totals
-        Ca44 = dcqz(a/(1+a) * tCa) 
+        UCa = Decimal(self.s.settings['bedrock_UCa'])
+
+        # Calculate isotope ratios
+        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001 * bed_44Ca)))  # 44/40 ratio
+        b = Decimal(str(self.s.stnd13C * (1 + 0.001 * bed_13C)))  # 13/12 ratio
+        c = Decimal(str(self.s.stnd18O * (1 + 0.001 * bed_18O)))  # 18/16 ratio
+
+        # Metal total (normalize to 1)
+        total_metal = 1 + MgCa + SrCa + BaCa + UCa
+        tCa = 1 / total_metal
+        tMg = MgCa / total_metal
+        tSr = SrCa / total_metal
+        tBa = BaCa / total_metal
+        tU = UCa / total_metal
+
+        # Apply rounding
+        tCa = dcqz(tCa)
+        tMg = dcqz(tMg)
+        tSr = dcqz(tSr)
+        tBa = dcqz(tBa)
+        tU = dcqz(tU)
+
+        # Re-normalize after rounding
+        total_metal = tCa + tMg + tSr + tBa + tU
+        tCa = tCa / total_metal
+        tMg = tMg / total_metal
+        tSr = tSr / total_metal
+        tBa = tBa / total_metal
+        tU = tU / total_metal
+
+        # Isotope totals
+        Ca44 = dcqz(a / (1 + a) * tCa)
         Ca40 = dcqz(tCa - Ca44)
-        C13 = dcqz(b/(1+b))
+        C13 = dcqz(b / (1 + b))
         C12 = dcqz(1 - C13)
-        O18 = dcqz(c/(1+c) * 3)
+        O18 = dcqz(c / (1 + c) * 3)
         O16 = dcqz(3 - O18)
-        
-        
-        # construct phase definition
-        metals = "Ca{Ca40}[44Ca]{Ca44}".format(Ca40=Ca40, Ca44=Ca44)
-        d = "{}Ca+2 + {}[44Ca]+2 + {}[13C]O3-2 + {}CO2[18O]-2 + {}CO3-2"
-        d = d.format(Ca40, Ca44, C13, O18, C12-O18)
-        
-        if MgCa > 0:
-            metals += "Mg{Mg}".format(Mg=tMg)
-            d += " + {}Mg+2".format(tMg)
-        if SrCa > 0:
-            metals += "Sr{Sr}".format(Sr=tSr)
-            d += " + {}Sr+2".format(tSr)
-        if BaCa > 0:
-            metals += "Ba{Ba}".format(Ba=tBa)
-            d += " + {}Ba+2".format(tBa)
-        if UCa > 0:
-            metals += "U{U}".format(U=tU)
-            d += " + {}UO2+2".format(tU)
+
+        # Adjust for uranium contribution (UO₂²⁺ affects oxygen balance)
+        if tU > 0:
             O16 = dcqz(O16 + 2 * tU)
-            
-        carbonate = "C{}[13C]{}O{}[18O]{}".format( C12, C13, O16, O18 )
+
+        # Ensure charge balance
+        net_charge = 2 * (tCa + tMg + tSr + tBa) + 2 * tU  # Positive charges
+        net_charge -= 2 * (C12 + C13)  # Negative charge from carbonate species
+        if abs(net_charge) > Decimal('1e-6'):
+            raise Exception("Charge imbalance detected. Adjusting proportions.")
+
+        # Ensure oxygen balance
+        total_oxygen = O16 + O18
+        expected_oxygen = 3 + 2 * tU  # Expected oxygen count with UO₂²⁺
+        if abs(total_oxygen - expected_oxygen) > Decimal('1e-6'):
+            raise Exception("Oxygen imbalance detected")
+
+        # Construct phase definition
+        metals = f"Ca{Ca40}[44Ca]{Ca44}"
+        d = f"{Ca40}Ca+2 + {Ca44}[44Ca]+2 + {C13}[13C]O3-2 + {O18}CO2[18O]-2 + {C12 - O18}CO3-2"
+
+        if tMg > 0:
+            metals += f"Mg{tMg}"
+            d += f" + {tMg}Mg+2"
+        if tSr > 0:
+            metals += f"Sr{tSr}"
+            d += f" + {tSr}Sr+2"
+        if tBa > 0:
+            metals += f"Ba{tBa}"
+            d += f" + {tBa}Ba+2"
+        if tU > 0:
+            metals += f"U{tU}"
+            d += f" + {tU}UO2+2"
+
+        carbonate = f"C{C12}[13C]{C13}O{O16}[18O]{O18}"
         s = metals + carbonate
-         
+
+        # Get reaction values
         v = self.s.reader.get_k_values([r'CaCO3'])
         
         log_k   =        -8.480
         delta_h     =    -2.297
         analytic_line   =    "-171.9065     -0.077993      2839.319      71.595"
-        
+     
         "{}Mg+2 + {}Sr+2 + {}Ba+2 + {}UO2+2"
+        # Set phase entry
         self.diss_reaction = s + ' = ' + d
-        self.pq_phase_entry = self.diss_reaction + \
-                              '\n\tlog_k\t' + str(v['log_k']) +  \
-                              '\n\tdelta_h\t' + str(v['delta_h']) + \
-                              '\n\t' + str(v['analytic_line'])
+        self.pq_phase_entry = (
+            self.diss_reaction + 
+            f'\n\tlog_k\t{v["log_k"]}' +  
+            f'\n\tdelta_h\t{v["delta_h"]}' +
+            f'\n\t{v["analytic_line"]}'
+        )
                               
     def _get_aragonite_phase(self):
         
+        # Internal rounding function
         def dcqz(decimal):
-            d2 = decimal.quantize( Decimal(str(BEDROCK_PHASE_QZ_LEVEL)),
-                                   rounding=ROUND_HALF_UP)
+            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_HALF_UP)
             return d2
-            
+
+        # Get settings from class instance
         bed_44Ca = self.s.settings['bedrock_d44Ca']
         bed_13C = self.s.settings['bedrock_d13C']
         bed_18O = self.s.settings['bedrock_d18O']
         MgCa = Decimal(self.s.settings['bedrock_MgCa'] * 0.001)
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
-        UCa =  Decimal(self.s.settings['bedrock_UCa'])
-        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
-        b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
-        c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
-    
-        # metal totals
-        tCa = 1 / (1+MgCa+SrCa+BaCa+UCa)
-        tMg = dcqz(MgCa * tCa)
-        tSr = dcqz(SrCa * tCa)
-        tBa = dcqz(BaCa * tCa)
-        tU =  dcqz(UCa * tCa)
-        
-        # isotope totals
-        Ca44 = dcqz(a/(1+a) * tCa) 
+        UCa = Decimal(self.s.settings['bedrock_UCa'])
+
+        # Calculate isotope ratios
+        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001 * bed_44Ca)))  # 44/40 ratio
+        b = Decimal(str(self.s.stnd13C * (1 + 0.001 * bed_13C)))  # 13/12 ratio
+        c = Decimal(str(self.s.stnd18O * (1 + 0.001 * bed_18O)))  # 18/16 ratio
+
+        # Metal total (normalize to 1)
+        total_metal = 1 + MgCa + SrCa + BaCa + UCa
+        tCa = 1 / total_metal
+        tMg = MgCa / total_metal
+        tSr = SrCa / total_metal
+        tBa = BaCa / total_metal
+        tU = UCa / total_metal
+
+        # Apply rounding
+        tCa = dcqz(tCa)
+        tMg = dcqz(tMg)
+        tSr = dcqz(tSr)
+        tBa = dcqz(tBa)
+        tU = dcqz(tU)
+
+        # Re-normalize after rounding
+        total_metal = tCa + tMg + tSr + tBa + tU
+        tCa = tCa / total_metal
+        tMg = tMg / total_metal
+        tSr = tSr / total_metal
+        tBa = tBa / total_metal
+        tU = tU / total_metal
+
+        # Isotope totals
+        Ca44 = dcqz(a / (1 + a) * tCa)
         Ca40 = dcqz(tCa - Ca44)
-        C13 = dcqz(b/(1+b))
+        C13 = dcqz(b / (1 + b))
         C12 = dcqz(1 - C13)
-        O18 = dcqz(c/(1+c) * 3)
+        O18 = dcqz(c / (1 + c) * 3)
         O16 = dcqz(3 - O18)
-        
-        # construct phase definition
-        metals = "Ca{Ca40}[44Ca]{Ca44}".format(Ca40=Ca40, Ca44=Ca44)
-        d = "{}Ca+2 + {}[44Ca]+2 + {}[13C]O3-2 + {}CO2[18O]-2 + {}CO3-2"
-        d = d.format(Ca40, Ca44, C13, O18, C12-O18)
-        
-        if MgCa > 0:
-            metals += "Mg{Mg}".format(Mg=tMg)
-            d += " + {}Mg+2".format(tMg)
-        if SrCa > 0:
-            metals += "Sr{Sr}".format(Sr=tSr)
-            d += " + {}Sr+2".format(tSr)
-        if BaCa > 0:
-            metals += "Ba{Ba}".format(Ba=tBa)
-            d += " + {}Ba+2".format(tBa)
-        if UCa > 0:
-            metals += "U{U}".format(U=tU)
-            d += " + {}UO2+2".format(tU)  
+
+        # Adjust for uranium contribution (UO₂²⁺ affects oxygen balance)
+        if tU > 0:
             O16 = dcqz(O16 + 2 * tU)
-            
-        carbonate = "C{}[13C]{}O{}[18O]{}".format( C12, C13, O16, O18 )
+
+        # Ensure charge balance
+        net_charge = 2 * (tCa + tMg + tSr + tBa) + 2 * tU  # Positive charges
+        net_charge -= 2 * (C12 + C13)  # Negative charge from carbonate species
+        if abs(net_charge) > Decimal('1e-6'):
+            raise Exception("Charge imbalance detected. Adjusting proportions.")
+
+        # Ensure oxygen balance
+        total_oxygen = O16 + O18
+        expected_oxygen = 3 + 2 * tU  # Expected oxygen count with UO₂²⁺
+        if abs(total_oxygen - expected_oxygen) > Decimal('1e-6'):
+            raise Exception("Oxygen imbalance detected")
+
+        # Construct phase definition
+        metals = f"Ca{Ca40}[44Ca]{Ca44}"
+        d = f"{Ca40}Ca+2 + {Ca44}[44Ca]+2 + {C13}[13C]O3-2 + {O18}CO2[18O]-2 + {C12 - O18}CO3-2"
+
+        if tMg > 0:
+            metals += f"Mg{tMg}"
+            d += f" + {tMg}Mg+2"
+        if tSr > 0:
+            metals += f"Sr{tSr}"
+            d += f" + {tSr}Sr+2"
+        if tBa > 0:
+            metals += f"Ba{tBa}"
+            d += f" + {tBa}Ba+2"
+        if tU > 0:
+            metals += f"U{tU}"
+            d += f" + {tU}UO2+2"
+
+        carbonate = f"C{C12}[13C]{C13}O{O16}[18O]{O18}"
         s = metals + carbonate
-         
+
+        # Get reaction values
         v = self.s.reader.get_k_values([r'CaCO3'])
         
         log_k = -8.336
@@ -754,44 +823,48 @@ class Carbonate(object):
                               '\n\t' + str(v['analytic_line'])                         
     
     def _get_dolomite_phase(self):
-        
+        # Internal rounding function
         def dcqz(decimal):
-            d2 = decimal.quantize( Decimal(str(BEDROCK_PHASE_QZ_LEVEL)),
-                                   rounding=ROUND_HALF_UP)
+            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_HALF_UP)
             return d2
 
+        # Extract settings
         bed_44Ca = self.s.settings['bedrock_d44Ca']
         bed_13C = self.s.settings['bedrock_d13C']
         bed_18O = self.s.settings['bedrock_d18O']
         SrCa = Decimal(self.s.settings['bedrock_SrCa'] * 0.001)
         BaCa = Decimal(self.s.settings['bedrock_BaCa'] * 0.001)
         UCa = Decimal(self.s.settings['bedrock_UCa'])
-        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001*bed_44Ca))) # 44/40 ratio
-        b = Decimal(str(self.s.stnd13C * (1 + 0.001*bed_13C))) # 13/12 ratio
-        c = Decimal(str(self.s.stnd18O * (1 + 0.001*bed_18O))) # 18/16 ratio
-    
-        # metal totals
-        tCa = 2 / (2+SrCa+BaCa+UCa)
-        tMg = dcqz(2 / (2+SrCa+BaCa+UCa))
+
+        # Calculate isotope ratios
+        a = Decimal(str(self.s.stnd44Ca * (1 + 0.001 * bed_44Ca)))  # 44/40 ratio
+        b = Decimal(str(self.s.stnd13C * (1 + 0.001 * bed_13C)))  # 13/12 ratio
+        c = Decimal(str(self.s.stnd18O * (1 + 0.001 * bed_18O)))  # 18/16 ratio
+
+        # Metal totals (normalized)
+        tCa = 2 / (2 + SrCa + BaCa + UCa)
+        tMg = dcqz(2 / (2 + SrCa + BaCa + UCa))
         tSr = dcqz(SrCa * tCa)
         tBa = dcqz(BaCa * tCa)
         tU = dcqz(UCa * tCa)
-        
-        # isotope totals
-        Ca44 = dcqz(a/(1+a) * tCa)
+
+        # Isotope totals (normalized)
+        Ca44 = dcqz(a / (1 + a) * tCa)
         Ca40 = dcqz(tCa - Ca44)
-        C13 = dcqz(2*b/(1+b))
-        C12 = dcqz(2 - 2*b/(1+b))
-        O18 = dcqz(c/(1+c) * 6)
-        O16 = dcqz(6 - c/(1+c) * 6)
-        
-        # construct phase definition
+        C13 = dcqz(2 * b / (1 + b))
+        C12 = dcqz(2 - 2 * b / (1 + b))
+        O18 = dcqz(c / (1 + c) * 6)
+        O16 = dcqz(6 - c / (1 + c) * 6)
+
+        # Construct phase definition
         metals = "Ca{Ca40}[44Ca]{Ca44}".format(Ca40=Ca40, Ca44=Ca44)
         metals += "Mg{}".format(tMg)
-         
+
+        # Define the overall phase reaction
         d = "{}Ca+2 + {}[44Ca]+2 + {}Mg+2 + {}[13C]O3-2 + {}CO2[18O]-2 + {}CO3-2"
-        d = d.format(Ca40, Ca44, tMg, C13, O18, C12-O18)
-        
+        d = d.format(Ca40, Ca44, tMg, C13, O18, C12 - O18)
+
+        # Add other metals if they exist
         if SrCa > 0:
             metals += "Sr{}".format(tSr)
             d += " + {}Sr+2".format(tSr)
@@ -800,22 +873,22 @@ class Carbonate(object):
             d += " + {}Ba+2".format(tBa)
         if UCa > 0:
             metals += "U{}".format(tU)
-            d += " + {}UO2+2".format(tU) 
-            O16 = dcqz(O16 + 2 * tU)
-            
-        carbonate = "C{C12}[13C]{C13}O{O16}[18O]{O18}".format(
-                       C12=C12, C13=C13, O16=O16, O18=O18
-                       )
-             
+            d += " + {}UO2+2".format(tU)
+            O16 = dcqz(O16 + 2 * tU)  # Adjust oxygen for uranium
+
+        # Construct carbonate phase
+        carbonate = "C{C12}[13C]{C13}O{O16}[18O]{O18}".format(C12=C12, C13=C13, O16=O16, O18=O18)
+
         s = metals + carbonate
 
-        
+        # Get reaction values from the reader
         v = self.s.reader.get_k_values([r"CaMg\(CO3\)2"])
         
         self.diss_reaction = s + ' = ' + d
         self.pq_phase_entry = self.diss_reaction + \
                               '\n\tlog_k\t' + str(v['log_k']) +  \
                               '\n\tdelta_h\t' + str(v['delta_h'])
+        
         
     @classmethod
     def check_charge_balance(reaction_string):
