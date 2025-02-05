@@ -1,8 +1,8 @@
 # CaveCalcV2.0: A software tool for forward modelling speleothem chemistry.
 version 1 (https://github.com/Rob-Owen/cavecalc)
 
-version 2 is still under construction 🚧🚗
-CDALite in construction (Ability to use the CDA without CaveCalc installed) 🚧🚗
+version 2 and CDALite is still under construction 🚧🚗
+
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/main)
 ![GitHub License](https://img.shields.io/github/license/Samhollowood/CaveCalcV2.0)
