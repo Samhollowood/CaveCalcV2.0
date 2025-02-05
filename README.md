@@ -2,6 +2,7 @@
 version 1 (https://github.com/Rob-Owen/cavecalc)
 
 version 2 is still under construction 🚧🚗
+CDALite in construction (Ability to use the CDA without CaveCalc installed) 🚧🚗
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/main)
 ![GitHub License](https://img.shields.io/github/license/Samhollowood/CaveCalcV2.0)
