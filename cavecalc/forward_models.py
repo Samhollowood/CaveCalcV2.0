@@ -108,15 +108,11 @@ class ForwardModels(object):
             self.input = SettingsMaker().settings()
 
 
-        if self.output_dir:
-            if not os.path.isdir(self.output_dir):
-                os.mkdir(self.output_dir)  # Create the specified directory if it doesn't exist
-        else:
-            # Default to current working directory and create 'cavecalc_output' folder if it doesn't exist
-            default_dir = os.path.join(os.getcwd())
-            if not os.path.isdir(default_dir):
-                os.mkdir(default_dir)
-            self.output_dir = default_dir
+        if output_dir:  
+            if not os.path.isdir(output_dir): 
+                os.mkdir(output_dir)
+            self.output_dir = output_dir
+        else: self.output_dir=os.getcwd()
 
 
 
