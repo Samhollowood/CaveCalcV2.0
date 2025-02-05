@@ -17,7 +17,7 @@ assert sys.version_info >= (3, 0), \
 
 # Define install_requires
 install_requires = [
-    'scipy', 'numpy', 'matplotlib', 'inflection', 'phreeqpy', 'seaborn', 'pandas'
+    'scipy', 'numpy', 'matplotlib', 'inflection', 'phreeqpy', 'seaborn', 'pandas', 'os',
 ]
 
 # If running on Windows, add pywin32
