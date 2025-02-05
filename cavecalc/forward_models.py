@@ -107,8 +107,6 @@ class ForwardModels(object):
         else:           
             self.input = SettingsMaker().settings()
 
-        # Check if output_dir is provided in settings, if not use default directory
-        self.output_dir = self.input.get('out_dir', None)
 
         if self.output_dir:
             if not os.path.isdir(self.output_dir):
