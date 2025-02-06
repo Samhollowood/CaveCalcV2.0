@@ -505,7 +505,7 @@ class PostProcessor(object):
         """
         
         # If output_dir is provided, use it; otherwise, default to the current working directory 
-        output_dir = getcwd() 
+        output_dir = os.getcwd() 
         
         
         # Ensure the directory exists; create it if it does not 
