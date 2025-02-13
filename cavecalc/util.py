@@ -639,19 +639,27 @@ class PostProcessor(object):
            d18O_spel = -999 if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
            d44Ca_spel = -999 if d44Ca_spel is None or d44Ca_spel != d44Ca_spel else d44Ca_spel
 
-           # Extract key input settings for the current iteration
-           soil_pCO2 = self.s.settings['soil_pCO2']
-           d13Csoil = self.s.settings['soil_d13C']
+           Gkeys = [
+    'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
+    'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba', 
+    'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C' 
+    ] 
+    
+           # Extract settings into a dictionary
+           settings = {key: self.s.settings[key] for key in Gkeys}
+
+           # Automatically create variables from dictionary keys
+           locals().update(settings)
+           
            f_ca = self.s.output.get('f_ca',[])
            f_ca = f_ca[i]
            ca = self.s.output.get('Ca(mol/kgw)',[])
            ca = ca[i]
-           cave_pCO2 = self.s.settings['cave_pCO2']
-           gas_volume = self.s.settings['gas_volume']
-           temp = self.s.settings['temperature']
+ 
            d13C_DIC = self.s.output.get('d13C',[])
            d13C_DIC = d13C_DIC[1]
-           rainfall_d18O = self.s.settings['atm_d18O']
+           atm_d18O = self.s.settings['atm_d18O']
+         
         
            # Define the keys to keep from self.s.settings **ADD atmo_exhange** 
            desired_keys = [ 
@@ -662,6 +670,7 @@ class PostProcessor(object):
                'bedrock_UCa', 'bedrock_d13C', 'bedrock_d44Ca',  
                'bedrock_mineral', 'bedrock_pyrite',  
                'gas_volume', 'reprecip', 'cave_pCO2','cave_R14C','cave_d13C', 'temperature', 'kinetics_mode', 'precipitate_mineralogy']
+           
 
            # Iterate through the data points
            for index in range(len(age_data)): 
@@ -741,12 +750,15 @@ class PostProcessor(object):
         
            tolerance_df = pd.DataFrame(tolerance_data) 
         
-           # Prepare Input Ranges DataFrame
+        
+
            input_ranges_data = {
-            'Variable': ['soil_pCO2', 'd13Csoil', 'cave_pCO2', 'gas_volume', 'temp', 'rainfall_d18O'],
-            'Minimum': [None] * 6,
-            'Maximum': [None] * 6 
-           }
+            'Variable': [    'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
+    'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba', 
+    'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C'],
+            'Minimum': [None] * 19, 
+            'Maximum': [None] * 19, 
+             }
         
            input_ranges_df = pd.DataFrame(input_ranges_data)
         
@@ -773,7 +785,7 @@ class PostProcessor(object):
                    all_all_records.update({
                     'd18O': d18O_data[index],
                     'CaveCalc d18O': d18O_spel,
-                    'rainfall d18O': rainfall_d18O, 
+                    'rainfall d18O': atm_d18O, 
                     'd18O residual': d18O_data[index] -  d18O_spel, 
                 })
             
@@ -837,7 +849,7 @@ class PostProcessor(object):
         # Handle 'All outputs' CSV 
         if not os.path.exists(all_outputs_csv):  
             all_record_df.to_csv(all_outputs_csv, index=False) 
-            print("CDA is initialised")
+            print(f"CDA was initialised for the first time in the output directory. Created new {all_outputs_csv}")
         else: 
             # Append new data to 'All outputs' CSV 
             all_record_df.to_csv(all_outputs_csv, mode='a', header=False, index=False) 
@@ -902,7 +914,7 @@ class PostProcessor(object):
                 print(f"Match! Created new file '{matches_csv}' and saved results.") 
             else: 
                 self.results_df.to_csv(matches_csv, mode='a', header=False, index=False) 
-                print("Match!")
+                print(f"Match! Appended to '{matches_csv}' and saved results.")
                        
         
             
