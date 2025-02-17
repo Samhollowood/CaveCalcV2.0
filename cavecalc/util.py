@@ -398,7 +398,7 @@ class PostProcessor(object):
             UCa = self.s.output.get('U/Ca(mol/mol)')
             UCa_Aragonite = [value * 0.001 if value is not None else None for value in (UCa_Aragonite or [])]
             UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
-            self.s.output['U/Ca(mol/mol)_Calcite'] = UCa_Aragonite
+            self.s.output['U/Ca(mol/mol)_Aragonite'] = UCa_Aragonite
             self.s.output['U/Ca(mol/mol)'] = UCa       
     
   
