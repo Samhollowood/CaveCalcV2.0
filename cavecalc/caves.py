@@ -825,7 +825,7 @@ class Carbonate(object):
     def _get_dolomite_phase(self):
         # Internal rounding function
         def dcqz(decimal):
-            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_HALF_UP)
+            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_05UP)
             return d2
 
         # Extract settings
