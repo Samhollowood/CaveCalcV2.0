@@ -344,9 +344,9 @@ class PostProcessor(object):
         
         self.s = Simulator
         self.calculate_f()
-        self.UCa_mmol_to_mol()
         self.VSMOW_to_VPDB()
         self.calculate_XCa()
+        self.UCa_mmol_to_mol()
         self.tidy()
         self.calculate_radiocarbon()
         self.set_none()  
@@ -374,33 +374,6 @@ class PostProcessor(object):
         self.s.output['f_ca'] = [x / init_ca for x in ca]
         self.s.output['f_c'] = [x / init_c for x in c]
         
-        
-        
-    def UCa_mmol_to_mol(self):
-        """UCa mmol/mol to mol/mol
-        
-        The bedrock UCa cannot handle small values or 
-        ERROR: Elements in species have not been tabulated, 
-        C0.988943415[13C]0.011056585O2.993996620[18O]0.006003562.
-        
-        Thus UCa is modelled as mmol/mol and other X/Ca as mol/mol
-        This puts each X/Ca on the same scale"""
-        
-        if self.s.settings['precipitate_mineralogy'] == 'Calcite':
-            UCa_Calcite = self.s.output.get('U/Ca(mol/mol)_Calcite')
-            UCa = self.s.output.get('U/Ca(mol/mol)')
-            UCa_Calcite = [value * 0.001 if value is not None else None for value in (UCa_Calcite or [])]
-            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
-            self.s.output['U/Ca(mol/mol)_Calcite'] = UCa_Calcite
-            self.s.output['U/Ca(mol/mol)'] = UCa
-        elif self.s.settings['precipitate_mineralogy'] == 'Aragonite': 
-            UCa_Aragonite = self.s.output.get('U/Ca(mol/mol)_Aragonite')
-            UCa = self.s.output.get('U/Ca(mol/mol)')
-            UCa_Aragonite = [value * 0.001 if value is not None else None for value in (UCa_Aragonite or [])]
-            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
-            self.s.output['U/Ca(mol/mol)_Aragonite'] = UCa_Aragonite
-            self.s.output['U/Ca(mol/mol)'] = UCa       
-    
   
     
     def VSMOW_to_VPDB(self):
@@ -489,7 +462,34 @@ class PostProcessor(object):
             precipitate_suffix = '_Calcite' if self.s.settings['precipitate_mineralogy'] == 'Calcite' else '_Aragonite'
             self.s.output[x+'/Ca(mol/mol)' + precipitate_suffix] = precipitate_ratios[x]
 
-           # self.s.output[x+'/Ca(mol/mol)_Calcite'] = precipitate_ratios[x]   
+           # self.s.output[x+'/Ca(mol/mol)_Calcite'] = precipitate_ratios[x] 
+           
+            
+    def UCa_mmol_to_mol(self):
+        """UCa mmol/mol to mol/mol
+        
+        The bedrock UCa cannot handle small values or 
+        ERROR: Elements in species have not been tabulated, 
+        C0.988943415[13C]0.011056585O2.993996620[18O]0.006003562.
+        
+        Thus UCa is modelled as mmol/mol and other X/Ca as mol/mol
+        This puts each X/Ca on the same scale"""
+        
+        if self.s.settings['precipitate_mineralogy'] == 'Calcite':
+            UCa_Calcite = self.s.output.get('U/Ca(mol/mol)_Calcite')
+            UCa = self.s.output.get('U/Ca(mol/mol)')
+            UCa_Calcite = [value * 0.001 if value is not None else None for value in (UCa_Calcite or [])]
+            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
+            self.s.output['U/Ca(mol/mol)_Calcite'] = UCa_Calcite
+            self.s.output['U/Ca(mol/mol)'] = UCa
+        elif self.s.settings['precipitate_mineralogy'] == 'Aragonite': 
+            UCa_Aragonite = self.s.output.get('U/Ca(mol/mol)_Aragonite')
+            UCa = self.s.output.get('U/Ca(mol/mol)')
+            UCa_Aragonite = [value * 0.001 if value is not None else None for value in (UCa_Aragonite or [])]
+            UCa = [value * 0.001 if value is not None else None for value in (UCa or [])]
+            self.s.output['U/Ca(mol/mol)_Aragonite'] = UCa_Aragonite
+            self.s.output['U/Ca(mol/mol)'] = UCa       
+           
         
     def CDA(self):
         """Performs the CDA 
@@ -633,6 +633,7 @@ class PostProcessor(object):
            SrCa_spel = SrCa_spel * 1000 if SrCa_spel is not None else None 
            BaCa_spel = BaCa_spel * 1000 if BaCa_spel is not None else None 
            UCa_spel = UCa_spel * 1000 if UCa_spel is not None else None 
+
            
            # Skip to the next iteration if d13C_spel is None
            d13C_spel = -999 if d13C_spel is None else d13C_spel
