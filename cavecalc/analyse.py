@@ -818,24 +818,30 @@ class Evaluate(object):
 
                 
         # Add faint text to the top left corner 
-        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5)
+        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5) 
         
-      
-        # Position for the 'User bedrock inputs' heading 
-        fig.text(0.20, 0.96, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
-        bedrock_values_y_position = 0.94
-                
-        # Display bedrock values 
-        for index, value in enumerate(bedrock_XCa_text.split(', ')):  
-            fig.text(0.20, bedrock_values_y_position - index * 0.025, f"{value}", ha='center', va='center', fontsize=10, color='black') 
-               
-         # Add gas_volume under bedrock inputs  
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']   
-        if not row.empty:    
-            # Update the annotation to reflect 'gas-to-water ratio' 
+        fig.text(0.235, 0.96, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
+        bedrock_values_y_position = 0.94 
+        
+        # Split bedrock values into two columns 
+        bedrock_values = bedrock_XCa_text.split(', ') 
+        num_values = len(bedrock_values)
+        num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns 
+         
+        for index, value in enumerate(bedrock_values):   
+            col = index // num_per_column  # Determine column (0 or 1) 
+            row = index % num_per_column  # Determine row position within the column 
+            x_pos = 0.17 + col * 0.12  # Adjust x-position for two columns 
+            y_pos = bedrock_values_y_position - row * 0.025 
+            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
+            
+        # Add gas_volume under bedrock inputs   
+        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']    
+        if not row.empty:     
+            # Update the annotation to reflect 'gas-to-water ratio'  
             variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"   
-            fig.text(0.20, bedrock_values_y_position - (index + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
-        
+            fig.text(0.20, bedrock_values_y_position - (num_per_column + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
+
         
         # Position for the 'Available measurements' heading 
         fig.text(0.80, 0.96, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')  # Adjusted y-position for heading 
@@ -879,7 +885,7 @@ class Evaluate(object):
  
         df_all_outputs = pd.read_csv(outputs_csv)
         df_all_outputs = df_all_outputs[df_all_outputs['CaveCalc d13C'] != -999]
-        relative_offset_fraction = 0.15  # Adjust this value to control the offset proportionally 
+        relative_offset_fraction = 0.05  # Adjust this value to control the offset proportionally 
         
 
         # Strip, lowercase, and remove non-alphanumeric characters from column names, except for the first column (assumed to be 'age') 
@@ -1054,23 +1060,32 @@ class Evaluate(object):
             if not row.empty: 
                 variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
                 fig.text(0.80, miscellaneous_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
-                miscellaneous_values_y_position -= 0.025  # Adjust position for next input
-
+                miscellaneous_values_y_position -= 0.025  # Adjust position for next input 
+                
         # Position for the 'User bedrock inputs' heading 
         fig.text(0.50, 0.91, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
-        bedrock_values_y_position = 0.89
-                
-        # Display bedrock values 
-        for index, value in enumerate(bedrock_XCa_text.split(', ')):  
-            fig.text(0.50, bedrock_values_y_position - index * 0.025, f"{value}", ha='center', va='center', fontsize=10, color='black') 
-               
-         # Add gas_volume under bedrock inputs 
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume'] 
-        if not row.empty:   
-            variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-            fig.text(0.50, bedrock_values_y_position - (index + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
-            
+        bedrock_values_y_position = 0.89  
         
+        # Split bedrock values into two columns  
+        bedrock_values = bedrock_XCa_text.split(', ')  
+        
+        # Add gas-to-water ratio if available 
+        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']  
+        if not row.empty:    
+            gas_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
+            bedrock_values.append(gas_text)  # Add gas-to-water ratio to the list 
+            
+            num_values = len(bedrock_values)  
+            num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns  
+            
+        for index, value in enumerate(bedrock_values):    
+            col = index // num_per_column  # Determine column (0 or 1) 
+            row = index % num_per_column  # Determine row position within the column 
+            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns 
+            y_pos = bedrock_values_y_position - row * 0.025 
+            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
+        
+    
         # Position for the 'User soil inputs' heading 
         fig.text(0.20, 0.91, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
         soil_values_y_position = 0.89
