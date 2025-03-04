@@ -885,7 +885,7 @@ class Evaluate(object):
  
         df_all_outputs = pd.read_csv(outputs_csv)
         df_all_outputs = df_all_outputs[df_all_outputs['CaveCalc d13C'] != -999]
-        relative_offset_fraction = 0.05  # Adjust this value to control the offset proportionally 
+        relative_offset_fraction = 0.12  # Adjust this value to control the offset proportionally 
         
 
         # Strip, lowercase, and remove non-alphanumeric characters from column names, except for the first column (assumed to be 'age') 
@@ -1066,25 +1066,34 @@ class Evaluate(object):
         fig.text(0.50, 0.91, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
         bedrock_values_y_position = 0.89  
         
-        # Split bedrock values into two columns  
-        bedrock_values = bedrock_XCa_text.split(', ')  
-        
-        # Add gas-to-water ratio if available 
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']  
-        if not row.empty:    
-            gas_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-            bedrock_values.append(gas_text)  # Add gas-to-water ratio to the list 
-            
-            num_values = len(bedrock_values)  
-            num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns  
-            
-        for index, value in enumerate(bedrock_values):    
+        # Group metals together in the text 
+        bedrock_values_grouped = [] 
+        for metal in trace_metals: 
+            values = bedrock_XCa_values.get(metal, []) 
+            if values.size > 0 and all(value != 0 for value in values): 
+                if metal == 'd44': 
+                    formatted_value = f"{metal}: {', '.join(map(str, values))} ‰" 
+                else: 
+                    formatted_value = f"{metal}/Ca: {', '.join(map(str, values))} mmol/mol" 
+                    bedrock_values_grouped.append(formatted_value) 
+
+        # Now distribute grouped values into two columns
+        num_values = len(bedrock_values_grouped)
+        num_per_column = (num_values + 1) // 2  # Distribute evenly
+
+        for index, value in enumerate(bedrock_values_grouped): 
             col = index // num_per_column  # Determine column (0 or 1) 
             row = index % num_per_column  # Determine row position within the column 
-            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns 
+            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns
             y_pos = bedrock_values_y_position - row * 0.025 
-            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
-        
+            fig.text(x_pos, y_pos, value, ha='center', va='center', fontsize=10, color='black')
+ 
+        # Add gas-to-water ratio **below** trace metal values 
+        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']  
+        if not row.empty:  
+            gas_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
+            gas_y_pos = bedrock_values_y_position - (num_per_column * 0.025) - 0.025  # Ensure it's below the last row 
+            fig.text(0.42, gas_y_pos, gas_text, ha='center', va='center', fontsize=10, color='black')
     
         # Position for the 'User soil inputs' heading 
         fig.text(0.20, 0.91, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
