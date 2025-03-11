@@ -51,7 +51,7 @@ else:
 EQ_STEP = True                      #   run initial isotope equilibration step
 PHREEQC_TOLERANCE = 0.1            #   tolerance on phreeqc percent error
 PRESSURE =  1.001                   #   atmospheric pressure (bar)
-BEDROCK_PHASE_QZ_LEVEL = 1e-9  #   precision of bedrock phase declaration
+BEDROCK_PHASE_QZ_LEVEL = 1e-10  #   precision of bedrock phase declaration
 
 # Class definitions
 class Solution(object):
@@ -825,7 +825,7 @@ class Carbonate(object):
     def _get_dolomite_phase(self):
         # Internal rounding function
         def dcqz(decimal):
-            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_05UP)
+            d2 = decimal.quantize(Decimal(str(BEDROCK_PHASE_QZ_LEVEL)), rounding=ROUND_HALF_UP)
             return d2
 
         # Extract settings
