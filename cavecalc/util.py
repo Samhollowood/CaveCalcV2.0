@@ -512,7 +512,7 @@ class PostProcessor(object):
         os.makedirs(output_dir, exist_ok=True)
         
         # Define the new folder name for CDA Results 
-        event_analyser_results_dir = os.path.join(output_dir, 'CDA Results') 
+        event_analyser_results_dir = os.path.join(output_dir, 'CDA_Results') 
         
         # Check if the directory exists; if not, create it 
         if not os.path.exists(event_analyser_results_dir): 
