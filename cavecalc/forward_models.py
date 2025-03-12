@@ -300,7 +300,7 @@ class ForwardModels(object):
                 # Perform additional logic for cavecalc.analyse
                 e = cca.Evaluate()
                 dir1 = user_filepath
-                dir2 = os.path.join(self.output_dir, 'CDA Results')  # Example for dir2
+                dir2 = os.path.join(self.output_dir, 'CDA_Results')  # Example for dir2
                 e.plot_CDA(dir1, dir2)
                 print("Plotting completed successfully.")
             except Exception:
