@@ -98,7 +98,7 @@ CaveCalcV2.0 allows users to run single models, multiple models, or models using
 - The **Graphical User Interface (GUI)**  
 - The `run_models.py` script (in `API_models/`)  
 - The `run_CDA.py` script (in `API_models/`)
-- Creating their own script, using `run_models.py`, `run_CDA.py`, or  `./examples/` as templates 
+- Creating your own script, using `run_models.py`, `run_CDA.py`, or  `./examples/` as templates 
 
 `run_models.py` uses default model inputs, while `run_CDA.py` has a select number of inputs, over a range, intended to guide the user on the CDA process. These model inputs can be **added, removed, or modified** to suit the users study. A complete list of inputs is available in **manual.pdf**, Table 2.  
 
