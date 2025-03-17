@@ -180,7 +180,7 @@ containing:
 
 
 ## Plotting
-CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archive models to produce plots. To do this, add the following lines to the bottom of the run_CDA.py or run_models.py script:
+CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archive models to produce plots. To do this via python scripting, add the following lines to the bottom of the run_CDA.py or run_models.py script:
 
 ```python
 import cavecalc.analyse as cca
