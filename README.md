@@ -137,11 +137,11 @@ It will print:
 ```shell
 CDA is initialised
 ```
-It will then create a CDA Results folder in the output directory, which will store matches in a .csv file.
+It will then create a CDA_Results folder in the output directory, which will store matches in a .csv file.
 For the first match with the measured data, it will print:
 
 ```shell
-Created new file path/to/out_dir/CDA Results/Matches.csv and saved results.
+Created new file path/to/out_dir/CDA_Results/Matches.csv and saved results.
 ```
 
 
@@ -159,9 +159,9 @@ When running **CaveCalcV2.0**, whether it be with the CDA, or without, three out
 
 There are several output keys, and the definition of each can be found in the manual.pdf, Table 3
 
-If the CDA is initialised, it will create a CDA Results folder:
+If the CDA is initialised, it will create a CDA_Results folder:
 ```shell
-cd /path/to/out_dir/CDA Results/
+cd /path/to/out_dir/CDA_Results/
 ```
 
 containing:
@@ -220,9 +220,9 @@ e = cca.Evaluate()
 
 # Define path to measured data and archived output directory
 user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA run,
-out_dir = 'path/to/out_dir/CDA Results/' # Path to the archived output directory containing CDA results,
+out_dir = 'path/to/out_dir/CDA_Results/' # Path to the archived output directory containing CDA_Results,
 
-# Plot CDA results
+# Plot CDA_Results
 plot = e.plot_CDA(user_filepath, out_dir)
 ```
 
