@@ -141,7 +141,7 @@ It will then create a CDA_Results folder in the output directory, which will sto
 For the first match with the measured data, it will print:
 
 ```shell
-Created new file path/to/out_dir/CDA_Results/Matches.csv and saved results.
+CDA was initialised for the first time in the output directory. Created new All_ouputs.csv file.
 ```
 
 
