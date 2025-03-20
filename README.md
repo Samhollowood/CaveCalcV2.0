@@ -106,14 +106,14 @@ CaveCalcV2.0 allows users to run single models, multiple models, or models using
 Integrated development environments (**Spyder**, **Jupyter Notebook**) are recommended for editing `.py` scripts. More advanced users may want to create their own `.py` scripts, using the `run_models.py`  or `run_CDA.py` as a template. 
 
 
-### Defining Inputs for the CDA
-Before running the CDA mode, specify the following in the **settings dictionary** (`s = {}`) in `API_models/run_CDA.py`:
+### Defining Inputs for the Carbonate Data Analyser (CDA)
+The new CDA mode is similar to standard CaveCalcV1.0 model runs. Required inputs are:
 
 - **`user_filepath`**: Path to the measured speleothem data file.  
 - **`tolerance_X`**: Tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). Remove unused proxies.  
 - **Model Inputs**: Standard CaveCalc model inputs (Owens et al., 2018).  
 
-A template (`Example_input.csv`) is provided for user data. Modify it by adding/removing proxies and data as needed. Alternatively, the inputs for the CDA may be found in the CDA Settings field within the GUI, which allows users to import their measured data and define tolerance intervals.
+A template (`Example_input.csv`) is provided for the measured speleothem data file. Modify it by adding/removing proxies and data as needed. In the GUI, the required inputs for the CDA are found in the CDA Settings, which allows users to import their measured data and define tolerance intervals.
 
 ### Optional: Defining Output Directory
 By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
