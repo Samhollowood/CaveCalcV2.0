@@ -145,6 +145,8 @@ For the first match with the measured data, it will print:
 CDA was initialised for the first time in the output directory. Created new All_ouputs.csv file.
 ```
 
+Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA and not replace the previous batch.
+
 
 ## Output
 When running **CaveCalcV2.0**, whether it be with the CDA, or without, three outputs are generated:
