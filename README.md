@@ -23,7 +23,7 @@ So code may be more prone to errors (please still reach out!)
 
 
 ## **Introduction**
-CaveCalcV2.0 is an updated forward modeling tool for simulating speleothem chemistry. It introduces several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
+CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chemistry. It introduces several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
 
 - Source code: `/cavecalc/`  
 - Example scripts: `/examples/`  
@@ -41,7 +41,7 @@ CaveCalcV2.0 is an updated forward modeling tool for simulating speleothem chemi
 - **Easier installation** for Windows and Linux users. 
 - **Carbonate Data Analyzer (CDA):** A mode for analysing and matching measured data with model outputs.  
 - **Aragonite precipitation modeling** in speleothems.
-- **Readable output** now produces a .csv format, with no need to understand processing of pickle files 
+- **Readable output** now produces a .csv format with the settings and results
 - **Flexible plotting capabilities** for visualizing model and CDA outputs.  
 - Supports **Python 3.0 and above** (tested with Python 3.10.12).  
 
@@ -94,14 +94,14 @@ python cc_input_gui.py
 
 ## Usage
 
-CaveCalcV2.0 allows users to run single models, multiple models, or models using the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. Users can run models via:
+CaveCalcV2.0 allows users to run single models, multiple models, or models using the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
 
 - The **Graphical User Interface (GUI)**  
 - The `run_models.py` script (in `API_models/`)  
 - The `run_CDA.py` script (in `API_models/`)
-- Creating your own script, using `run_models.py`, `run_CDA.py`, or  `./examples/` as templates 
+- By creating your own script
 
-`run_models.py` uses default model inputs, while `run_CDA.py` has a select number of inputs, over a range, intended to guide the user on the CDA process. Model inputs can be **added, removed, or modified** to suit the users study. A complete list of inputs is available in **manual.pdf**, Table 2.  
+`run_models.py` is a python file that sets a settings dictionary that defines all model inputs as their defualt values. The `run_CDA.py` is a python file that has a select number of inputs, with some inputs defined in an array, intended to guide the user on the CDA. In both these scripts, model inputs can be **added, removed, or modified** to suit the users study. Removing model inputs from the settings dictionary will mean their default values (`cavecalc/data/deafaults.py`) are applied. A complete list of all model inputs are available in **manual.pdf**, Table 2.  
 
 Integrated development environments (**Spyder**, **Jupyter Notebook**) are recommended for editing `.py` scripts. More advanced users may want to create their own `.py` scripts, using the `run_models.py`  or `run_CDA.py` as a template. 
 
