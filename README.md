@@ -162,7 +162,7 @@ When running **CaveCalcV2.0**, whether it be with the CDA, or without, three out
 
 There are several output keys, and the definition of each can be found in the manual.pdf, Table 3
 
-If the CDA is initialised, it will create a CDA_Results folder:
+If the CDA is initialised, it will create a CDA_Results folder within the output directory:
 ```shell
 cd /path/to/out_dir/CDA_Results/
 ```
