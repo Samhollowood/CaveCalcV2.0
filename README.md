@@ -108,7 +108,7 @@ Integrated development environments (**Spyder**, **Jupyter Notebook**) are recom
 ### Aragonite Precipitation 
 In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as `Aragonite' will initialise Aragonite precipitation. There is no requirement to actively change the database files. The precipitate_mineralogy input feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
 
-## CDA
+##Carbonate Data Analyser (CDA)
 The new Carbonate Data Analyser (CDA) mode aims to automate the comparison betweenn CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
 
 - **`user_filepath`**: Users are required to important their measured speleothem data by providing the path.  
