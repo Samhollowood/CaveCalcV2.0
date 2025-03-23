@@ -1,8 +1,7 @@
 # CaveCalcV2.0: A software tool for forward modelling speleothem chemistry.
 version 1 (https://github.com/Rob-Owen/cavecalc)
 
-version 2 and CDALite is still under construction 🚧🚗 
-So code may be more prone to errors (please still reach out!)
+version 2 and CDALite is still under construction 🚧🚗  So code may be more prone to errors (please still reach out!)
 
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/main)
@@ -94,7 +93,7 @@ python cc_input_gui.py
 
 ## Usage
 
-CaveCalcV2.0 allows users to run single models, multiple models, or models using the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
+CaveCalcV2.0 allows users to run single models, multiple models, or models alongside the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
 
 - The **Graphical User Interface (GUI)**  
 - The `run_models.py` script (in `API_models/`)  
@@ -228,6 +227,8 @@ out_dir = 'path/to/out_dir/CDA_Results/' # Path to the archived output directory
 # Plot CDA_Results
 plot = e.plot_CDA(user_filepath, out_dir)
 ```
+
+It is important to note that the plotting feature for CDA does not plot ALL input variables, only a select amount. However, all input variables can be found in the Matches.csv file.
 
 ## Citing this work
 If you use CaveCalcV2.0 please cite .....
