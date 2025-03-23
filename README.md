@@ -13,6 +13,7 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 - [Features](#features)  
 - [Installation](#installation)
 - [Usage](#usage)
+- [Carbonate Data Analyser](#CDA)
 - [Output](#output)
 - [Plotting](#plotting)
 - [Citing this work](#citing-this-work)
@@ -92,7 +93,6 @@ python cc_input_gui.py
 
 
 ## Usage
-
 CaveCalcV2.0 allows users to run single models, multiple models, or models alongside the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
 
 - The **Graphical User Interface (GUI)**  
@@ -100,19 +100,24 @@ CaveCalcV2.0 allows users to run single models, multiple models, or models along
 - The `run_CDA.py` script (in `API_models/`)
 - By creating your own script
 
-`run_models.py` is a python file that sets a settings dictionary that defines all model inputs as their defualt values. The `run_CDA.py` is a python file that has a select number of inputs, with some inputs defined in an array, intended to guide the user on the CDA. In both these scripts, model inputs can be **added, removed, or modified** to suit the users study. Removing model inputs from the settings dictionary will mean their default values (`cavecalc/data/deafaults.py`) are applied. A complete list of all model inputs are available in **manual.pdf**, Table 2.  
+`run_models.py` is a python file that sets a settings dictionary that defines all model inputs as their defualt values. The `run_CDA.py` is a python file that has a select number of inputs, with some inputs defined in an array, intended to guide the user on the CDA. In both these scripts, model inputs can be **added, removed, or modified** to suit the users study. Removing model inputs from the settings dictionary will mean their default values (`cavecalc/data/deafaults.py`) are applied. A complete list of all model inputs are available in **manual.pdf**, Table 3.  
 
 Integrated development environments (**Spyder**, **Jupyter Notebook**) are recommended for editing `.py` scripts. More advanced users may want to create their own `.py` scripts, using the `run_models.py`  or `run_CDA.py` as a template. 
 
 
-### Defining Inputs for the Carbonate Data Analyser (CDA)
-The new CDA mode is similar to standard CaveCalcV1.0 model runs. Required inputs are:
+### Aragonite Precipitation 
+In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as `Aragonite' will initialise Aragonite precipitation. There is no requirement to actively change the database files. The precipitate_mineralogy input feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
 
-- **`user_filepath`**: Path to the measured speleothem data file.  
-- **`tolerance_X`**: Tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). Remove unused proxies.  
-- **Model Inputs**: Standard CaveCalc model inputs (Owens et al., 2018).  
+## CDA
+The new Carbonate Data Analyser (CDA) mode aims to automate the comparison betweenn CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
 
-A template (`Example_input.csv`) is provided for the measured speleothem data file. Modify it by adding/removing proxies and data as needed. In the GUI, the required inputs for the CDA are found in the CDA Settings, which allows users to import their measured data and define tolerance intervals.
+- **`user_filepath`**: Users are required to important their measured speleothem data by providing the path.  
+- **`tolerance_X`**: Users can optionally define tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). These tolerance intervals define what consitutues a match.  
+- **Model Inputs**: Users will need to defined model input varaubles as per standard CaveCalc model runs, focusing on model inputs they want to constrain.  
+
+A template (`Example_input.csv`) is provided for the measured speleothem data file. This can be modified by adding/removing proxies and rows. 
+
+Within the GUI, users can find the required inputs for the CDA in the CDA Settings headings, which allows users to import their measured data and define tolerance intervals.
 
 ### Optional: Defining Output Directory
 By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
@@ -148,7 +153,7 @@ Provided the output directory is left unchanged, runninng extra batches of model
 
 
 ## Output
-When running **CaveCalcV2.0**, whether it be with the CDA, or without, three outputs are generated:
+When running **CaveCalcV2.0**, whether it be with the CDA, or without, three model output files are generated:
 
 1. **`settings.pkl`**  
    A pickle file that stores all the input settings for the model.
@@ -157,11 +162,11 @@ When running **CaveCalcV2.0**, whether it be with the CDA, or without, three out
    A pickle file that contains all the model results.
 
 3. A new **`settings_results.csv`**  
-   This is a CSV file that consolidates both the input settings and the model outputs in a single, readable format. Users can now easily observe which input settings correspond to what output, and how the ouput evolves from the soil to the speleothem.
+   This is a CSV file that consolidates both the input settings and the model outputs in a single, readable format. Model outputs can be osberved for each stage of speleothem chemistry per model (e.g., soil-water equilibriation, bedrock dissolution and C02-degassing and carbonate precipitation). 
 
-There are several output keys, and the definition of each can be found in the manual.pdf, Table 3
+There are several model output keys, and the definition of each can be found in the manual.pdf, Table 4
 
-If the CDA is initialised, it will create a CDA_Results folder within the output directory:
+If the CDA is initialised, it will create a CDA_Results folder within the output directory with additional output files:
 ```shell
 cd /path/to/out_dir/CDA_Results/
 ```
