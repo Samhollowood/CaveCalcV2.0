@@ -29,7 +29,7 @@ s =  {#Environmental model inputs
       'soil_d13C': [-18,-21,-25],
       'soil_pCO2': [260, 600, 1000, 2000, 5000, 8000],
       'gas_volume': [0, 100, 200, 300, 400, 500],
-      'cave_pCO2': [260, 600, 4500]',
+      'cave_pCO2': [260, 600, 4500],
       'temperature': [5,15,25],
 
       #And any other environmental model inputs (see run_models.py)
