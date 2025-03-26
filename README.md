@@ -74,6 +74,12 @@ conda activate base
 python setup.py install
 ```
 
+or
+```shell
+pip install .
+```
+
+
 5. Verify installation by running example:
 ```shell
 cd examples/
