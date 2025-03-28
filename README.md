@@ -71,13 +71,14 @@ conda activate base
 
 4. Install the CaveCalcV2.0 package:
 ```shell
+pip install .
+```
+
+Or if you would rather install the package as ann .egg file (it will be deprecated soon)
+```shell
 python setup.py install
 ```
 
-or
-```shell
-pip install .
-```
 
 
 5. Verify installation by running example:
