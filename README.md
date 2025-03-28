@@ -74,12 +74,12 @@ conda activate base
 pip install .
 ```
 
-Or if you would rather install the package as ann .egg file (it will be deprecated soon)
+Or if you would rather install the package as an .egg file (it will be deprecated soon)
 ```shell
 python setup.py install
 ```
 
-By default, the setuptools package should be automatically in your Python environment. If not, you may need to run:
+[DEBUGGING] By default, the setuptools package should be automatically in your Python environment. If not, you may need to run:
 ```shell
 pip install --upgrade setuptools
 ```
