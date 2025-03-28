@@ -79,6 +79,11 @@ Or if you would rather install the package as ann .egg file (it will be deprecat
 python setup.py install
 ```
 
+By default, the setuptools package should be automatically in your Python environment. If not, you may need to run:
+```shell
+pip install --upgrade setuptools
+```
+and then run the installation steps again 
 
 
 5. Verify installation by running example:
