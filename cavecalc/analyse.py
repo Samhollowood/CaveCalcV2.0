@@ -40,7 +40,7 @@ class Evaluate(object):
     under the hood by the output GUI.
     
     Methods:
-        get_settings_report - Get a dict summarising model settings
+    settings_report - Get a dict summarising model settings
         load_data           - Load .pkl files from a directory
         save_csvs           - Save all loaded model output to .csv files
         save_all_mat        - Save all loaded model output to a .mat file
@@ -490,6 +490,9 @@ class Evaluate(object):
         # Construct file paths for the CSV files
         matches_csv = os.path.join(dir2, 'Matches.csv')
         tolerances_csv = os.path.join(dir2, 'Tolerances.csv')
+        
+        # Set the font to 'DejaVu Sans', which supports subscript 
+        matplotlib.rcParams['font.family'] = 'DejaVu Sans'
     
         # Load the 'Matches' CSV as df_main
         df_main = pd.read_csv(matches_csv, on_bad_lines="skip")
@@ -880,13 +883,12 @@ class Evaluate(object):
         plt.show(block=False) 
         figures.append(fig) 
  
-        
+        '''       
         outputs_csv = os.path.join(dir2, 'All_outputs.csv')
  
         df_all_outputs = pd.read_csv(outputs_csv)
         df_all_outputs = df_all_outputs[df_all_outputs['CaveCalc d13C'] != -999]
-        relative_offset_fraction = 0.12  # Adjust this value to control the offset proportionally 
-        
+  
 
         # Strip, lowercase, and remove non-alphanumeric characters from column names, except for the first column (assumed to be 'age') 
         df_test.columns = [df_test.columns[0]] + df_test.columns[1:].str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True).tolist()
@@ -957,6 +959,9 @@ class Evaluate(object):
                 # Create evenly spaced positions for the boxplots and scatter points 
                 positions = np.arange(len(unique_ages)) 
                 
+                num_unique_ages = len(unique_ages) 
+                relative_offset_fraction = 0.014 * num_unique_ages + 0.022  # Linear interpolation
+                
                 # Map the ages to their respective positions 
                 scatter_positions_main = np.searchsorted(unique_ages, df_main[age_column_main]) 
                 scatter_positions_test = np.searchsorted(unique_ages, df_test[age_column_test]) + relative_offset_fraction 
@@ -991,6 +996,8 @@ class Evaluate(object):
                     message = 'No Sr/Ca data provided' 
                 elif key == 'uca': 
                     message = 'No U/Ca data provided' 
+                elif key == 'd18o':
+                    message = 'No d18O data provided'               
                 else: 
                     message = f'No {key} data provided' 
                     
@@ -998,7 +1005,7 @@ class Evaluate(object):
                 ax.text(0.5, 0.5, message, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=12, color='black')
             
             # Set x-axis labels as the original age values 
-            ax.set_xticks(positions)  # Ensure the number of tick positions matches unique_ages 
+            ax.set_xticks(positions)  # Ensure the number of tick positions matches unique_ages
             ax.set_xticklabels(unique_ages, rotation=45)  # Ensure equal labels for each tick
             ax.set_xlabel('Age')
             ax.set_ylabel(axis_labels.get(key, key), fontsize=10)    
@@ -1062,39 +1069,29 @@ class Evaluate(object):
                 fig.text(0.80, miscellaneous_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
                 miscellaneous_values_y_position -= 0.025  # Adjust position for next input 
                 
-        # Position for the 'User bedrock inputs' heading 
-        fig.text(0.50, 0.91, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
-        bedrock_values_y_position = 0.89  
+         
+        fig.text(0.5, 0.89, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
+        bedrock_values_y_position = 0.87 
         
-        # Group metals together in the text 
-        bedrock_values_grouped = [] 
-        for metal in trace_metals: 
-            values = bedrock_XCa_values.get(metal, []) 
-            if values.size > 0 and all(value != 0 for value in values): 
-                if metal == 'd44': 
-                    formatted_value = f"{metal}: {', '.join(map(str, values))} ‰" 
-                else: 
-                    formatted_value = f"{metal}/Ca: {', '.join(map(str, values))} mmol/mol" 
-                    bedrock_values_grouped.append(formatted_value) 
-
-        # Now distribute grouped values into two columns
-        num_values = len(bedrock_values_grouped)
-        num_per_column = (num_values + 1) // 2  # Distribute evenly
-
-        for index, value in enumerate(bedrock_values_grouped): 
+        # Split bedrock values into two columns 
+        bedrock_values = bedrock_XCa_text.split(', ') 
+        num_values = len(bedrock_values)
+        num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns 
+         
+        for index, value in enumerate(bedrock_values):   
             col = index // num_per_column  # Determine column (0 or 1) 
             row = index % num_per_column  # Determine row position within the column 
-            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns
+            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns 
             y_pos = bedrock_values_y_position - row * 0.025 
-            fig.text(x_pos, y_pos, value, ha='center', va='center', fontsize=10, color='black')
- 
-        # Add gas-to-water ratio **below** trace metal values 
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']  
-        if not row.empty:  
-            gas_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-            gas_y_pos = bedrock_values_y_position - (num_per_column * 0.025) - 0.025  # Ensure it's below the last row 
-            fig.text(0.42, gas_y_pos, gas_text, ha='center', va='center', fontsize=10, color='black')
-    
+            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
+            
+        # Add gas_volume under bedrock inputs   
+        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']    
+        if not row.empty:     
+            # Update the annotation to reflect 'gas-to-water ratio'  
+            variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"   
+            fig.text(0.42, bedrock_values_y_position - (num_per_column + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
+
         # Position for the 'User soil inputs' heading 
         fig.text(0.20, 0.91, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
         soil_values_y_position = 0.89
@@ -1121,7 +1118,7 @@ class Evaluate(object):
             
         return figures
 
-   
+        '''  
  
     
       
