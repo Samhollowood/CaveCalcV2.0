@@ -883,7 +883,7 @@ class Evaluate(object):
         plt.show(block=False) 
         figures.append(fig) 
  
-        '''       
+               
         outputs_csv = os.path.join(dir2, 'All_outputs.csv')
  
         df_all_outputs = pd.read_csv(outputs_csv)
@@ -1118,7 +1118,7 @@ class Evaluate(object):
             
         return figures
 
-        '''  
+         
  
     
       
