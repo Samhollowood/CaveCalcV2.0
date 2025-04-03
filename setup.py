@@ -2,8 +2,8 @@ import os
 import sys
 import subprocess
 import shutil
-import re 
-import platform 
+import re
+import platform
 
 try:
     from setuptools import setup
@@ -12,7 +12,7 @@ except ImportError:
 
 # Check system meets basic requirements
 assert sys.platform in ('darwin', 'linux', 'win32'), \
-    "Platform not supported: %s" % (sys.platform)
+    f"Platform not supported: {sys.platform}"
 assert sys.version_info >= (3, 0), \
     "Python version not supported. Python 3.5+ is recommended."
 
@@ -38,76 +38,9 @@ setup(
     install_requires=install_requires
 )
 
-# Additional setup for non-Windows platforms (if Binder is Linux or macOS)
-if sys.argv[1] == 'install' and sys.platform.lower() not in ['win32']:
+# Utility function for phreeqpy configuration
+def configure_phreeqpy_for_platform(iphreeqc_path, platform_type):
     try:
-        import phreeqpy
-        print("Done\nAttempting to patch phreeqpy using 2to3...")
-        loc = os.path.dirname(os.path.abspath(phreeqpy.__file__))
-        com_file = os.path.join(loc, 'iphreeqc', 'phreeqc_com.py')
-        subprocess.check_call(["2to3", "-w", com_file])
-    except ImportError as e:
-        print(f"phreeqpy not found: {e}")
-
-# Skip Windows-specific steps (phreeqpy configuration for Windows)
-if sys.platform.lower() == 'win32':
-    try:
-        print("Configuring phreeqpy for Windows...")
-
-        # Locate phreeqpy installation
-        output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
-        phreeqpy_path = None
-        for line in output.splitlines():
-            if line.startswith('Location:'):
-                phreeqpy_path = line.split('Location: ')[1]
-                break
-            
-        if not phreeqpy_path:
-            raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
-
-        # Paths to IPhreeqc files
-        iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
-        iphreeqc_dll_path = os.path.join(iphreeqc_path, 'IPhreeqc.dll')
-        iphreeqc_backup_path = os.path.join(iphreeqc_path, 'IPhreeqc_backup.dll')
-        iphreeqc_phreeqc3_path = os.path.join(iphreeqc_path, 'phreeqc3')
-
-        # Check if the phreeqc3 directory exists
-        if not os.path.exists(iphreeqc_phreeqc3_path):
-            raise FileNotFoundError(f"phreeqc3 directory not found at {iphreeqc_phreeqc3_path}")
-
-        # If the backup file already exists, delete it
-        if os.path.exists(iphreeqc_backup_path):
-            os.remove(iphreeqc_backup_path)
-            print(f"Deleted existing {iphreeqc_backup_path}")
-
-        # Rename the current IPhreeqc.dll to backup (if it exists)
-        if os.path.exists(iphreeqc_dll_path):
-            os.rename(iphreeqc_dll_path, iphreeqc_backup_path)
-            print(f"Renamed {iphreeqc_dll_path} to {iphreeqc_backup_path}")
-
-        # Find IPhreeqc-x.x.x.dll file in phreeqc3
-        dll_files = [f for f in os.listdir(iphreeqc_phreeqc3_path) if f.startswith('IPhreeqc-') and f.endswith('.dll')]
-        if not dll_files:
-            raise FileNotFoundError("No IPhreeqc-x.x.x.dll file found in phreeqc3 directory.")
-
-        iphreeqc_versioned_dll_path = os.path.join(iphreeqc_phreeqc3_path, dll_files[0])
-
-        # Rename the current IPhreeqc.dll to backup
-        if os.path.exists(iphreeqc_dll_path):
-            os.rename(iphreeqc_dll_path, iphreeqc_backup_path)
-
-        # Copy the versioned IPhreeqc-x.x.x.dll to IPhreeqc.dll
-        shutil.copy(iphreeqc_versioned_dll_path, iphreeqc_dll_path)
-        print(f"Copied {dll_files[0]} to {iphreeqc_dll_path}")
-
-    except Exception as e:
-        print(f"Error during phreeqpy configuration: {e}")
-
-# For Linux
-if sys.platform.lower() == 'linux':
-    try:
-        print("Configuring phreeqpy for Linux...")
-
         # Locate phreeqpy installation
         output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
         phreeqpy_path = None
@@ -119,94 +52,70 @@ if sys.platform.lower() == 'linux':
         if not phreeqpy_path:
             raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
 
-        # Paths to IPhreeqc files
-        iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
-        iphreeqc_so_path = os.path.join(iphreeqc_path, 'libiphreeqc.so.0.0.0')
-        iphreeqc_backup_path = os.path.join(iphreeqc_path, 'libiphreeqc_backup.so')
-        iphreeqc_phreeqc3_path = os.path.join(iphreeqc_path, 'phreeqc3')
+        # Platform-specific file handling
+        if platform_type == 'win32':
+            iphreeqc_files = [f for f in os.listdir(iphreeqc_path) if f.startswith('IPhreeqc-') and f.endswith('.dll')]
+            extension = '.dll'
+            backup_extension = '_backup.dll'
+        elif platform_type == 'linux':
+            iphreeqc_files = [f for f in os.listdir(iphreeqc_path) if re.match(r'libiphreeqc-\d+\.\d+\.\d+\.so', f)]
+            extension = '.so'
+            backup_extension = '_backup.so'
+        elif platform_type == 'darwin' and 'arm64' in platform.machine():
+            iphreeqc_files = [f for f in os.listdir(iphreeqc_path) if f.startswith('libiphreeqc-') and f.endswith('-m1.dylib')]
+            extension = '.dylib'
+            backup_extension = '_backup.dylib'
+        else:
+            raise ValueError("Unsupported platform or architecture.")
 
-        # Find all libiphreeqc-<version>.so files (with dynamic version)
-        so_files = [f for f in os.listdir(iphreeqc_phreeqc3_path) if re.match(r'libiphreeqc-\d+\.\d+\.\d+\.so', f)]
-        if not so_files:
-            raise FileNotFoundError("No libiphreeqc-<version>.so file found in phreeqc3 directory.")
+        if not iphreeqc_files:
+            raise FileNotFoundError(f"No appropriate {extension} file found in {iphreeqc_path}")
 
-        # Assuming we want the first found file (or you can implement version sorting if needed)
-        iphreeqc_versioned_so_path = os.path.join(iphreeqc_phreeqc3_path, so_files[0])
+        # Handle backup and replacement
+        for file in iphreeqc_files:
+            source_path = os.path.join(iphreeqc_path, file)
+            backup_path = os.path.join(iphreeqc_path, file.replace(extension, backup_extension))
 
-        # Check if the phreeqc3 directory exists
-        if not os.path.exists(iphreeqc_phreeqc3_path):
-            raise FileNotFoundError(f"phreeqc3 directory not found at {iphreeqc_phreeqc3_path}")
+            # Backup the existing file if it exists
+            if os.path.exists(backup_path):
+                os.remove(backup_path)
 
-        # If the backup file already exists, delete it
-        if os.path.exists(iphreeqc_backup_path):
-            os.remove(iphreeqc_backup_path)
-            print(f"Deleted existing {iphreeqc_backup_path}")
+            # Rename existing file to backup if it exists
+            if os.path.exists(source_path):
+                os.rename(source_path, backup_path)
 
-        # Rename the current libiphreeqc.so.0.0.0 to backup (if it exists)
-        if os.path.exists(iphreeqc_so_path):
-            os.rename(iphreeqc_so_path, iphreeqc_backup_path)
-            print(f"Renamed {iphreeqc_so_path} to {iphreeqc_backup_path}")
-
-        # Copy the versioned libiphreeqc.so to libiphreeqc.so
-        shutil.copy(iphreeqc_versioned_so_path, iphreeqc_so_path)
-        print(f"Copied {iphreeqc_versioned_so_path} to {iphreeqc_so_path}")
-
-    except Exception as e:
-        print(f"An error occurred while configuring phreeqpy for Linux: {e}")
-
-# For macOS Apple Silicon (arm64)
-if sys.platform.lower() == 'darwin' and 'arm64' in platform.machine():
-    try:
-        print("Configuring phreeqpy for macOS Apple Silicon (arm64)...")
-
-        # Locate phreeqpy installation
-        output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
-        phreeqpy_path = None
-        for line in output.splitlines():
-            if line.startswith('Location:'):
-                phreeqpy_path = line.split('Location: ')[1]
-                break
-
-        if not phreeqpy_path:
-            raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
-
-        # Paths to IPhreeqc files
-        iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
-        iphreeqc_dylib_path = os.path.join(iphreeqc_path, 'libiphreeqc.0.dylib')
-        iphreeqc_backup_path = os.path.join(iphreeqc_path, 'libiphreeqc.0_backup.dylib')
-        iphreeqc_phreeqc3_path = os.path.join(iphreeqc_path, 'phreeqc3')
-
-        # Check if the phreeqc3 directory exists
-        if not os.path.exists(iphreeqc_phreeqc3_path):
-            raise FileNotFoundError(f"phreeqc3 directory not found at {iphreeqc_phreeqc3_path}")
-
-        # If the backup file already exists, delete it
-        if os.path.exists(iphreeqc_backup_path):
-            os.remove(iphreeqc_backup_path)
-            print(f"Deleted existing {iphreeqc_backup_path}")
-
-        # Rename the current libiphreeqc.0.dylib to backup (if it exists)
-        if os.path.exists(iphreeqc_dylib_path):
-            os.rename(iphreeqc_dylib_path, iphreeqc_backup_path)
-            print(f"Renamed {iphreeqc_dylib_path} to {iphreeqc_backup_path}")
-
-        # Find the libiphreeqc-X.X.X-m1.dylib file in phreeqc3
-        dylib_files = [f for f in os.listdir(iphreeqc_phreeqc3_path) if f.startswith('libiphreeqc-') and f.endswith('-m1.dylib')]
-        if not dylib_files:
-            raise FileNotFoundError("No libiphreeqc-<version>-m1.dylib file found in phreeqc3 directory.")
-
-        iphreeqc_versioned_dylib_path = os.path.join(iphreeqc_phreeqc3_path, dylib_files[0])
-
-        # Copy the versioned libiphreeqc-X.X.X-m1.dylib to libiphreeqc.0.dylib
-        shutil.copy(iphreeqc_versioned_dylib_path, iphreeqc_dylib_path)
-        print(f"Copied {dylib_files[0]} to {iphreeqc_dylib_path}")
+            # Copy the versioned file over to replace the old one
+            shutil.copy(source_path, source_path.replace(extension, backup_extension))
+            print(f"Copied {file} to {source_path.replace(extension, backup_extension)}")
 
     except Exception as e:
-        print(f"An error occurred while configuring phreeqpy for macOS Apple Silicon: {e}")
+        print(f"Error during phreeqpy configuration for {platform_type}: {e}")
 
+# For platform-specific handling
+if sys.argv[1] == 'install':
+    if sys.platform.lower() in ['win32', 'linux', 'darwin']:
+        try:
+            # Locate the phreeqpy installation folder
+            output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
+            phreeqpy_path = None
+            for line in output.splitlines():
+                if line.startswith('Location:'):
+                    phreeqpy_path = line.split('Location: ')[1]
+                    break
+
+            if not phreeqpy_path:
+                raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
+
+            # Get path to iphreeqc folder
+            iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
+
+            # Call platform-specific configuration function
+            configure_phreeqpy_for_platform(iphreeqc_path, sys.platform.lower())
+
+        except Exception as e:
+            print(f"An error occurred during phreeqpy configuration: {e}")
 
 print("Cavecalc installation complete. Run example1.py to test.")
-
 
 
 
