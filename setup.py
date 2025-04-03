@@ -3,6 +3,7 @@ import sys
 import subprocess
 import shutil
 import re 
+import platform 
 
 try:
     from setuptools import setup
