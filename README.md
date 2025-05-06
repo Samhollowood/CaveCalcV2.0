@@ -26,9 +26,9 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chemistry. It maintains the core fundamentals of the original while adding several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
 
 - Source code: `/cavecalc/`  
-- Example scripts: `/examples/`  
-- API model run examples: `/API_models/`  
-- Scripts for the Graphical User Interface (GUI): `/scripts/`  
+- Original example scripts: `/examples/`  
+- New example scripts for API models: `/API_models/`  
+- Scripts to open the Graphical User Interface (GUI): `/scripts/`  
 
 **Key updates include:**
 1. The new Carbonate Data Analyzer (CDA) mode.  
@@ -51,7 +51,7 @@ CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chem
 
 Installing CaveCalcV2.0 requires the use of the terminal (Mac/Linux) or command prompt (Windows). 
 
-The git command (https://git-scm.com/downloads) is recommened for this particular method of installation. Alternatively, users may download the repository as a zip-file, locally.
+The git command (https://git-scm.com/downloads) is recommened for this particular method of installation. Alternatively, users may download the repository as a zip-file for this repository locally.
 
 1. Clone the repository:
 ```shell
@@ -67,19 +67,21 @@ cd CaveCalcV2.0
 ```shell
 conda activate base
 ```
-
+To activate the base anaconda environment. Or you may wish to use your own environment 
 
 4. Install the CaveCalcV2.0 package:
 ```shell
 pip install .
 ```
 
-Or if you would rather install the package as an .egg file (it will be deprecated soon)
+Or if you would rather install the package as an .egg file (NOTE: .egg as a method of installation will be deprecated soon):
 ```shell
 python setup.py install
 ```
 
-5. Verify installation by running example:
+If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
+
+5. You can verify the installation by running an example:
 ```shell
 cd examples/
 ```
@@ -87,7 +89,7 @@ cd examples/
 python example1.py
 ```
 
-6. Open the GUI by:
+6. You can now open the GUI by:
 ```shell
 cd ../scripts
 ```
@@ -98,31 +100,31 @@ python cc_input_gui.py
 
 
 ## Usage
-CaveCalcV2.0 allows users to run single models, multiple models, or models alongside the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
+The CaveCalcV2.0 module should now be in your python or anaconda environment. Users can use CaveCalcV2.0 via the GUI or by settings up a .py script to run (see below). Doing this, users can run models, multiple models, or models alongside the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
 
 - The **Graphical User Interface (GUI)**  
 - The `run_models.py` script (in `API_models/`)  
 - The `run_CDA.py` script (in `API_models/`)
-- By creating your own script
+- By creating your own .py script
 
-`run_models.py` is a python file that sets a settings dictionary that defines all model inputs as their defualt values. The `run_CDA.py` is a python file that has a select number of inputs, with some inputs defined in an array, intended to guide the user on the CDA. In both these scripts, model inputs can be **added, removed, or modified** to suit the users study. Removing model inputs from the settings dictionary will mean their default values (`cavecalc/data/deafaults.py`) are applied. A complete list of all model inputs are available in **manual.pdf**, Table 3.  
+`run_models.py` is a python file that contains a settings dictionary, which defines all possible model inputs as their defualt values. The `run_CDA.py` is similar, but is catered to the new Carbonate Data Analyser (CDA) mode. It is a python file that has a select number of important inputs, with some inputs defined in an array, intended to guide the user on the CDA. In both these scripts, model inputs can be **added, removed, or modified** to suit the users study. Removing model inputs from the settings dictionary will mean their default values (`cavecalc/data/deafaults.py`) are applied. A complete list of all model inputs are available in **manual.pdf**, Table 3.  
 
 Integrated development environments (**Spyder**, **Jupyter Notebook**) are recommended for editing `.py` scripts. More advanced users may want to create their own `.py` scripts, using the `run_models.py`  or `run_CDA.py` as a template. 
 
 
 ### Aragonite Precipitation 
-In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as `Aragonite' will initialise Aragonite precipitation. There is no requirement to actively change the database files. The precipitate_mineralogy input feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
+In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy via a drop-down menu. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as a string `Aragonite' will initialise Aragonite precipitation during model runs. There is no requirement to actively change the database files. The precipitate_mineralogy variable feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
 
 ##Carbonate Data Analyser (CDA)
-The new Carbonate Data Analyser (CDA) mode aims to automate the comparison betweenn CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
+The new Carbonate Data Analyser (CDA) mode aims to automate the comparison between CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
 
-- **`user_filepath`**: Users are required to important their measured speleothem data by providing the path.  
+- **`user_filepath`**: Users are required to important their measured speleothem data by providing the path as a string.  
 - **`tolerance_X`**: Users can optionally define tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). These tolerance intervals define what consitutues a match.  
-- **Model Inputs**: Users will need to defined model input varaubles as per standard CaveCalc model runs, focusing on model inputs they want to constrain.  
+- **Model Inputs**: Users will need to define model input variables as per standard CaveCalc model runs, focusing on model inputs they want to constrain.  
 
 A template (`Example_input.csv`) is provided for the measured speleothem data file. This can be modified by adding/removing proxies and rows. 
 
-Within the GUI, users can find the required inputs for the CDA in the CDA Settings headings, which allows users to import their measured data and define tolerance intervals.
+Within the GUI, users can find the required inputs for the CDA in the CDA Settings heading, which allows users to import their measured data and define tolerance intervals. The rest of the GUI can be used to define the model input variables.
 
 ### Optional: Defining Output Directory
 By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
@@ -141,20 +143,14 @@ python run_models.py
 
 
 ### When the CDA is functioning correctly:
-
 It will print:
 
 ```shell
-CDA is initialised
+CDA was initialised for the first time in the output directory. Created new 'Path/to/Output_Directory/CDA_Results/All_outputs.csv
 ```
-It will then create a CDA_Results folder in the output directory, which will store matches in a .csv file.
-For the first match with the measured data, it will print:
+The CDA creates a new CDA_Results folder within the output directory, which will store matches in a .csv file.
 
-```shell
-CDA was initialised for the first time in the output directory. Created new All_ouputs.csv file.
-```
-
-Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA and not replace the previous batch.
+Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA AND not replace the previous batch of runs.
 
 
 ## Output
@@ -167,11 +163,11 @@ When running **CaveCalcV2.0**, whether it be with the CDA, or without, three mod
    A pickle file that contains all the model results.
 
 3. A new **`settings_results.csv`**  
-   This is a CSV file that consolidates both the input settings and the model outputs in a single, readable format. Model outputs can be osberved for each stage of speleothem chemistry per model (e.g., soil-water equilibriation, bedrock dissolution and C02-degassing and carbonate precipitation). 
+   This is a new CSV file that consolidates both the input settings and the model outputs in a single, readable format. Model outputs can be osberved for each stage of speleothem chemistry per model (e.g., soil-water equilibriation, bedrock dissolution and C02-degassing and carbonate precipitation). 
 
-There are several model output keys, and the definition of each can be found in the manual.pdf, Table 4
+There are several model output keys, and the definition of each can be found in the manual.pdf, Table 4. Each model ouput willl have an array of values, which will represent different parts of speleothem chemistry (i.e the values after soil-water equilibriation, bedrock dissolution and C02-degassing steps). 
 
-If the CDA is initialised, it will create a CDA_Results folder within the output directory with additional output files:
+If the CDA was initialised, it will create a CDA_Results folder within the output directory with additional output files:
 ```shell
 cd /path/to/out_dir/CDA_Results/
 ```
@@ -192,7 +188,7 @@ containing:
 
 
 ## Plotting
-CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archive models to produce plots. To do this via python scripting, add the following lines to the bottom of the run_CDA.py or run_models.py script:
+CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archived models to produce plots. To do this via python scripting, add the following lines to the bottom of the run_CDA.py or run_models.py script:
 
 ```python
 import cavecalc.analyse as cca
@@ -203,10 +199,10 @@ e = cca.Evaluate()  # Initializes the Evaluate class
 e = load_data(out_dir) #Load data 
 e1 = e.filter_by_index(0, n=True) #Filters out first model step
 
-#Example plot of fCa on x-axis. d13C on y-axis (i.e. outputs). Different lines will be coloured depending on the soil_pCO2 (i.e. inputs), and added to the legend
+#Example plot of fCa on x-axis and d13C_Calcite on y-axis. Different lines will be coloured depending on the soil_pCO2 (i.e. inputs), and added to the legend
 e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2')
 ```
-This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each input value in label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
+This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each input value within label_with. In the example above, the d13C_Calcite will be plotted against f_ca, with each colored line corresponding to a specific input value of soil_pCO2. These can be replaced with any outputs for the x_key and y_key and inputs for label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
 
 There is also an option to plot by points:
 ```python
