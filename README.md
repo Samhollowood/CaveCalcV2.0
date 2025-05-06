@@ -23,7 +23,7 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 
 
 ## **Introduction**
-CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chemistry. It introduces several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
+CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chemistry. It maintains the core fundamentals of the original while adding several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
 
 - Source code: `/cavecalc/`  
 - Example scripts: `/examples/`  
