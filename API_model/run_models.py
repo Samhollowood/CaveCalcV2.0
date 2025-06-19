@@ -96,7 +96,7 @@ model.save()
 
 # Save model outputs as .csvs
 e = cca.Evaluate()
-e.load_data(dir_model)
-e.save_csvs(dir_model)
+e.load_data(s['out_dir'])
+e.save_csvs(s['out_dir'])
 
 
