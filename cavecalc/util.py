@@ -344,7 +344,6 @@ class PostProcessor(object):
         
         self.s = Simulator
         self.calculate_f()
-        self.VSMOW_to_VPDB()
         self.calculate_XCa()
         self.UCa_mmol_to_mol()
         self.tidy()
@@ -374,46 +373,6 @@ class PostProcessor(object):
         self.s.output['f_ca'] = [x / init_ca for x in ca]
         self.s.output['f_c'] = [x / init_c for x in c]
         
-  
-    
-    def VSMOW_to_VPDB(self):
-        # Ensure data is loaded
-        if not self.s.output:
-            print("Warning: self.s.output is empty!")
-            return
-
-
-        # Get mineralogy setting
-        mineralogy = self.s.settings.get('precipitate_mineralogy', "").strip()
-
-
-        # Access d18O data based on mineralogy
-        if mineralogy == 'Calcite':
-            d18O = self.s.output.get('I_R(18O)_Calcite', [])
-        elif mineralogy == 'Aragonite':
-            d18O = self.s.output.get('I_R(18O)_Aragonite', [])
-        else:
-            print("Unsupported mineralogy setting:", mineralogy)
-            return
-
-        # Check if d18O was found
-        if not d18O:
-            print(f"Warning: {mineralogy} data not found in self.s.output!")
-            return
-
-        # Process data, skipping the first two indices
-        d18O_PDB = []
-        for i, x in enumerate(d18O):
-            if i < 2:
-                d18O_PDB.append(np.nan)
-            else:
-                d18O_PDB.append(x * 0.97001 - 29.99 if x is not None else np.nan)
-
-        # Save results back to self.s.output
-        self.s.output['d18O_PDB'] = d18O_PDB
-        
-
-          
                 
 
     def calculate_XCa(self):
@@ -428,7 +387,7 @@ class PostProcessor(object):
         
         a = self.s.output
         
-        trace_elements = ['Ba', 'Sr', 'Mg','U(6)']
+        trace_elements = ['Ba', 'Sr', 'Mg','U']
         output_names = ['Ba', 'Sr', 'Mg', 'U']
         dissolved_ratios = {k : [] for k in trace_elements}
         precipitate_ratios = {k : [] for k in trace_elements}
@@ -696,14 +655,41 @@ class PostProcessor(object):
                base_record['d13C residual'] = residual
                  
                
-               d18O_residual  = d18O_spel - d18O_data[index] if d18O_data else None
-               MgCa_residual = MgCa_spel - MgCa_data[index] if MgCa_data else None
-               dcp_residual = dcp_spel - dcp_data[index] if index < len(dcp_data) and dcp_spel and (dcp_data[index] not in [None, '',float('nan')]) else None 
-               d44Ca_residual = d44Ca_spel - d44Ca_data[index] if index < len(d44Ca_data) and d44Ca_spel and (d44Ca_data[index] not in [None, '',float('nan')]) else None 
-               SrCa_residual = SrCa_spel - SrCa_data[index] if SrCa_data else None
-               BaCa_residual = BaCa_spel - BaCa_data[index] if BaCa_data else None
-               UCa_residual = UCa_spel - UCa_data[index] if UCa_data else None
-            
+               d18O_residual = (
+                   d18O_spel - d18O_data[index] 
+                   if d18O_data and index < len(d18O_data) and d18O_spel and d18O_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               MgCa_residual = ( 
+                   MgCa_spel - MgCa_data[index] 
+                   if MgCa_data and index < len(MgCa_data) and MgCa_spel and MgCa_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               dcp_residual = ( 
+                   dcp_spel - dcp_data[index] 
+                   if dcp_data and index < len(dcp_data) and dcp_spel and dcp_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               d44Ca_residual = ( 
+                   d44Ca_spel - d44Ca_data[index] 
+                   if d44Ca_data and index < len(d44Ca_data) and d44Ca_spel and d44Ca_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               SrCa_residual = ( 
+                   SrCa_spel - SrCa_data[index] 
+                   if SrCa_data and index < len(SrCa_data) and SrCa_spel and SrCa_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               BaCa_residual = ( 
+                   BaCa_spel - BaCa_data[index] 
+                   if BaCa_data and index < len(BaCa_data) and BaCa_spel and BaCa_data[index] not in [None, '', float('nan')] 
+                   else None) 
+               
+               UCa_residual = (
+                   UCa_spel - UCa_data[index] 
+                   if UCa_data and index < len(UCa_data) and UCa_spel and UCa_data[index] not in [None, '', float('nan')] 
+                   else None)
+
                # Check if residuals are within tolerance
                residual_check = abs(residual) <= tolerance if d13C_data else True
                d18O_check = abs(d18O_residual) <= d18O_tolerance if d18O_data else True
