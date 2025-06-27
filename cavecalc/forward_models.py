@@ -110,7 +110,7 @@ class ForwardModels(object):
 
         if output_dir:  
             if not os.path.isdir(output_dir): 
-                os.mkdir(output_dir)
+                os.makedirs(output_dir, exist_ok=True)  # Create nested dirs safely
             self.output_dir = output_dir
         else: self.output_dir=os.getcwd()
 
