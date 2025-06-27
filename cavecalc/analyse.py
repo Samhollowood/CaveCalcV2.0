@@ -678,7 +678,7 @@ class Evaluate(object):
   
         
         # Plot for Flow Path Hydrology
-        variables_flow_path = ['gas_volume', 'fCa']
+        variables_flow_path = ['gas_volume', 'f_ca']
         
         # Titles for the subplots [A], [B], [C], [D] 
         subplot_titles = [r'[A]', r'[B]'] 
@@ -741,7 +741,7 @@ class Evaluate(object):
                 color = 'darkgreen' if var == 'gas_volume' else 'darkblue'  # Use dark green for gas volume
  
                 # Set marker to 's' only for fca, otherwise 'o' 
-                if var == 'fCa' :
+                if var == 'f_ca' :
                     marker = 's'
                 else:
                     marker = 'o'
@@ -760,7 +760,7 @@ class Evaluate(object):
                 # Set the y-label with the specific changes for gas volume and fca 
                 if var == 'gas volume (L/kg)':  
                     axs_flow_path[i].set_ylabel('gas-to-water ratio (L/kg)')  # Updated label 
-                elif var == 'fCa': 
+                elif var == 'f_ca': 
                         axs_flow_path[i].set_ylabel('fCa')  # Updated label for f_c 
                 else:  
                     axs_flow_path[i].set_ylabel(var)
@@ -1070,8 +1070,8 @@ class Evaluate(object):
                 miscellaneous_values_y_position -= 0.025  # Adjust position for next input 
                 
          
-        fig.text(0.5, 0.89, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
-        bedrock_values_y_position = 0.87 
+        fig.text(0.5, 0.92, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
+        bedrock_values_y_position = 0.91
         
         # Split bedrock values into two columns 
         bedrock_values = bedrock_XCa_text.split(', ') 
@@ -1082,7 +1082,7 @@ class Evaluate(object):
             col = index // num_per_column  # Determine column (0 or 1) 
             row = index % num_per_column  # Determine row position within the column 
             x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns 
-            y_pos = bedrock_values_y_position - row * 0.025 
+            y_pos = bedrock_values_y_position - row * 0.015 
             fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
             
         # Add gas_volume under bedrock inputs   
@@ -1090,7 +1090,7 @@ class Evaluate(object):
         if not row.empty:     
             # Update the annotation to reflect 'gas-to-water ratio'  
             variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"   
-            fig.text(0.42, bedrock_values_y_position - (num_per_column + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
+            fig.text(0.42, bedrock_values_y_position - (num_per_column + 1) * 0.015, variable_text, ha='center', va='center', fontsize=10, color='black') 
 
         # Position for the 'User soil inputs' heading 
         fig.text(0.20, 0.91, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
