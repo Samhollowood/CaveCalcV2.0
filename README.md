@@ -6,7 +6,8 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/main)
 ![GitHub License](https://img.shields.io/github/license/Samhollowood/CaveCalcV2.0)
-![GitHub Release](https://img.shields.io/github/v/release/Samhollowood/CaveCalcV2.0)
+![Github Release](https://img.shields.io/github/v/release/Samhollowood/CaveCalcV2.0?include_prereleases&tag=Beta)
+
 
 ## Table of Contents
 - [Introduction](#introduction)
