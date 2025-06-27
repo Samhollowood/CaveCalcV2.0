@@ -246,7 +246,7 @@ class DBReader(object):
         """
         
         a = None
-        pat = "([ \t]*?)-isotope([ \t]*?)\[{!s}\][ \t]"
+        pat = r"([ \t]*?)-isotope([ \t]*?)\[{!s}\][ \t]"
         c = re.compile(pat.format(isotope))
         with open(self.db, 'r') as f:
             for line in f:
@@ -428,7 +428,8 @@ class PostProcessor(object):
         
         a = self.s.output
         
-        trace_elements = ['Ba', 'Sr', 'Mg','U']
+        trace_elements = ['Ba', 'Sr', 'Mg','U(6)']
+        output_names = ['Ba', 'Sr', 'Mg', 'U']
         dissolved_ratios = {k : [] for k in trace_elements}
         precipitate_ratios = {k : [] for k in trace_elements}
         
@@ -457,13 +458,10 @@ class PostProcessor(object):
                 else:
                         precipitate_ratios[x].append( 0 )
          
-        for x in trace_elements:
-            self.s.output[x+'/Ca(mol/mol)'] = dissolved_ratios[x]
-            precipitate_suffix = '_Calcite' if self.s.settings['precipitate_mineralogy'] == 'Calcite' else '_Aragonite'
-            self.s.output[x+'/Ca(mol/mol)' + precipitate_suffix] = precipitate_ratios[x]
-
-           # self.s.output[x+'/Ca(mol/mol)_Calcite'] = precipitate_ratios[x] 
-           
+        for x_in, x_out in zip(trace_elements, output_names): 
+            self.s.output[x_out+'/Ca(mol/mol)'] = dissolved_ratios[x_in] 
+            precipitate_suffix = '_Calcite' if self.s.settings['precipitate_mineralogy'] == 'Calcite' else '_Aragonite' 
+            self.s.output[x_out+'/Ca(mol/mol)' + precipitate_suffix] = precipitate_ratios[x_in]
             
     def UCa_mmol_to_mol(self):
         """UCa mmol/mol to mol/mol
@@ -546,15 +544,15 @@ class PostProcessor(object):
             baca_column = [col for col in df.columns if 'baca' in col.lower()]
             uca_column = [col for col in df.columns if 'uca' in col.lower()]
 
-            age_data = df[age_column[0]].dropna().tolist()
-            d13C_data = df[d13C_columns[0]].dropna().tolist() if d13C_columns else None
-            d18O_data = df[d18O_columns[0]].dropna().tolist() if d18O_columns else None
-            MgCa_data = df[mgca_column[0]].dropna().tolist() if mgca_column else None
-            dcp_data = df[dcp_column[0]].dropna().tolist() if dcp_column else None
-            d44Ca_data = df[d44Ca_column[0]].dropna().tolist() if d44Ca_column else None
-            SrCa_data = df[srca_column[0]].dropna().tolist() if srca_column else None
-            BaCa_data = df[baca_column[0]].dropna().tolist() if baca_column else None
-            UCa_data = df[uca_column[0]].dropna().tolist() if uca_column else None
+            age_data = df[age_column[0]].tolist()
+            d13C_data = df[d13C_columns[0]].tolist() if d13C_columns else None
+            d18O_data = df[d18O_columns[0]].tolist() if d18O_columns else None
+            MgCa_data = df[mgca_column[0]].tolist() if mgca_column else None
+            dcp_data = df[dcp_column[0]].tolist() if dcp_column else None
+            d44Ca_data = df[d44Ca_column[0]].tolist() if d44Ca_column else None
+            SrCa_data = df[srca_column[0]].tolist() if srca_column else None
+            BaCa_data = df[baca_column[0]].tolist() if baca_column else None
+            UCa_data = df[uca_column[0]].tolist() if uca_column else None
           
             
         except Exception as e:
@@ -615,7 +613,6 @@ class PostProcessor(object):
         
         for i in range(num_data_points):
            d13C_spel = self.s.output.get(keys['d13C'], [None])[i]
-           #d18O_spel =  self.s.output.get(keys['d18O'], [None])[i]
            MgCa_spel =  self.s.output.get(keys['MgCa'], [None])[i]
            SrCa_spel =  self.s.output.get(keys['SrCa'],  [None])[i]
            BaCa_spel =  self.s.output.get(keys['BaCa'], [None])[i]
@@ -625,8 +622,7 @@ class PostProcessor(object):
            
 
            d18O_spel =  self.s.output.get(keys['d18O'], [None])[i] 
-           # Convert d18O_spel if present
-           d18O_spel = (d18O_spel * 0.97001) - 29.99 if d18O_spel is not None else None
+
            
       
            MgCa_spel = MgCa_spel * 1000 if MgCa_spel is not None else None 
@@ -638,8 +634,7 @@ class PostProcessor(object):
            # Skip to the next iteration if d13C_spel is None
            d13C_spel = -999 if d13C_spel is None else d13C_spel
            d18O_spel = -999 if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
-           d44Ca_spel = -999 if d44Ca_spel is None or d44Ca_spel != d44Ca_spel else d44Ca_spel
-
+        
            Gkeys = [
     'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
     'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba', 
@@ -655,7 +650,7 @@ class PostProcessor(object):
            f_ca = self.s.output.get('f_ca',[])
            f_ca = f_ca[i]
            ca = self.s.output.get('Ca(mol/kgw)',[])
-           ca = ca[i]
+           ca = ca[1]
  
            d13C_DIC = self.s.output.get('d13C',[])
            d13C_DIC = d13C_DIC[1]
@@ -663,14 +658,14 @@ class PostProcessor(object):
          
         
            # Define the keys to keep from self.s.settings **ADD atmo_exhange** 
-           desired_keys = [ 
+           desired_keys = [ 'temperature', 'kinetics_mode', 
                'atm_O2', 'atm_d18O', 'atm_pCO2', 'atm_d13C', 'atm_R14C',
                'soil_O2', 'soil_R14C', 'soil_d13C', 'soil_pCO2',  
                'soil_Ba', 'soil_Ca', 'soil_Mg', 'soil_Sr', 'soil_U',  
                'bedrock_BaCa', 'bedrock_MgCa', 'bedrock_SrCa',  
                'bedrock_UCa', 'bedrock_d13C', 'bedrock_d44Ca',  
                'bedrock_mineral', 'bedrock_pyrite',  
-               'gas_volume', 'reprecip', 'cave_pCO2','cave_R14C','cave_d13C', 'temperature', 'kinetics_mode', 'precipitate_mineralogy']
+               'gas_volume', 'reprecip', 'precipitate_mineralogy', 'cave_pCO2','cave_R14C','cave_d13C']
            
 
            # Iterate through the data points
@@ -682,25 +677,29 @@ class PostProcessor(object):
             
                # Base dictionary with common keys for CDA.xlsx  
                base_record = {  
-                   'Age': age_data[index],  
-                   'd13C': d13C_value, 
-                   'CaveCalc d13C': d13C_spel, 
-                   'd13C residual': residual, 
-                   'fCa': f_ca, 
-                   'd13C_init': d13C_DIC,
-                   'Ca (mol/kgw)': ca,
-                   } 
+                   'Age': age_data[index]} 
                
-               # Update base_record with all settings from self.s.settings
-               # Filter and add desired settings to base_record 
-               filtered_settings = {key: self.s.settings[key] for key in desired_keys if key in self.s.settings} 
-               base_record.update(filtered_settings)
+               for key in desired_keys: 
+                   if key in self.s.settings: 
+                       base_record[key] = self.s.settings[key] 
+                       
+                # After adding 'reprecip', insert your three keys before continuing 
+                   if key == 'reprecip': 
+                       base_record['d13C_init'] = d13C_DIC 
+                       base_record['Ca (mol/kgw)_init'] = ca 
+                       base_record['f_ca'] = f_ca
+
+               
+               # Add these columns at the end 
+               base_record['d13C'] = d13C_value 
+               base_record['CaveCalc d13C'] = d13C_spel 
+               base_record['d13C residual'] = residual
                  
                
                d18O_residual  = d18O_spel - d18O_data[index] if d18O_data else None
                MgCa_residual = MgCa_spel - MgCa_data[index] if MgCa_data else None
-               dcp_residual = dcp_spel - dcp_data[index] if dcp_data else None
-               d44Ca_residual = d44Ca_spel - d44Ca_data[index] if d44Ca_spel is not None and d44Ca_data and d44Ca_data[index] is not None else None 
+               dcp_residual = dcp_spel - dcp_data[index] if index < len(dcp_data) and dcp_spel and (dcp_data[index] not in [None, '',float('nan')]) else None 
+               d44Ca_residual = d44Ca_spel - d44Ca_data[index] if index < len(d44Ca_data) and d44Ca_spel and (d44Ca_data[index] not in [None, '',float('nan')]) else None 
                SrCa_residual = SrCa_spel - SrCa_data[index] if SrCa_data else None
                BaCa_residual = BaCa_spel - BaCa_data[index] if BaCa_data else None
                UCa_residual = UCa_spel - UCa_data[index] if UCa_data else None
@@ -709,8 +708,8 @@ class PostProcessor(object):
                residual_check = abs(residual) <= tolerance if d13C_data else True
                d18O_check = abs(d18O_residual) <= d18O_tolerance if d18O_data else True
                MgCa_check = abs(MgCa_residual) <= mg_tolerance if MgCa_data else True
-               dcp_check = abs(dcp_residual) <= dcp_tolerance if dcp_data else True
-               d44Ca_check = abs(d44Ca_residual) <= d44Ca_tolerance if d44Ca_data is not None else True
+               dcp_check = abs(dcp_residual) <= dcp_tolerance if dcp_residual is not None and not math.isnan(dcp_residual) else True
+               d44Ca_check = abs(d44Ca_residual) <= d44Ca_tolerance if d44Ca_residual is not None and not math.isnan(d44Ca_residual) else True
                SrCa_check = abs(SrCa_residual) <= sr_tolerance if SrCa_data else True
                BaCa_check = abs(BaCa_residual) <= ba_tolerance if BaCa_data else True
                UCa_check = abs(UCa_residual) <= u_tolerance if UCa_data else True
@@ -775,7 +774,7 @@ class PostProcessor(object):
                 'd13C': d13C_value, 
                 'CaveCalc d13C': d13C_spel, 
                 'd13C residual': residual, 
-                'fCa': f_ca, 
+                'f_ca': f_ca, 
                 'd13C_init': d13C_DIC,
                 'Ca (mol/kgw)': ca,  
                 } 
@@ -798,18 +797,21 @@ class PostProcessor(object):
                 })
             
                if dcp_data: 
+                   dcp_val = dcp_data[index]
                    all_all_records.update({
-                    'DCP': dcp_data[index], 
+                    'DCP': dcp_val, 
                     'CaveCalc DCP': dcp_spel,
-                    'DCP residual': dcp_data[index] -  dcp_spel, 
+                    'DCP residual': dcp_data[index] -  dcp_spel if dcp_spel is not None and dcp_val is not None else None, 
                 }) 
             
                if d44Ca_data: 
-                   all_all_records.update({
-                    'd44Ca': d44Ca_data[index], 
-                    'CaveCalc d44Ca': d44Ca_spel,
-                    'd44Ca residual': d44Ca_data[index] -  d44Ca_spel,
-                })
+                   d44Ca_val = d44Ca_data[index] 
+                   all_all_records.update({ 
+                       'd44Ca': d44Ca_val, 
+                       'CaveCalc d44Ca': d44Ca_spel, 
+                       'd44Ca residual': d44Ca_val - d44Ca_spel if d44Ca_spel is not None and d44Ca_val is not None else None,
+               })
+
                    
                if SrCa_data: 
                    all_all_records.update({
