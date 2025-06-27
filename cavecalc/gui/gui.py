@@ -561,13 +561,33 @@ class CCInputGUI(object):
             i += 1
             for a, b in self._loop_gen(layout_number):
                 color = 'red' if a in ['soil_d13C', 'soil_pCO2', 'cave_pCO2', 'gas_volume','temperature','atm_d18O'] else 'black'
-                if b == 'A': # text with range
+                if b == 'A':   
                     label = Label(frame, text=ns(a), fg=color) 
                     label.grid(row=i, sticky=W) 
-                    # Add tooltip for variable if available 
-                    Tooltip(label, tooltips_variables.get(a, 'No information available'))
-                    x = InputsRangeWidget(frame, self.settings[a])
-                    x.grid(row=i, column=1, sticky=W)
+                
+                    Tooltip(label, tooltips_variables.get(a, 'No information available')) 
+                    
+                    x = InputsRangeWidget(frame, self.settings[a]) 
+                    x.grid(row=i, column=1, sticky=W) 
+                    
+                    if a == 'atm_d18O': 
+                        def convert_to_vpdb(var=self.settings[a]): 
+                            try: 
+                                # Get the input string and split by commas 
+                                vsmow_values = var.get().split() 
+                                # Convert each value
+                                vpdb_values = [] 
+                                for val in vsmow_values: 
+                                    val = val.strip() 
+                                    if val:  
+                                        vsmow = float(val) 
+                                        vpdb = (0.970001 * vsmow) - 29.99 
+                                        vpdb_values.append(str(round(vpdb, 4)))  
+                                var.set(' '.join(vpdb_values)) 
+                            except ValueError: 
+                                messagebox.showerror("Conversion Error", "Please enter valid δ¹⁸O value(s), separated by commas.") 
+                        Button(frame, text="→ VPDB", command=convert_to_vpdb).grid(row=i, column=2, sticky=W)
+
                 elif b == 'B': # text without range
                     label = Label(frame, text=ns(a), fg=color) 
                     label.grid(row=i, sticky=W) 
