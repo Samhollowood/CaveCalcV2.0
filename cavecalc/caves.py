@@ -87,7 +87,6 @@ class Solution(object):
         self.init_C = None # initial solution C concentration
         self.init_pH = None # initial solution pH (improved estimate)
         self.init_13c_aq = None # DIC d13c_aq
-        self.init_pe = None 
  
  
         self._get_init_co()
@@ -233,7 +232,7 @@ class Solution(object):
             
         self.init_C = dummy_simulator.get('C(mol/kgw)')*1000 # initial [C]
         self.init_pH = dummy_simulator.get('pH')    # improved estimate of pH
-        self.init_pe = dummy_simulator.get('pe')    # improved estimate of pH 
+
 
        
         
@@ -253,7 +252,6 @@ class Solution(object):
         t = self.s.settings['temperature']
         fmt = { 'temp'  :   t,
                 'ph'    :   self.init_pH, 
-                 'pe'    :   self.init_pe, 
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
@@ -288,7 +286,6 @@ class Solution(object):
         
         d_conv = [self.s.settings['init_d13C']]
         ph_conv = [self.init_pH]
-        pe_conv = [self.init_pe]
         c_conv = [self.init_C]
         
         dummy_simulator.ipq_buffer([dummy_chemistry, dummy_gas])
@@ -317,8 +314,7 @@ class Solution(object):
                                            self.init_13c_aq    )
         
         fmt = { 'temp'  :   self.s.settings['temperature'],
-                'ph'    :   self.init_pH,
-                'pe'    : self.init_pe,   
+                'ph'    :   self.init_pH, 
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
