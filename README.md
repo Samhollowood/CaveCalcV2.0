@@ -130,6 +130,7 @@ You can **add, remove, or modify** any inputs to tailor your simulation. If a ke
 #### `run_CDA.py`
 
 Similar in structure to `run_models.py`, this script is optimized for the new **CDA mode**, focusing on a core set of inputs. Some are defined as arrays to support batch processing and exploration of parameter space.
+The `run_CDA.py` uses the measured data from `Example_CDA.csv`.
 
 A full list of model inputs is provided in **`manual.pdf`**, Table 3.
 
