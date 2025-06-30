@@ -31,7 +31,7 @@ s =  {#Environmental model inputs
       'soil_pCO2': [1000, 2000, 5000, 8000],
       'gas_volume': [0,50, 200, 500],
       'cave_pCO2': [260],
-      'atm_d18O': [-39,-44], #Conveted to VPDB
+      'atm_d18O': [-6,-7], #Conveted to VPDB
       'bedrock_MgCa': [50,100,150],
 
       #And any other environmental model inputs (see run_models.py)
