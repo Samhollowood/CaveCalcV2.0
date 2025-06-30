@@ -101,7 +101,12 @@ python cc_input_gui.py
 
 
 ## Usage
-The CaveCalcV2.0 module should now be in your python or anaconda environment. Users can use CaveCalcV2.0 via the GUI or by settings up a .py script to run (see below). Doing this, users can run models, multiple models, or models alongside the Carbonate Data Analyser (CDA). Detailed instructions are available in **manual.pdf**. In summary, users can run models via:
+The CaveCalcV2.0 module should now be in your python or anaconda environment. 
+Models can be run via the GUI or by running a .py file. 
+Users can run a single models, multiple (a batch) of models, and models alongside the new Carbonate Data Analyser (CDA) mode.
+Detailed instructions are available in **manual.pdf**. 
+
+To summarise, users can run models via:
 
 - The **Graphical User Interface (GUI)**  
 - The `run_models.py` script (in `API_models/`)  
