@@ -14,7 +14,7 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 - [Features](#features)  
 - [Installation](#installation)
 - [Usage](#usage)
-- [Carbonate Data Analyser (CDA)](#carbonate-data-analyser-(cda))
+- [Carbonate Data Analyser](#carbonate-data-analyser)
 - [Aragonite Precipitation](#aragonite-precipitation)
 - [Output](#output)
 - [Plotting](#plotting)
@@ -142,7 +142,7 @@ cd API_model
 python run_models.py
 ```
 
-## Carbonate Data Analyser (CDA)
+## Carbonate Data Analyser
 
 The **Carbonate Data Analyser** (CDA) automatically compares **CaveCalcV2.0** model outputs with **measured speleothem data**.
 
