@@ -15,6 +15,7 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Carbonate Data Analyser (CDA)](#CDA)
+- [Aragonite Precipitation](#aragonite)
 - [Output](#output)
 - [Plotting](#plotting)
 - [Citing this work](#citing-this-work)
@@ -141,9 +142,6 @@ cd API_model
 python run_models.py
 ```
 
-### Aragonite Precipitation 
-In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy via a drop-down menu. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as a string `Aragonite' will initialise Aragonite precipitation during model runs. There is no requirement to actively change the database files. The precipitate_mineralogy variable feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
-
 ## Carbonate Data Analyser (CDA)
 The new Carbonate Data Analyser (CDA) mode aims to automate the comparison between CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
 
@@ -180,6 +178,32 @@ CDA was initialised for the first time in the output directory. Created new 'Pat
 The CDA creates a new CDA_Results folder within the output directory, which will store matches in a .csv file.
 
 Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA AND not replace the previous batch of runs.
+
+## Aragonite Precipitation
+
+You can simulate **aragonite** as the speleothem precipitate in either the **GUI** or via a **Python script**.
+
+---
+
+### In the GUI
+
+1. Navigate to the **Calcite / Aragonite** section.
+2. Use the drop-down menu labeled `precipitate_mineralogy`.
+3. Select `Aragonite`.
+
+CaveCalc will automatically switch to the correct thermodynamic database (`Aragonite.dat`).  
+There is **no need to manually edit** any database files.
+
+---
+
+### In a Python Script
+
+If you're running CaveCalc via a `.py` file (e.g., `run_models.py`), define the speleothem mineralogy in the `settings` dictionary using:
+
+```python
+'precipitate_mineralogy': 'Aragonite'
+```
+
 
 
 ## Output
