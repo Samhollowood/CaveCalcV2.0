@@ -137,7 +137,7 @@ A full list of model inputs is provided in **`manual.pdf`**, Table 3.
 To execute a model run, open your terminal or command prompt, navigate to the appropriate directory, and run:
 
 ```bash
-cd API_models
+cd API_model
 python run_models.py
 ```
 
