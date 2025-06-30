@@ -482,7 +482,14 @@ class PostProcessor(object):
         all_outputs_csv = os.path.join(event_analyser_results_dir, 'All_outputs.csv')
         matches_csv = os.path.join(event_analyser_results_dir, 'Matches.csv')
 
-        file_path = self.s.settings['user_filepath']
+        file_path_raw = self.s.settings['user_filepath']
+        # If the path is not absolute, make it relative to this script's directory
+        if not os.path.isabs(file_path_raw):
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir, file_path_raw)
+        else: 
+            file_path = file_path_raw
+
 
         if not file_path:
             return
