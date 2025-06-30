@@ -49,7 +49,7 @@ else:
     
 # Global parameters
 EQ_STEP = True                      #   run initial isotope equilibration step
-PHREEQC_TOLERANCE = 0.1            #   tolerance on phreeqc percent error
+PHREEQC_TOLERANCE = 0.25            #   tolerance on phreeqc percent error
 PRESSURE =  1.001                   #   atmospheric pressure (bar)
 BEDROCK_PHASE_QZ_LEVEL = 1e-10  #   precision of bedrock phase declaration
 
@@ -87,7 +87,9 @@ class Solution(object):
         self.init_C = None # initial solution C concentration
         self.init_pH = None # initial solution pH (improved estimate)
         self.init_13c_aq = None # DIC d13c_aq
-        
+        self.init_pe = None 
+ 
+ 
         self._get_init_co()
         self._get_init_d13c()
      
@@ -182,6 +184,8 @@ class Solution(object):
         #degas_input = CO2_OUT.format(**fmt) # include radiocarbon (unnecessary)
         degas_input = CO2_OUT2.format(**fmt) # no radiocarbon (greater stability)
         return degas_input
+    
+
         
     def _get_init_co(self):
         """Calculate initial solution pH, C and O concentrations.
@@ -196,6 +200,7 @@ class Solution(object):
         # get settings
         fmt = { 'temp'  :   self.s.settings['temperature'],
                 'ph'    :   self.s.settings['soil_pH'],
+                'pe'    : self.s.settings['soil_pe'],
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
@@ -206,7 +211,7 @@ class Solution(object):
                                 self.s.settings['soil_Sr'] +
                                 self.s.settings['soil_U'] +
                                 self.s.settings['soil_Ba'] ),
-                'co2_si':   math.log10(PRESSURE * 1e-6 * self.s.settings['init_pCO2']) }
+                'co2_si':   math.log10(PRESSURE * 1e-6 * self.s.settings['init_pCO2'])}
         
         if self.s.settings['init_O2'] == 0:
             fmt['o2_si'] = -10
@@ -215,7 +220,7 @@ class Solution(object):
         
         # create a dummy PHREEQC solution in a new Simulator to calculate C and
         # O concentrations in initial solution
-        dummy_chemistry = DUMMY_CHEM_CO.format(**fmt)
+        dummy_chemistry = DUMMY_CHEM_CO.format(**fmt) 
         dummy_settings = self.s.settings.copy()
         dummy_settings['phreeqc_log_file_name'] = 'log_{}_init.phr'
         dummy_simulator = Simulator(dummy_settings, self.s.id)
@@ -229,7 +234,11 @@ class Solution(object):
             
         self.init_C = dummy_simulator.get('C(mol/kgw)')*1000 # initial [C]
         self.init_pH = dummy_simulator.get('pH')    # improved estimate of pH
+        self.init_pe = dummy_simulator.get('pe')    # improved estimate of pH 
+
+       
         
+
     def _get_init_d13c(self):
         """Calculate the initial solution d13C.
         
@@ -244,7 +253,8 @@ class Solution(object):
         
         t = self.s.settings['temperature']
         fmt = { 'temp'  :   t,
-                'ph'    :   self.init_pH,
+                'ph'    :   self.init_pH, 
+                 'pe'    :   self.init_pe, 
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
@@ -262,6 +272,7 @@ class Solution(object):
                 'R14C'  :   self.s.settings['init_R14C'],
                 'd44Ca' :   self.s.settings['soil_d44Ca']}
         
+        
         dummy_chemistry = (DUMMY_CHEM_D13C.format(**fmt), 
                             'soln with guesstimate d13C')
 
@@ -278,6 +289,7 @@ class Solution(object):
         
         d_conv = [self.s.settings['init_d13C']]
         ph_conv = [self.init_pH]
+        pe_conv = [self.init_pe]
         c_conv = [self.init_C]
         
         dummy_simulator.ipq_buffer([dummy_chemistry, dummy_gas])
@@ -307,6 +319,7 @@ class Solution(object):
         
         fmt = { 'temp'  :   self.s.settings['temperature'],
                 'ph'    :   self.init_pH,
+                'pe'    : self.init_pe,   
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
@@ -322,9 +335,12 @@ class Solution(object):
                 'd18O'  :   self.s.settings['atm_d18O'],
                 'd13C'  :   self.init_13c_aq,
                 'R14C'  :   init_r14c,
-                'd44Ca' :   self.s.settings['soil_d44Ca']}
+                'd44Ca' :   self.s.settings['soil_d44Ca'],
+                }
         
-        self.initial_chemistry = INITIAL_CHEM.format(**fmt)
+        
+        self.initial_chemistry = INITIAL_CHEM.format(**fmt) 
+        
                                      
         if EQ_STEP:
             return self.initial_chemistry + WATER_EQUILIBRATE, 'initial_water'
@@ -1305,7 +1321,7 @@ class Simulator(object):
             self.settings['kinetics_mode'] == 'diss_only'):
             fmt['saturation_indices'] = ''
         else:
-            fmt['saturation_indices'] = '\n\t-saturation_indices Calcite'
+            fmt['saturation_indices'] = '\n\t-saturation_indices Calcite Aragonite'
                 
         self.selected_output     = SEL_OUTPUT_CORE.format(**fmt)
 
