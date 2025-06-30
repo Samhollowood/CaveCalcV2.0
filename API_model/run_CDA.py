@@ -48,7 +48,7 @@ s =  {#Environmental model inputs
       'tolerance_UCa': 0.3,       #DEFAULT | Tolerance level for UCa (mmol/mol)
 
       #output directory
-      'out_dir' = 'Example_CDA' #Change to an output directory you like
+      'out_dir':'Example_CDA' #Change to an output directory you like
 
      }
 
