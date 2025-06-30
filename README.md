@@ -340,12 +340,42 @@ This project is licensed under the MIT license
 
 ## References and Acknowledgements
 
+## References and Acknowledgements
+
 This repository uses the following open-source software libraries:
 
+- **scipy** (v1.13.1) — Scientific computing tools  
+- **numpy** (v1.26.4) — Fundamental package for numerical computing  
+- **matplotlib** (v3.8.4) — Plotting and visualization library  
+- **inflection** (v0.5.1) — String transformation utilities  
+- **phreeqpy** (v0.6.0) — Python interface for PHREEQC geochemical modeling  
+- **seaborn** (v0.13.2) — Statistical data visualization based on matplotlib  
+- **pandas** (v2.2.3) — Data structures and data analysis tools  
+- **pywin32** (v305.1) — Windows extensions for Python  
 
+### matplotlib dependencies
 
+- **contourpy** (v1.2.0)  
+- **cycler** (v0.11.0)  
+- **fonttools** (v4.51.0)  
+- **kiwisolver** (v1.4.4)  
+- **packaging** (v23.2)  
+- **pillow** (v10.4.0)  
+- **pyparsing** (v3.0.9)  
+- **python-dateutil** (v2.9.0.post0)  
 
+### pandas dependencies
 
+- **pytz** (v2024.1)  
+- **tzdata** (v2023.3)  
+
+### Other dependencies
+
+- **six** (v1.16.0) — Python 2 and 3 compatibility utilities
+
+---
+
+We thank the developers of these libraries for making this work possible.
 
 Samuel J. Hollowood is funded by a UKRI NERC DTP Award (NE/S007474/1) and gratefully acknowledges their support.
 
