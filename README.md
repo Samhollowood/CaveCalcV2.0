@@ -143,34 +143,73 @@ python run_models.py
 ```
 
 ## Carbonate Data Analyser (CDA)
-The new Carbonate Data Analyser (CDA) mode aims to automate the comparison between CaveCalcV2.0 model output and measured speleothem data. There are three key steps to the CDA:
 
-- **`user_filepath`**: Users are required to important their measured speleothem data by providing the path as a string.  
-- **`tolerance_X`**: Users can optionally define tolerance values for proxies (e.g., `d13C`, `d18O`, `d44Ca`, `MgCa`, `SrCa`, `BaCa`, `UCa`). These tolerance intervals define what consitutues a match.  
-- **Model Inputs**: Users will need to define model input variables as per standard CaveCalc model runs, focusing on model inputs they want to constrain.  
+The **Carbonate Data Analyser** (CDA) automatically compares **CaveCalcV2.0** model outputs with **measured speleothem data**.
 
-A template (`Example_input.csv`) is provided for the measured speleothem data file. This can be modified by adding/removing proxies and rows. 
+---
 
-Within the GUI, users can find the required inputs for the CDA in the CDA Settings heading, which allows users to import their measured data and define tolerance intervals. The rest of the GUI can be used to define the model input variables.
+### Step 1: Import Measured Data
 
-### Optional: Defining Output Directory
-By default, outputs are saved in `./cavecalc_output/`. Alternatively, the user can specify the output directory by defining the `out_dir` key in the settings dictionary (`s = {}`). Users may also simply define an output directory on the GUI. 
+Use the `user_filepath` settings key to point to your speleothem data file:
 
-### Running models
-After setting the model inputs, importing the measured data, and setting the tolerance intervals, to run the CDA mode:
+```python
+'user_filepath': 'Path/to/Example_input.csv'
+```
+
+You do not need to populate all columns or cells in the file.
+The CDA will only compare model outputs to the proxies that are filled in.
+
+### Step 2: Define Tolerance Values (Optional)
+
+You can optionally set tolerance values for proxies to define what counts as a match between model and measured data. For example:
+
+- `tolerance_d13C`  
+- `tolerance_d18O`  
+- `tolerance_d44Ca`  
+- `tolerance_MgCa`  
+- `tolerance_SrCa`  
+- `tolerance_BaCa`  
+- `tolerance_UCa`  
+
+If you leave these blank or undefined, CDA will use the default tolerance intervals for each proxy tolerance.
+ 
+### Step 3: Define Model Inputs
+
+Set your model input variables as usual for CaveCalc model runs. Focus on the inputs you want to constrain or explore.
+
+**See usage.**  
+**See manual Table 3 for all available inputs.**
+
+Remember, these are the model inputs you wish to constrain using the CDA (e.g., environmental parameters).
+
+### Optional: Define Output Directory
+
+By default, outputs save to:
+
+./cavecalc_output/
+
+You can override this by setting the `out_dir` key in your settings dictionary:
+
+'out_dir': './my_custom_output/'
+
+Or set the output directory directly in the GUI.
+
+**Note:** The CDA output will be stored within the specified output directory inside a folder named `CDA_Results/`, containing 4 `.csv` files (see output below).
+
+
+## Running models with CDA
+
+After setting the model inputs, importing the measured data, and setting the tolerance intervals, run the CDA mode:
+
 ```shell
 cd CaveCalcV2.0/API_models/
 python run_CDA.py
 ```
-If you do not wish to use the CDA, there is no need to define `user_filepath`. Simply define the model inputs and optionally, `out_dir`, in the settings dictionary and run:
+Via the GUI, click Run CaveCalc with CDA.
 
-```shell
-python run_models.py
-```
+Note: Any updates will be shown in the terminal or command prompt.
 
-
-### When the CDA is functioning correctly:
-It will print:
+When the CDA is functioning correctly, it will print:
 
 ```shell
 CDA was initialised for the first time in the output directory. Created new 'Path/to/Output_Directory/CDA_Results/All_outputs.csv
@@ -178,6 +217,7 @@ CDA was initialised for the first time in the output directory. Created new 'Pat
 The CDA creates a new CDA_Results folder within the output directory, which will store matches in a .csv file.
 
 Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA AND not replace the previous batch of runs.
+
 
 ## Aragonite Precipitation
 
