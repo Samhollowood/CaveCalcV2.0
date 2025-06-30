@@ -14,7 +14,7 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 - [Features](#features)  
 - [Installation](#installation)
 - [Usage](#usage)
-- [Carbonate Data Analyser](#CDA)
+- [Carbonate Data Analyser (CDA](#CDA)
 - [Output](#output)
 - [Plotting](#plotting)
 - [Citing this work](#citing-this-work)
