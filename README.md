@@ -153,7 +153,7 @@ The **Carbonate Data Analyser** (CDA) automatically compares **CaveCalcV2.0** mo
 Use the `user_filepath` settings key to point to your speleothem data file:
 
 ```python
-'user_filepath': 'Path/to/Example_input.csv'
+'user_filepath': 'Path/to/template.csv'
 ```
 
 You do not need to populate all columns or cells in the file.
