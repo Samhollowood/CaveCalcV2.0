@@ -200,7 +200,6 @@ class Solution(object):
         # get settings
         fmt = { 'temp'  :   self.s.settings['temperature'],
                 'ph'    :   self.s.settings['soil_pH'],
-                'pe'    : self.s.settings['soil_pe'],
                 'ca'    :   self.s.settings['soil_Ca'],
                 'mg'    :   self.s.settings['soil_Mg'],
                 'sr'    :   self.s.settings['soil_Sr'],
