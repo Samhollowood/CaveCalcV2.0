@@ -18,6 +18,7 @@ Contact me for any more information/debugging/guidance.
 'Import modules'
 from cavecalc.forward_models import ForwardModels
 import cavecalc.analyse as cca
+import os
 
 
 'Important note before running'
@@ -36,7 +37,7 @@ s =  {#Environmental model inputs
       #And any other environmental model inputs (see run_models.py)
       
       #CDA Mode
-      'user_filepath': "Example_CDA.csv",       # Please change to run CDA. Provide path to measured data
+      'user_filepath':  os.path.abspath("Example_CDA.csv")      # Please change to run CDA. Provide path to measured data
       'tolerance_d13C': 0.5,      #DEFAULT | Tolerance level for d13C (‰, VPDB)
       'tolerance_d18O': 0.5,      #DEFAULT | Tolerance level for d18O (‰, VPDB)
       'tolerance_DCP':  1.5,      #DEFAULT | Tolerance level for DCP (%)
