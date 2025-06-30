@@ -697,13 +697,13 @@ class PostProcessor(object):
 
                # Check if residuals are within tolerance
                residual_check = abs(residual) <= tolerance if d13C_data else True
-               d18O_check = abs(d18O_residual) <= d18O_tolerance if d18O_data else True
-               MgCa_check = abs(MgCa_residual) <= mg_tolerance if MgCa_data else True
+               d18O_check = abs(d18O_residual) <= d18O_tolerance if d18O_residual is not None and not math.isnan(d18O_residual) else True
+               MgCa_check = abs(MgCa_residual) <= mg_tolerance if MgCa_residual is not None and not math.isnan(MgCa_residual) else True
                dcp_check = abs(dcp_residual) <= dcp_tolerance if dcp_residual is not None and not math.isnan(dcp_residual) else True
                d44Ca_check = abs(d44Ca_residual) <= d44Ca_tolerance if d44Ca_residual is not None and not math.isnan(d44Ca_residual) else True
-               SrCa_check = abs(SrCa_residual) <= sr_tolerance if SrCa_data else True
-               BaCa_check = abs(BaCa_residual) <= ba_tolerance if BaCa_data else True
-               UCa_check = abs(UCa_residual) <= u_tolerance if UCa_data else True
+               SrCa_check = abs(SrCa_residual) <= sr_tolerance if SrCa_residual is not None and not math.isnan(SrCa_residual) else True
+               BaCa_check = abs(BaCa_residual) <= ba_tolerance if BaCa_residual is not None and not math.isnan(BaCa_residual) else True
+               UCa_check = abs(UCa_residual) <= u_tolerance if UCa_residual is not None and not math.isnan(UCa_residual) else True
             
                if residual_check and MgCa_check and dcp_check and d44Ca_check and SrCa_check and BaCa_check and UCa_check and d18O_check: 
                    extended_record = base_record.copy() 
