@@ -482,7 +482,7 @@ class PostProcessor(object):
         all_outputs_csv = os.path.join(event_analyser_results_dir, 'All_outputs.csv')
         matches_csv = os.path.join(event_analyser_results_dir, 'Matches.csv')
 
-        file_path= self.s.settings['user_filepath']
+        file_path = os.path.abspath(self.s.settings['user_filepath'])
 
         if not file_path:
             return
