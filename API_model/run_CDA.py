@@ -31,11 +31,13 @@ s =  {#Environmental model inputs
       'gas_volume': [0, 100, 200, 300, 400, 500],
       'cave_pCO2': [260, 600, 4500],
       'temperature': [5,15,25],
+      'atm_d18O': [-10,-15,-20],
+      'bedrock_MgCa': [50,100,150],
 
       #And any other environmental model inputs (see run_models.py)
       
       #CDA Mode
-      'user_filepath': "path/to/data",       # Please change to run CDA. Provide path to measured data
+      'user_filepath': "Example_CDA.csv",       # Please change to run CDA. Provide path to measured data
       'tolerance_d13C': 0.5,      #DEFAULT | Tolerance level for d13C (‰, VPDB)
       'tolerance_d18O': 0.5,      #DEFAULT | Tolerance level for d18O (‰, VPDB)
       'tolerance_DCP':  1.5,      #DEFAULT | Tolerance level for DCP (%)
@@ -46,7 +48,7 @@ s =  {#Environmental model inputs
       'tolerance_UCa': 0.3,       #DEFAULT | Tolerance level for UCa (mmol/mol)
 
       #output directory
-      'out_dir' = './path/to/CDA' #Change to an output directory you like
+      'out_dir' = 'Example_CDA' #Change to an output directory you like
 
      }
 
