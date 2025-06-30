@@ -98,47 +98,47 @@ cd ../scripts
 python cc_input_gui.py
 ```
 
-
-
 ## Usage
 
 Once installation is complete, the **CaveCalcV2.0** module will be available in your Python or Anaconda environment.  
-You can run models using the following methods:
+You can run either a **single model** or a **batch of models** using any of the following methods:
 
 ### 1. Graphical User Interface (GUI)
 
-The GUI provides an intuitive interface for setting model inputs and running simulations. Once inputs are defined, users can click:
+The GUI provides an intuitive interface for setting model inputs and running simulations.  
+Once inputs are defined, users can click:
 
 - **Run CaveCalc Only!** — to run the CaveCalc model by itself  
 - **Run CaveCalc With CDA!** — to run the CaveCalc model alongside the Carbonate Data Analyser (CDA) mode
 
+Both single and batch model runs are supported in the GUI. To run a batch, users can provide arrays or multiple values for input parameters.
+
 ### 2. Python Scripts
 
-For users who prefer scripting or want to run multiple models in batch mode, CaveCalc can also be run using:
+For scripting-based workflows, CaveCalc can also be run via:
 
 - `run_models.py` (in the `API_models/` folder)  
 - `run_CDA.py` (also in `API_models/`)  
-- Custom `.py` scripts based on these templates
+- Custom `.py` scripts using these files as templates
 
 #### `run_models.py`
 
-This script contains a `settings` dictionary populated with **all possible model inputs** set to their default values.  
-Users can **add, remove, or modify** inputs in the dictionary to suit their study. If a setting is removed, the default value from `cavecalc/data/defaults.py` will be used.
+This script includes a `settings` dictionary containing **all available model inputs** set to their default values.  
+You can **add, remove, or modify** any inputs to tailor your simulation. If a key is removed, the value will default to what’s defined in `cavecalc/data/defaults.py`.
 
 #### `run_CDA.py`
 
-This script is similar to `run_models.py`, but specifically tailored for **CDA mode**. It includes a simplified set of key inputs, with some values defined as arrays to help guide users through CDA-focused simulations.
+Similar in structure to `run_models.py`, this script is optimized for **CDA mode**, focusing on a core set of inputs. Some are defined as arrays to support batch processing and exploration of parameter space.
 
-A complete list of available model inputs is provided in **`manual.pdf`**, Table 3.
+A full list of model inputs is provided in **`manual.pdf`**, Table 3.
 
 ### 3. Running Scripts from the Terminal
 
-To execute a Python script, open your terminal or command prompt, navigate to the appropriate directory, and run:
+To execute a model run, open your terminal or command prompt, navigate to the appropriate directory, and run:
 
 ```bash
-cd API_models
 python run_models.py
-```
+
 
 ### Aragonite Precipitation 
 In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy via a drop-down menu. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as a string `Aragonite' will initialise Aragonite precipitation during model runs. There is no requirement to actively change the database files. The precipitate_mineralogy variable feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
