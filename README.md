@@ -137,8 +137,9 @@ A full list of model inputs is provided in **`manual.pdf`**, Table 3.
 To execute a model run, open your terminal or command prompt, navigate to the appropriate directory, and run:
 
 ```bash
+cd API_models
 python run_models.py
-
+```
 
 ### Aragonite Precipitation 
 In the GUI, users should navigate to the calcite/aragonite heading. Here they can define `Aragonite` as the precipitate mineralogy via a drop-down menu. If the user is running models via a .py file, then defining the model_name: `precipitate_mineralogy` as a string `Aragonite' will initialise Aragonite precipitation during model runs. There is no requirement to actively change the database files. The precipitate_mineralogy variable feeds into CaveCalcV2.0 whether the Calcite.dat or Aragonite.dat database should be loaded.
