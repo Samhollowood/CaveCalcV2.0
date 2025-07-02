@@ -481,7 +481,7 @@ class Evaluate(object):
  
 
 class CDAPlotter:
-    """Class for creating CDA (Cave Data Analysis) plots."""
+    """Class for creating CDA (Carbonate Data Analyser) plots."""
     
     def __init__(self):
         # Set font for subscript support
