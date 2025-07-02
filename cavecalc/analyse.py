@@ -479,644 +479,454 @@ class Evaluate(object):
      
         
  
-    def plot_CDA(self,dir1,dir2): 
-        """
-        Extract headings and data from a file and return as a dictionary.
 
-        param directory: Path to the directory containing the .xlsx files 
-        return: A list of figures created from the data 
-         """ 
-         
-        # Construct file paths for the CSV files
-        matches_csv = os.path.join(dir2, 'Matches.csv')
-        tolerances_csv = os.path.join(dir2, 'Tolerances.csv')
-        
-        # Set the font to 'DejaVu Sans', which supports subscript 
+class CDAPlotter:
+    """Class for creating CDA (Cave Data Analysis) plots."""
+    
+    def __init__(self):
+        # Set font for subscript support
         matplotlib.rcParams['font.family'] = 'DejaVu Sans'
-    
-        # Load the 'Matches' CSV as df_main
-        df_main = pd.read_csv(matches_csv, on_bad_lines="skip")
-    
-        # Load the 'Tolerances' CSV as df_tolerances
-        df_tolerances = pd.read_csv(tolerances_csv)
         
-        df_test = pd.read_csv(dir1)        
-        # Dynamically find the 'Age' column in both datasets 
-        age_column_main = next((col for col in df_main.columns if 'age' in col.lower()), None)
-        age_column_test = next((col for col in df_test.columns if 'age' in col.lower()), None)  
+        # Column mappings
+        self.column_mapping = {
+            'd13c': 'CaveCalc d13C', 'mgca': 'CaveCalc MgCa', 'dcp': 'CaveCalc DCP',
+            'd44ca': 'CaveCalc d44Ca', 'srca': 'CaveCalc SrCa', 'baca': 'CaveCalc BaCa',
+            'uca': 'CaveCalc UCa', 'd18o': 'CaveCalc d18O'
+        }
         
-        if not age_column_main or not age_column_test:  
-            raise ValueError("Could not find 'Age' column in one or both datasets.") 
-            
-         # Map the relevant column names in the main dataset to match the test dataset columns 
-        column_mapping_main = {
-        'd13C': 'CaveCalc d13C','Mg/Ca': 'CaveCalc MgCa', 'DCP': 'CaveCalc DCP','d44Ca': 'CaveCalc d44Ca',
-        'Sr/Ca': 'CaveCalc SrCa','Ba/Ca': 'CaveCalc BaCa','U/Ca': 'CaveCalc UCa', 'd18O': 'CaveCalc d18O'}  
-               
-        # Extract and format trace metal values 
-        trace_metals = ['Mg', 'Sr', 'Ba', 'U', 'd44'] 
-        bedrock_XCa_values = {metal: df_main.get(f'bedrock_{metal}Ca', pd.Series(dtype='float64')).dropna().unique() for metal in trace_metals}
-        soil_XCa_values = {metal: df_main.get(f'soil_{metal}', pd.Series(dtype='float64')).dropna().unique() for metal in trace_metals}
+        self.axis_labels = {
+            'd13c': 'd13C$_{CaCO3}$ (‰, VPDB)', 'd18o': 'd18O$_{CaCO3}$ (‰, VPDB)',
+            'd44ca': 'd44Ca$_{CaCO3}$ (‰)', 'mgca': 'Mg/Ca$_{CaCO3}$ (mmol/mol)',
+            'dcp': 'DCP$_{CaCO3}$ (%)', 'srca': 'Sr/Ca$_{CaCO3}$ (mmol/mol)',
+            'baca': 'Ba/Ca$_{CaCO3}$ (mmol/mol)', 'uca': 'U/Ca$_{CaCO3}$ (mmol/mol)'
+        }
+        
+        self.trace_metals = ['Mg', 'Sr', 'Ba', 'U', 'd44']
 
-        # Format trace metals correctly 
-        format_XCa_text = lambda XCa_values, unit: ', '.join( 
-            f"{metal}/Ca: {', '.join(map(str, values))} {unit}" if metal != 'd44' else f"{metal}: {', '.join(map(str, values))} ‰"
-    for metal, values in XCa_values.items() if values.size > 0 and all(value != 0 for value in values)  
-    )
-    
-        # Get formatted texts
-        bedrock_XCa_text = format_XCa_text(bedrock_XCa_values, "mmol/mol")
-        soil_XCa_text = format_XCa_text(soil_XCa_values, "mmol/kgw")
+    def load_data(self, dir1, dir2):
+        """Load all required CSV files."""
+        data = {}
         
-        # Initialize the dictionary to store extracted data and create plots  
-        figures = []  
+        # Load CSV files
+        csv_files = {
+            'matches': os.path.join(dir2, 'Matches.csv'),
+            'tolerances': os.path.join(dir2, 'Tolerances.csv'),
+            'input_ranges': os.path.join(dir2, 'Input_Ranges.csv'),
+            'all_outputs': os.path.join(dir2, 'All_outputs.csv'),
+            'test': dir1
+        }
         
-       # Initialize variables and labels
+        for key, path in csv_files.items():
+            if key == 'matches':
+                data[key] = pd.read_csv(path, on_bad_lines="skip")
+            else:
+                data[key] = pd.read_csv(path)
+        
+        # Clean test data columns
+        test_cols = data['test'].columns
+        data['test'].columns = [test_cols[0]] + [
+            col.strip().lower().replace(r'[^a-z0-9]', '') 
+            for col in test_cols[1:].str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
+        ]
+        
+        # Filter out invalid data
+        data['matches'] = data['matches'][data['matches']['CaveCalc d13C'] != -999]
+        data['all_outputs'] = data['all_outputs'][data['all_outputs']['CaveCalc d13C'] != -999]
+        
+        return data
+
+    def find_age_columns(self, df_main, df_test):
+        """Find age columns in both datasets."""
+        age_main = next((col for col in df_main.columns if 'age' in col.lower()), None)
+        age_test = next((col for col in df_test.columns if 'age' in col.lower()), None)
+        
+        if not age_main or not age_test:
+            raise ValueError("Could not find 'Age' column in one or both datasets.")
+        
+        return age_main, age_test
+
+    def format_trace_metals(self, df_main):
+        """Extract and format trace metal values."""
+        bedrock_values = {}
+        soil_values = {}
+        
+        for metal in self.trace_metals:
+            bedrock_col = f'bedrock_{metal}Ca' if metal != 'd44' else f'bedrock_{metal}'
+            soil_col = f'soil_{metal}Ca' if metal != 'd44' else f'soil_{metal}'
+            
+            if bedrock_col in df_main.columns:
+                bedrock_values[metal] = df_main[bedrock_col].dropna().unique()
+            if soil_col in df_main.columns:
+                soil_values[metal] = df_main[soil_col].dropna().unique()
+        
+        def format_text(values_dict, unit):
+            return ', '.join([
+                f"{metal}/Ca: {', '.join(map(str, values))} {unit}" if metal != 'd44' 
+                else f"{metal}: {', '.join(map(str, values))} ‰"
+                for metal, values in values_dict.items() 
+                if len(values) > 0 and all(v != 0 for v in values)
+            ])
+        
+        return format_text(bedrock_values, "mmol/mol"), format_text(soil_values, "mmol/kgw")
+
+    def create_boxplot_with_scatter(self, ax, df, age_col, var_col, color, marker, positions=None):
+        """Create boxplot with scatter overlay."""
+        if positions is None:
+            grouped_data = df.groupby(age_col)[var_col].apply(list)
+            positions = np.arange(len(grouped_data))
+            data_for_boxplot = grouped_data.tolist()
+        else:
+            unique_ages = np.sort(df[age_col].unique())
+            grouped_data = df.groupby(age_col)[var_col].apply(list)
+            data_for_boxplot = [grouped_data.get(age, []) for age in unique_ages]
+        
+        # Create boxplot
+        box_width = (positions.max() - positions.min()) / (len(positions) * 4) if len(positions) > 1 else 0.1
+        ax.boxplot(data_for_boxplot, positions=positions, widths=box_width, patch_artist=True,
+                   boxprops=dict(facecolor='none', color='black'),
+                   medianprops=dict(color='black'), whiskerprops=dict(color='black'),
+                   capprops=dict(color='black'), showfliers=False)
+        
+        # Add scatter plot
+        scatter_positions = np.interp(df[age_col], np.sort(df[age_col].unique()), positions)
+        ax.scatter(scatter_positions, df[var_col], marker=marker, color=color, s=50)
+        
+        # Set x-axis
+        ax.set_xticks(positions)
+        ax.set_xticklabels(np.sort(df[age_col].unique()))
+        
+        return positions
+
+    def add_subplot_annotations(self, ax, title, subtitle, index):
+        """Add title and subtitle to subplot."""
+        ax.text(0.02, 1.01, title, transform=ax.transAxes, fontsize=12, fontweight='bold', ha='center')
+        
+        max_length = 100 if index < 4 else 70
+        if len(subtitle) > max_length:
+            first_line, second_line = subtitle[:max_length], subtitle[max_length:]
+            ax.text(0.05, 1.06, first_line, transform=ax.transAxes, fontsize=10, ha='left')
+            ax.text(0.05, 1.01, second_line, transform=ax.transAxes, fontsize=10, ha='left')
+        else:
+            ax.text(0.05, 1.01, subtitle, transform=ax.transAxes, fontsize=10, ha='left')
+
+    def add_figure_elements(self, fig, title, color, legend_elements=None):
+        """Add common figure elements (title, legend, border, watermark)."""
+        # Main title
+        fig.suptitle(title, fontsize=16, fontweight='bold', y=0.98)
+        
+        # Watermark
+        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', 
+                fontsize=10, color='black', alpha=0.5)
+        
+        # Legend
+        if legend_elements:
+            fig.legend(handles=legend_elements['handles'], labels=legend_elements['labels'], 
+                      loc=legend_elements.get('loc', 'upper center'), 
+                      bbox_to_anchor=legend_elements.get('bbox', (0.5, 0.96)), 
+                      ncol=legend_elements.get('ncol', 2), fontsize=12, frameon=False)
+        
+        # Border
+        fig.subplots_adjust(left=0.05, right=0.95, top=0.77, bottom=0.10)
+        rect = patches.FancyBboxPatch((0.05, 0.05), 0.90, 0.90, transform=fig.transFigure,
+                                     boxstyle="round,pad=0.05", edgecolor=color, 
+                                     linewidth=5, fill=False)
+        fig.patches.append(rect)
+
+    def add_input_annotations(self, fig, input_ranges_df, bedrock_text, soil_text):
+        """Add input parameter annotations to figure."""
+        # Miscellaneous inputs
+        fig.text(0.50, 0.90, 'User miscellaneous inputs', ha='center', va='center', 
+                fontsize=10, fontweight='bold')
+        y_pos = 0.88
+        
+        misc_inputs = {'temperature': 'T', 'cave_pCO2': 'cave air pCO2'}
+        for var, label in misc_inputs.items():
+            row = input_ranges_df[input_ranges_df['Variable'] == var]
+            if not row.empty:
+                fig.text(0.50, y_pos, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", 
+                        ha='center', va='center', fontsize=10)
+                y_pos -= 0.025
+        
+        # Soil inputs
+        fig.text(0.20, 0.95, 'User soil inputs', ha='center', va='center', 
+                fontsize=10, fontweight='bold')
+        y_pos = 0.93
+        
+        soil_inputs = {'soil_pCO2': 'soil-gas pCO2', 'soil_d13C': 'd13Cₛₒᵢₗ'}
+        for var, label in soil_inputs.items():
+            row = input_ranges_df[input_ranges_df['Variable'] == var]
+            if not row.empty:
+                fig.text(0.20, y_pos, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", 
+                        ha='center', va='center', fontsize=10)
+                y_pos -= 0.025
+        
+        # Soil values
+        for value in soil_text.split(', '):
+            if value:
+                fig.text(0.20, y_pos, value, ha='center', va='center', fontsize=10)
+                y_pos -= 0.025
+        
+        # Available measurements
+        fig.text(0.80, 0.95, 'Available measurements', ha='center', va='center', 
+                fontsize=10, fontweight='bold')
+        y_avail, x_spacing, y_spacing = 0.92, 0.05, 0.025
+        
+        for i, proxy in enumerate(self.column_mapping.keys()): 
+            x_pos = 0.75 + (i % 3) * x_spacing 
+            y_pos = y_avail - (i // 3) * y_spacing 
+            
+            label = proxy 
+            if label.lower() == 'd44ca': 
+                label = 'd44Ca' 
+            else: 
+                label = label.replace('ca', '/Ca') 
+                
+            fig.text(x_pos, y_pos, label, ha='center', va='center', fontsize=10)
+
+    def plot_co2_processes(self, data):
+        """Create CO2 processes plot."""
+        df_main = data['matches']
+        age_col_main, _ = self.find_age_columns(df_main, data['test'])
+        
         variables = ['soil_d13C', 'soil_pCO2', 'cave_pCO2', 'd13C_init']
         custom_labels = {
-            'soil_d13C': 'Soil d13C',
-            'soil_pCO2': 'Soil gas pCO2 (ppmv)',
-            'cave_pCO2': 'Cave air pCO2 (ppmv)',
-            'd13C_init': 'd13C initial solution'
+            'soil_d13C': 'Soil d13C', 'soil_pCO2': 'Soil gas pCO2 (ppmv)',
+            'cave_pCO2': 'Cave air pCO2 (ppmv)', 'd13C_init': 'd13C initial solution'
         }
-        subplot_titles = [r'[A]', r'[B]', r'[C]', r'[D]']
+        subplot_titles = ['[A]', '[B]', '[C]', '[D]']
         subtitles = [
             'Viable soil d13C, constrained by matches between modeled and measured CaCO3',
             'Viable soil gas pCO2, constrained by matches between modeled and measured CaCO3',
             'Viable cave air pCO2, constrained by matches between modeled and measured CaCO3',
             'd13C initial solution outputs from viable soil d13C, soil gas pCO2, and gas-to-water ratio'
         ]
-
-        # Set up subplots
-        num_vars = len(variables)
-        num_cols = 2
-        num_rows = int(np.ceil(num_vars / num_cols))
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows))
+        
+        # Create subplots
+        fig, axs = plt.subplots(2, 2, figsize=(15, 10))
         plt.subplots_adjust(hspace=0.25)
         axs = axs.flatten()
-
-        # Loop through each variable and plot
+        
+        # Plot each variable
         for i, var in enumerate(variables):
             if var in df_main.columns:
-                age_values = df_main[age_column_main].dropna()
-                var_values = df_main[var].dropna()
+                color = 'darkblue' if var == 'd13C_init' else 'darkgreen'
+                marker = 's' if var == 'd13C_init' else 'o'
                 
-                # Group data by age for boxplot
-                grouped_data = df_main.groupby(age_column_main)[var].apply(list)
-                positions = np.arange(len(grouped_data))  # Create evenly spaced positions for the boxplots
-                data_for_boxplot = grouped_data.tolist()
-                
-                # Compute box plot width and plot
-                box_width = (positions.max() - positions.min()) / (len(positions) * 4)
-                axs[i].boxplot(data_for_boxplot, positions=positions, widths=box_width, patch_artist=True,
-                               boxprops=dict(facecolor='none', color='black'),
-                               medianprops=dict(color='black'),
-                               whiskerprops=dict(color='black'),
-                               capprops=dict(color='black'),
-                               flierprops=dict(marker='o', color='black', markersize=5),
-                               showfliers=False)
-                
-                # Overlay scatter plot
-                color, marker = ('darkblue', 's') if var == 'd13C_init' else ('darkgreen', 'o')
-                # Map the actual age values to the new, evenly spaced positions 
-                scatter_positions = np.interp(df_main[age_column_main], np.sort(age_values.unique()), positions)
-
-                # Plot the scatter points with the adjusted positions
-                axs[i].scatter(scatter_positions, df_main[var], marker=marker, color=color, s=50, label='Modeled Data')
-
-               #  Set x-axis labels as the original age values
-                axs[i].set_xticks(positions)
-                axs[i].set_xticklabels(np.sort(age_values.unique()))
-
-                # Titles and labels
+                self.create_boxplot_with_scatter(axs[i], df_main, age_col_main, var, color, marker)
                 axs[i].set_xlabel('Age')
                 axs[i].set_ylabel(custom_labels[var])
-                axs[i].text(0.02, 1.01, subplot_titles[i], transform=axs[i].transAxes, fontsize=12, fontweight='bold', ha='center')
-                
-                # Subtitle handling with line breaks if necessary
-                subtitle = subtitles[i]
-                if len(subtitle) > 100:
-                    first_line, second_line = subtitle[:100], subtitle[100:]
-                    axs[i].text(0.05, 1.06, first_line, transform=axs[i].transAxes, fontsize=10, ha='left')
-                    axs[i].text(0.05, 1.01, second_line, transform=axs[i].transAxes, fontsize=10, ha='left')
-                else:
-                    axs[i].text(0.05, 1.01, subtitle, transform=axs[i].transAxes, fontsize=10, ha='left')
+                self.add_subplot_annotations(axs[i], subplot_titles[i], subtitles[i], i)
             else:
-                axs[i].axis('off')  # Turn off unused subplots
-      
-        # Add faint text to the top left corner and main title
-        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5)
-        fig.suptitle('CO2 Processes', fontsize=16, fontweight='bold', y=0.98)
-
-        # Create and add custom legend
-        from matplotlib.lines import Line2D
-        legend_elements = [
-            Line2D([0], [0], marker='o', color='darkgreen', label='Model Inputs', markersize=10, linestyle='None'),
-            Line2D([0], [0], marker='s', color='darkblue', label='Model Outputs', markersize=10, linestyle='None')
-        ]
-        fig.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, 0.96), ncol=2, fontsize=12, frameon=False)
-
-        # Position for the 'User miscellaneous input' heading
-        fig.text(0.50, 0.90, 'User miscellaneous inputs', ha='center', va='center', fontsize=10, fontweight='bold')
-        miscellaneous_values_y_position = 0.88
-
-        # Load and filter input ranges
-        input_ranges_df = pd.read_csv(os.path.join(dir2, 'Input_Ranges.csv'))
-        miscellaneous_inputs = {'temperature': 'T', 'cave_pCO2': 'cave air pCO2'}
-
-        # Display miscellaneous input ranges
-        for input_var, label in miscellaneous_inputs.items():
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var]
-            if not row.empty:
-                fig.text(0.50, miscellaneous_values_y_position, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", ha='center', va='center', fontsize=10)
-                miscellaneous_values_y_position -= 0.025
-
-        # Position for the 'User soil inputs' heading
-        fig.text(0.20, 0.95, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold')
-        soil_values_y_position = 0.93
-
-        # Display soil input ranges
-        soil_inputs = {'soil_pCO2': 'soil-gas pCO2', 'soil_d13C': 'd13Cₛₒᵢₗ'}
-        for input_var, label in soil_inputs.items():
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var]
-            if not row.empty:
-                fig.text(0.20, soil_values_y_position, f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})", ha='center', va='center', fontsize=10)
-                soil_values_y_position -= 0.025
-
-        # Display soil values
-        for value in soil_XCa_text.split(', '):
-            fig.text(0.20, soil_values_y_position, value, ha='center', va='center', fontsize=10)
-            soil_values_y_position -= 0.025
-
-        # Position for the 'Available measurements' heading
-        fig.text(0.80, 0.95, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')
-        available_measurements_y_position = 0.92
-        num_columns, spacing_x, spacing_y = 3, 0.05, 0.025
-
-        # Display available measurements
-        column_mapping_main = {
-            'd13C': 'CaveCalc d13C', 'Mg/Ca': 'CaveCalc MgCa', 'DCP': 'CaveCalc DCP', 'd44Ca': 'CaveCalc d44Ca',
-            'Sr/Ca': 'CaveCalc SrCa', 'Ba/Ca': 'CaveCalc BaCa', 'U/Ca': 'CaveCalc UCa', 'd18O': 'CaveCalc d18O'
+                axs[i].axis('off')
+        
+        # Add figure elements
+        legend_elements = {
+            'handles': [Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10),
+                       Line2D([0], [0], marker='s', color='darkblue', linestyle='None', markersize=10)],
+            'labels': ['Model Inputs', 'Model Outputs']
         }
-        for index, (proxy, column) in enumerate(column_mapping_main.items()):
-            x_position, y_position = 0.75 + (index % num_columns) * spacing_x, available_measurements_y_position - (index // num_columns) * spacing_y
-            if column not in df_main.columns or df_main[column].isnull().all():
-                fig.text(x_position, y_position, proxy, ha='center', va='center', fontsize=10)
+        self.add_figure_elements(fig, 'CO2 Processes', 'red', legend_elements)
+        
+        # Add input annotations
+        bedrock_text, soil_text = self.format_trace_metals(df_main)
+        self.add_input_annotations(fig, data['input_ranges'], bedrock_text, soil_text)
+        
+        return fig
 
-        # Adjust subplot and add red rectangle around figure
-        fig.subplots_adjust(left=0.05, right=0.95, top=0.77, bottom=0.10)
-        rect_flow_path = patches.FancyBboxPatch(
-            (0.05, 0.05), 0.90, 0.90, transform=fig.transFigure, boxstyle="round,pad=0.05", edgecolor='red', linewidth=5, fill=False
-        )
-        fig.patches.append(rect_flow_path)
-
-       
-        plt.show(block=False)
-        figures.append(fig)
-  
+    def plot_flow_path_controls(self, data):
+        """Create Flow Path Controls plot."""
+        df_main = data['matches']
+        age_col_main, _ = self.find_age_columns(df_main, data['test'])
         
-  
-        
-        # Plot for Flow Path Hydrology
-        variables_flow_path = ['gas_volume', 'f_ca']
-        
-        # Titles for the subplots [A], [B], [C], [D] 
-        subplot_titles = [r'[A]', r'[B]'] 
-        
-        # Custom subtitles for each subplot 
-        subtitles = [ 
-            'Viable gas-to-water ratio, constrained by matches between modeled and measured CaCO3', 
+        variables = ['gas_volume', 'f_ca']
+        subplot_titles = ['[A]', '[B]']
+        subtitles = [
+            'Viable gas-to-water ratio, constrained by matches between modeled and measured CaCO3',
             'Viable fca outputs constrained by matches between modeled and measured CaCO3'
-   
         ]
         
-
-        # Determine the number of rows and columns for the subplot grid
-        num_cols_flow_path = 2  # Number of columns in the grid (including an extra column for d44Ca)
-        num_rows_flow_path = 1  # One row for all subplots
-    
-        # Create a figure with a grid of subplots
-        fig, axs_flow_path = plt.subplots(num_rows_flow_path, num_cols_flow_path, figsize=(18, 6)) 
-
-        # Flatten the axs array for easy iteration if it's a 2D array
-        axs_flow_path = axs_flow_path.flatten()  
+        # Create subplots
+        fig, axs = plt.subplots(1, 2, figsize=(18, 6))
         
-        
-    
-        for i, var in enumerate(variables_flow_path):   
-            if var in df_main.columns:  
-                # Compute min and max values 
-                age_values = df_main[age_column_main] 
-                var_values = df_main[var] 
-
-                # Prepare data for custom boxplot 
-                data_for_boxplot = [] 
-                for age in age_values.unique():   
-                    age_mask = df_main[age_column_main] == age 
-                    data_for_boxplot.append(var_values[age_mask]) 
-                    
-
-                # Group data by age for boxplot
-                grouped_data = df_main.groupby(age_column_main)[var].apply(list)
-                positions = np.arange(len(grouped_data))  # Create evenly spaced positions for the boxplots
-                data_for_boxplot = grouped_data.tolist()
+        # Plot each variable
+        for i, var in enumerate(variables):
+            if var in df_main.columns:
+                color = 'darkgreen' if var == 'gas_volume' else 'darkblue'
+                marker = 's' if var == 'f_ca' else 'o'
                 
-                # Compute box plot width and plot
-                box_width = (positions.max() - positions.min()) / (len(positions) * 4)
-                axs_flow_path[i].boxplot(data_for_boxplot, positions=positions, widths=box_width, patch_artist=True,
-                               boxprops=dict(facecolor='none', color='black'),
-                               medianprops=dict(color='black'),
-                               whiskerprops=dict(color='black'),
-                               capprops=dict(color='black'),
-                               flierprops=dict(marker='o', color='black', markersize=5),
-                               showfliers=False)
+                self.create_boxplot_with_scatter(axs[i], df_main, age_col_main, var, color, marker)
+                axs[i].set_xlabel('Age')
                 
-                # Custom box plot that spans the full range of data 
-                for age in age_values.unique():  
-                    age_mask = df_main[age_column_main] == age
-                    age_min = var_values[age_mask].min()
-                    age_max = var_values[age_mask].max() 
-                    
-                # Overlay scatter plot on top of the custom box plot
-                color = 'darkgreen' if var == 'gas_volume' else 'darkblue'  # Use dark green for gas volume
- 
-                # Set marker to 's' only for fca, otherwise 'o' 
-                if var == 'f_ca' :
-                    marker = 's'
+                # Set custom y-labels
+                if var == 'gas_volume':
+                    axs[i].set_ylabel('gas-to-water ratio (L/kg)')
+                elif var == 'f_ca':
+                    axs[i].set_ylabel('fCa')
                 else:
-                    marker = 'o'
+                    axs[i].set_ylabel(var)
                 
-                # Map the actual age values to the evenly spaced positions 
-                scatter_positions = np.interp(df_main[age_column_main], np.sort(age_values.unique()), positions) 
-                
-                # Plot the scatter points with the adjusted positions 
-                axs_flow_path[i].scatter(scatter_positions, df_main[var], marker=marker, color=color, s=50, label='Modeled Data') 
-                
-                # Set x-axis labels as the original age values 
-                axs_flow_path[i].set_xticks(positions) 
-                axs_flow_path[i].set_xticklabels(np.sort(age_values.unique()))
+                self.add_subplot_annotations(axs[i], subplot_titles[i], subtitles[i], i + 4)
+        
+        # Add figure elements
+        legend_elements = {
+            'handles': [Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10),
+                       Line2D([0], [0], marker='s', color='darkblue', linestyle='None', markersize=10)],
+            'labels': ['Model inputs', 'Model outputs'],
+            'bbox': (0.5, 0.90)
+        }
+        self.add_figure_elements(fig, 'Flow Path Controls', 'blue', legend_elements)
+        
+        # Add bedrock inputs
+        bedrock_text, _ = self.format_trace_metals(df_main)
+        fig.text(0.235, 0.96, 'User bedrock inputs', ha='center', va='center', 
+                fontsize=10, fontweight='bold')
+        
+        y_pos = 0.94
+        bedrock_values = bedrock_text.split(', ')
+        for i, value in enumerate(bedrock_values):
+            col = i // ((len(bedrock_values) + 1) // 2)
+            row = i % ((len(bedrock_values) + 1) // 2)
+            x_pos = 0.17 + col * 0.12
+            y_pos_calc = y_pos - row * 0.025
+            fig.text(x_pos, y_pos_calc, value, ha='center', va='center', fontsize=10)
+        
+        # Add gas volume
+        row = data['input_ranges'][data['input_ranges']['Variable'] == 'gas_volume']
+        if not row.empty:
+            gas_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"
+            fig.text(0.20, y_pos - (len(bedrock_values) + 1) * 0.025, gas_text, 
+                    ha='center', va='center', fontsize=10)
+        
+        return fig
 
-                axs_flow_path[i].set_xlabel('Age')
-                # Set the y-label with the specific changes for gas volume and fca 
-                if var == 'gas volume (L/kg)':  
-                    axs_flow_path[i].set_ylabel('gas-to-water ratio (L/kg)')  # Updated label 
-                elif var == 'f_ca': 
-                        axs_flow_path[i].set_ylabel('fCa')  # Updated label for f_c 
-                else:  
-                    axs_flow_path[i].set_ylabel(var)
-                
-                # Corrected title plotting line 
-                axs_flow_path[i].text(0.02, 1.01, subplot_titles[i], transform=axs_flow_path[i].transAxes,  
-                                      fontsize=12, fontweight='bold', ha='center')
-                
-                
+    def plot_model_data_comparison(self, data):
+        """Create Model-Data comparison plot."""
+        df_main = data['matches']
+        df_test = data['test']
+        df_all_outputs = data['all_outputs']
+        df_tolerances = data['tolerances']
+        
+        age_col_main, age_col_test = self.find_age_columns(df_main, df_test)
+        
+        # Create subplots
+        num_plots = len(self.column_mapping)
+        num_rows = int(np.ceil(num_plots / 2))
+        fig, axs = plt.subplots(num_rows, 2, figsize=(15, 5 * num_rows))
+        plt.subplots_adjust(hspace=0.40)
+        axs = axs.flatten()
+        
+        # Get unique ages
+        unique_ages = np.sort(np.unique(np.concatenate([
+            df_main[age_col_main].unique(),
+            df_test[age_col_test].unique(),
+            df_all_outputs[age_col_main].unique()
+        ])))
+        positions = np.arange(len(unique_ages))
+        
+        # Plot each comparison
+        for i, (key, mapped_col) in enumerate(self.column_mapping.items()):
+            ax = axs[i]
             
-                # Add custom subtitle for each subplot
-                subtitle = subtitles[i]  # Get the corresponding subtitle
-                max_length = 70  # Define a character limit before breaking into two lines   
-                if len(subtitle) > max_length:   
-                    # Split the subtitle into two parts  
-                    first_line = subtitle[:max_length] 
-                    second_line = subtitle[max_length:] 
-            
-                    # Display the first line at the usual position 
-                    axs_flow_path[i].text(0.05, 1.04, first_line, transform=axs_flow_path[i].transAxes,  
-                                          fontsize=10, fontweight='normal', ha='left') 
-                    
-                    # Display the second line slightly lower to avoid overlap 
-                    axs_flow_path[i].text(0.05, 1.00, second_line, transform=axs_flow_path[i].transAxes,  
-                                          fontsize=10, fontweight='normal', ha='left')  
-                else:  
-                    # If subtitle is short, display it on a single line   
-                    axs_flow_path[i].text(0.05, 1.01, subtitle, transform=axs_flow_path[i].transAxes,  
-                                          fontsize=10, fontweight='normal', ha='left')
-                                        
-
-        #Add a blue rectangle around the entire figure
-        fig.subplots_adjust(left=0.08, right=0.92, top=0.79, bottom=0.13)
-        # Create a FancyBboxPatch instead of Rectangle 
-        rect_flow_path = patches.FancyBboxPatch( 
-            (0.05, 0.05), 0.9, 0.9,  # (x, y, width, height) in figure coordinates 
-            transform=fig.transFigure,  # Use figure coordinates 
-            boxstyle="round,pad=0.05",  # You can adjust padding here 
-            edgecolor='blue',  # Border color 
-            linewidth=5,  # Border widt 
-            fill=False  # No fill, just the border 
-            ) 
-        # Add the patch to the figure 
-        fig.patches.append(rect_flow_path) 
-        
-       
-         #Set the main title 
-        fig.suptitle('Flow Path Controls', fontsize=16, fontweight='bold',y=0.98) 
-        
-        # Define handles and labels for the legend  
-        handles = [plt.Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10), 
-                   plt.Line2D([0], [0], marker='s', color='darkblue', linestyle='None', markersize=10)]
-        labels = ['Model inputs', 'Model ouputs'] 
-        
-        fig.legend(handles, labels, loc='lower center', ncol=3, fontsize=10, bbox_to_anchor=(0.5, 0.90),frameon=False)
-                                
-        
-
-                
-        # Add faint text to the top left corner 
-        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5) 
-        
-        fig.text(0.235, 0.96, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
-        bedrock_values_y_position = 0.94 
-        
-        # Split bedrock values into two columns 
-        bedrock_values = bedrock_XCa_text.split(', ') 
-        num_values = len(bedrock_values)
-        num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns 
-         
-        for index, value in enumerate(bedrock_values):   
-            col = index // num_per_column  # Determine column (0 or 1) 
-            row = index % num_per_column  # Determine row position within the column 
-            x_pos = 0.17 + col * 0.12  # Adjust x-position for two columns 
-            y_pos = bedrock_values_y_position - row * 0.025 
-            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
-            
-        # Add gas_volume under bedrock inputs   
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']    
-        if not row.empty:     
-            # Update the annotation to reflect 'gas-to-water ratio'  
-            variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"   
-            fig.text(0.20, bedrock_values_y_position - (num_per_column + 1) * 0.025, variable_text, ha='center', va='center', fontsize=10, color='black') 
-
-        
-        # Position for the 'Available measurements' heading 
-        fig.text(0.80, 0.96, 'Available measurements', ha='center', va='center', fontsize=10, fontweight='bold')  # Adjusted y-position for heading 
-        available_measurements_y_position = 0.93
-        num_columns = 3  # Number of columns for annotations 
-        spacing_x = 0.05  # Horizontal spacing between columns 
-        spacing_y = 0.025  # Vertical spacing between rows
-        
-        # Map the relevant column names in the main dataset to match the test dataset columns  
-        column_mapping_main = {
-    'd13C': 'CaveCalc d13C',
-    'Mg/Ca': 'CaveCalc MgCa',
-    'DCP': 'CaveCalc DCP',
-    'd44Ca': 'CaveCalc d44Ca',
-    'Sr/Ca': 'CaveCalc SrCa',
-    'Ba/Ca': 'CaveCalc BaCa',
-    'U/Ca': 'CaveCalc UCa',
-    'd18O': 'CaveCalc d18O' 
-         } 
-    
-        # Loop through the column mapping  
-        for index, (proxy, column) in enumerate(column_mapping_main.items()): 
-            # Calculate row and column position 
-            row_index = index // num_columns 
-            col_index = index % num_columns
-
-            # Calculate x and y positions 
-            x_position = 0.75 + col_index * spacing_x 
-            y_position = available_measurements_y_position - row_index * spacing_y
-
-            if column not in df_main.columns or df_main[column].isnull().all(): 
-                # If the column is missing or all values are NaN, annotate that the data is unavailable  
-                fig.text(x_position, y_position, f"{proxy}", ha='center', va='center', fontsize=10, color='black') 
-
-        
-        plt.show(block=False) 
-        figures.append(fig) 
- 
-               
-        outputs_csv = os.path.join(dir2, 'All_outputs.csv')
- 
-        df_all_outputs = pd.read_csv(outputs_csv)
-        df_all_outputs = df_all_outputs[df_all_outputs['CaveCalc d13C'] != -999]
-  
-
-        # Strip, lowercase, and remove non-alphanumeric characters from column names, except for the first column (assumed to be 'age') 
-        df_test.columns = [df_test.columns[0]] + df_test.columns[1:].str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True).tolist()
-
-
-        
-        # Map the relevant column names in the main dataset to match the test dataset columns 
-        column_mapping_main = {
-       'd13c': 'CaveCalc d13C','mgca': 'CaveCalc MgCa', 'dcp': 'CaveCalc DCP','d44ca': 'CaveCalc d44Ca',
-       'srca': 'CaveCalc SrCa','baca': 'CaveCalc BaCa','uca': 'CaveCalc UCa', 'd18o': 'CaveCalc d18O'}  
-       
-        
-        # Define the number of columns and rows for the subplots
-        num_cols_comparisons = 2  # Number of columns for the comparison plots
-        num_rows_comparisons = int(np.ceil(len(column_mapping_main) / num_cols_comparisons))  # Calculate the number of rows needed
-
-        # Create a figure with subplots for each valid comparison  
-        fig, axs_comparisons = plt.subplots(num_rows_comparisons, num_cols_comparisons, figsize=(15, 5 * num_rows_comparisons))  
-        
-        # Adjust the spacing between su[,p;bplots 
-        plt.subplots_adjust(hspace=0.40)  # Adjust wspace for horizontal space, hspace for vertical space
-
-        # Flatten the axs array for easy iteration if it's a 2D array  
-        axs_comparisons = axs_comparisons.flatten() 
-               
-        # Define a dictionary for axis labels 
-        axis_labels = { 
-            'd13c': 'd13C$_{CaCO3}$ (‰, VPDB)', 
-            'd18o': 'd18O$_{CaCO3}$ (‰, VPDB)', 
-            'd44ca': 'd44Ca$_{CaCO3}$ (‰)', 
-            'mgca': 'Mg/Ca$_{CaCO3}$ (mmol/mol)', 
-            'dcp': 'DCP$_{CaCO3}$ (%)', 
-            'srca': 'Sr/Ca$_{CaCO3}$ (mmol/mol)', 
-            'baca': 'Ba/Ca$_{CaCO3}$ (mmol/mol)',
-            'uca': 'U/Ca$_{CaCO3}$ (mmol/mol)' 
-            }
-        
-        df_main = df_main[df_main['CaveCalc d13C'] != -999]
-
-     
-        
-        
-        for i, (key, mapped_col) in enumerate(column_mapping_main.items()):   
-            ax = axs_comparisons[i] 
-        
-            
-            if mapped_col in df_main.columns and key in df_test.columns: 
-                # Convert both the key and 'Proxies' values to lowercase for comparison
+            if mapped_col in df_main.columns and key in df_test.columns:
+                # Get tolerance
                 tolerance_row = df_tolerances[df_tolerances['Proxy'].str.lower() == key.lower()]
-
-                if not tolerance_row.empty: 
-                    tolerance_value = tolerance_row['Tolerance Value'].values[0]
-                else: 
-                    tolerance_value = 0  # Default if no tolerance is found
-               
-                # Custom box plot that spans the full range of data
-                for age in df_main[age_column_main].unique():   
-                    age_mask = df_main[age_column_main] == age 
-
-                # Get all unique ages across df_main, df_test, and df_all_outputs 
-                unique_ages = np.sort( 
-                    np.unique( 
-                        np.concatenate((df_main[age_column_main].unique(), 
-                        df_test[age_column_test].unique(), 
-                        df_all_outputs[age_column_main].unique()))) 
-                    ) 
+                tolerance = tolerance_row['Tolerance Value'].values[0] if not tolerance_row.empty else 0
                 
-                # Create evenly spaced positions for the boxplots and scatter points 
-                positions = np.arange(len(unique_ages)) 
+                # Calculate positions
+                num_ages = len(unique_ages)
+                offset = 0.0 * num_ages + 0.022
                 
-                num_unique_ages = len(unique_ages) 
-                relative_offset_fraction = 0.014 * num_unique_ages + 0.022  # Linear interpolation
+                pos_main = np.searchsorted(unique_ages, df_main[age_col_main])
+                pos_test = np.searchsorted(unique_ages, df_test[age_col_test]) + offset
+                pos_outputs = np.searchsorted(unique_ages, df_all_outputs[age_col_main]) - offset
                 
-                # Map the ages to their respective positions 
-                scatter_positions_main = np.searchsorted(unique_ages, df_main[age_column_main]) 
-                scatter_positions_test = np.searchsorted(unique_ages, df_test[age_column_test]) + relative_offset_fraction 
-                scatter_positions_all_outputs = np.searchsorted(unique_ages, df_all_outputs[age_column_main]) - relative_offset_fraction 
+                # Plot data
+                ax.scatter(pos_main, df_main[mapped_col], marker='o', color='darkgreen', 
+                          s=100, label=f'Modeled {key}')
+                ax.scatter(pos_test, df_test[key], marker='s', color='black', 
+                          s=100, label=f'Measured {key}')
+                if mapped_col in df_all_outputs.columns:
+                    ax.scatter(pos_outputs, df_all_outputs[mapped_col], marker='o', 
+                              color='black', s=80, alpha=0.7, label=f'Output {key}')
                 
-                # Plot modeled data (df_main) only where available 
-                if mapped_col in df_main.columns: 
-                    ax.scatter(scatter_positions_main, df_main[mapped_col], marker='o', color='darkgreen', s=100, label=f'Modeled {key}') 
-                    
-                # Always plot measured data (df_test)  
-                ax.scatter(scatter_positions_test, df_test[key], marker='s', color='black', s=100, label=f'Measured {key}') 
-                
-                # Always plot all outputs (df_all_outputs) if the column exists 
-                if mapped_col in df_all_outputs.columns: 
-                    ax.scatter(scatter_positions_all_outputs, df_all_outputs[mapped_col], marker='o', color='black', s=80, label=f'Output {key}', alpha=0.7) 
-                    
-                # Add vertical lines with ± tolerance for each measured data point 
-                for j, age in enumerate(df_test[age_column_test]): 
-                    ax.vlines(x=scatter_positions_test[j], ymin=df_test[key][j] - tolerance_value, ymax=df_test[key][j] + tolerance_value, color='black', linestyles='--')
-               
-              
-        
-            else:    
-                # Define specific messages for certain keys 
-                if key == 'baca':  
-                    message = 'No Ba/Ca data provided' 
-                elif key == 'dcp':
-                    message = 'No DCP data provided'
-                elif key == 'mgca': 
-                    message = 'No Mg/Ca data provided' 
-                elif key == 'srca': 
-                    message = 'No Sr/Ca data provided' 
-                elif key == 'uca': 
-                    message = 'No U/Ca data provided' 
-                elif key == 'd18o':
-                    message = 'No d18O data provided'               
-                else: 
-                    message = f'No {key} data provided' 
-                    
-                # Add the message to the empty plot 
-                ax.text(0.5, 0.5, message, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=12, color='black')
+                # Add tolerance lines
+                for j, age_idx in enumerate(pos_test):
+                    test_val = df_test[key].iloc[j]
+                    ax.vlines(age_idx, test_val - tolerance, test_val + tolerance, 
+                             colors='black', linestyles='--')
+            else:
+                # Handle missing data
+                messages = {
+                    'baca': 'No Ba/Ca data provided', 'dcp': 'No DCP data provided',
+                    'mgca': 'No Mg/Ca data provided', 'srca': 'No Sr/Ca data provided',
+                    'uca': 'No U/Ca data provided', 'd18o': 'No d18O data provided'
+                }
+                message = messages.get(key, f'No {key} data provided')
+                ax.text(0.5, 0.5, message, ha='center', va='center', 
+                       transform=ax.transAxes, fontsize=12)
             
-            # Set x-axis labels as the original age values 
-            ax.set_xticks(positions)  # Ensure the number of tick positions matches unique_ages
-            ax.set_xticklabels(unique_ages, rotation=45)  # Ensure equal labels for each tick
+            # Set labels
+            ax.set_xticks(positions)
+            ax.set_xticklabels(unique_ages, rotation=45)
             ax.set_xlabel('Age')
-            ax.set_ylabel(axis_labels.get(key, key), fontsize=10)    
-            
-        # Ensure any extra subplots are turned off
-        for j in range(len(column_mapping_main), len(axs_comparisons)):  
-            axs_comparisons[j].axis('off')          
-            
-        # Add a black rectangle around the entire figure 
-        fig.subplots_adjust(left=0.05, right=0.95, top=0.80, bottom=0.07)
-        rect_flow_path = patches.FancyBboxPatch(  
-                (0.05, 0.05), 0.9, 0.9,  # (x, y, width, height) in figure coordinates  
-                transform=fig.transFigure,  # Use figure coordinates  
-                boxstyle="round,pad=0.05",  # You can adjust padding here  
-                edgecolor='black',  # Border color  
-                linewidth=5,  # Border widt  
-                fill=False  # No fill, just the border  
-                ) 
-            
-        # Add the patch to the figure 
-        fig.patches.append(rect_flow_path)  
-            
-        # Collect unique handles and labels for the legend 
-        handles = [] 
-        labels = [] 
-        for ax in axs_comparisons: 
-            for h, l in zip(*ax.get_legend_handles_labels()): 
-                if l not in labels:  # Add only if the label hasn't been added before 
-                      handles.append(h) 
-                      labels.append(l)
-            
-        # Set the main title for flow path hydrology 
-        fig.suptitle('Model-Data comparison', fontsize=16, fontweight='bold', y=0.99)     
-            
-        # Define handles and labels for the legend  
-        handles = [plt.Line2D([0], [0], marker='o', color='black', linestyle='None', markersize=10),
-                   plt.Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10), 
-                   plt.Line2D([0], [0], marker='s', color='black', linestyle='None', markersize=10),
-                   plt.Line2D([0], [1], color='black', linestyle='--', lw=2)  ]  
-        labels = ['All modeled data', 'Matched modeled Data', 'Measured Data','Tolerance Interval'] 
-                       
-        # Add text for headings and content, placing them horizontally 
-        #fig.text(0.1, 1, 'Data', ha='center', va='center', fontsize=14, fontweight='bold') 
-        fig.legend(handles, labels, loc='lower center', ncol=3, fontsize=10, bbox_to_anchor=(0.5, 0.92),frameon=False)
+            ax.set_ylabel(self.axis_labels.get(key, key), fontsize=10)
         
-        # Add faint text to the top left corner 
-        fig.text(0.013, 0.99, 'Produced by CaveCalcv2.0', ha='left', va='top', fontsize=10, color='black', alpha=0.5)
+        # Turn off extra subplots
+        for j in range(len(self.column_mapping), len(axs)):
+            axs[j].axis('off')
         
-        # Position for the 'User miscellaneous input' heading 
-        fig.text(0.80, 0.91, 'User miscellaneous inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
-        miscellaneous_values_y_position = 0.889
+        # Add figure elements
+        legend_elements = {
+            'handles': [Line2D([0], [0], marker='o', color='black', linestyle='None', markersize=10),
+                       Line2D([0], [0], marker='o', color='darkgreen', linestyle='None', markersize=10),
+                       Line2D([0], [0], marker='s', color='black', linestyle='None', markersize=10),
+                       Line2D([0], [1], color='black', linestyle='--', lw=2)],
+            'labels': ['All modeled data', 'Matched modeled Data', 'Measured Data', 'Tolerance Interval'],
+            'bbox': (0.5, 0.96),
+            'ncol': 3
+        }
+        self.add_figure_elements(fig, 'Model-Data comparison', 'black', legend_elements)
+        
+        # Add input annotations
+        bedrock_text, soil_text = self.format_trace_metals(df_main)
+        self.add_input_annotations(fig, data['input_ranges'], bedrock_text, soil_text)
         
         
-        
-        # Filter for specific miscellaneous inputs with custom labels 
-        miscellaneous_inputs = {'temperature': 'T', 'cave_pCO2': 'cave air pCO2'} 
-        for input_var, label in miscellaneous_inputs.items(): 
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var] 
-            if not row.empty: 
-                variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-                fig.text(0.80, miscellaneous_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
-                miscellaneous_values_y_position -= 0.025  # Adjust position for next input 
-                
-         
-        fig.text(0.5, 0.92, 'User bedrock inputs', ha='center', va='center', fontsize=10, fontweight='bold')  
-        bedrock_values_y_position = 0.91
-        
-        # Split bedrock values into two columns 
-        bedrock_values = bedrock_XCa_text.split(', ') 
-        num_values = len(bedrock_values)
-        num_per_column = (num_values + 1) // 2  # Distribute roughly evenly across two columns 
-         
-        for index, value in enumerate(bedrock_values):   
-            col = index // num_per_column  # Determine column (0 or 1) 
-            row = index % num_per_column  # Determine row position within the column 
-            x_pos = 0.42 + col * 0.12  # Adjust x-position for two columns 
-            y_pos = bedrock_values_y_position - row * 0.015 
-            fig.text(x_pos, y_pos, f"{value}", ha='center', va='center', fontsize=10, color='black') 
-            
-        # Add gas_volume under bedrock inputs   
-        row = input_ranges_df[input_ranges_df['Variable'] == 'gas_volume']    
-        if not row.empty:     
-            # Update the annotation to reflect 'gas-to-water ratio'  
-            variable_text = f"gas-to-water ratio: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})"   
-            fig.text(0.42, bedrock_values_y_position - (num_per_column + 1) * 0.015, variable_text, ha='center', va='center', fontsize=10, color='black') 
+        return fig
 
-        # Position for the 'User soil inputs' heading 
-        fig.text(0.20, 0.91, 'User soil inputs', ha='center', va='center', fontsize=10, fontweight='bold') 
-        soil_values_y_position = 0.89
-                    
-        # Display soil X/Ca values and additional soil inputs with custom labels 
-        soil_inputs = {'soil_pCO2': 'soil-gas pCO2', 'soil_d13C': 'd13Cₛₒᵢₗ'}  # Custom labels with subscript 
-        for input_var, label in soil_inputs.items(): 
-            row = input_ranges_df[input_ranges_df['Variable'] == input_var] 
-            if not row.empty:  
-                variable_text = f"{label}: ({row['Minimum'].values[0]} to {row['Maximum'].values[0]})" 
-                fig.text(0.20, soil_values_y_position, variable_text, ha='center', va='center', fontsize=10, color='black') 
-                soil_values_y_position -= 0.025  # Adjust position for next input
-
-            
-        # Display soil values 
-        for index, value in enumerate(soil_XCa_text.split(', ')):  
-            fig.text(0.20, soil_values_y_position, f"{value}", ha='center', va='center', fontsize=10, color='black')
-            soil_values_y_position -= 0.025  # Adjust position for next input
-                   
-            
+    def plot_CDA(self, dir1, dir2):
+        """
+        Extract headings and data from files and create CDA plots.
         
-        plt.show(block=False) 
-        figures.append(fig) 
+        Args:
+            dir1: Path to the test CSV file
+            dir2: Path to the directory containing the .xlsx files
             
+        Returns:
+            A list of figures created from the data
+        """
+        # Load data
+        data = self.load_data(dir1, dir2)
+        
+        # Create plots
+        figures = []
+        figures.append(self.plot_co2_processes(data))
+        figures.append(self.plot_flow_path_controls(data))
+        figures.append(self.plot_model_data_comparison(data))
+        
+        # Show all plots
+        for fig in figures:
+            plt.show(block=False)
+        
         return figures
+
+
+# Usage example:
+# import cavecalc.analyse as cca
+# plotter = cca.CDAPlotter()
+# figures = plotter.plot_CDA('path/to/test.csv', 'path/to/data/directory')
+
+      
 
          
  
