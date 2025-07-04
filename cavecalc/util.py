@@ -518,14 +518,10 @@ class PostProcessor(object):
             print(f"Error reading Excel file: {e}")
             return
 
-        tolerance =    self.s.settings['tolerance_d13C']
-        d18O_tolerance = self.s.settings['tolerance_d18O']
-        mg_tolerance = self.s.settings['tolerance_MgCa']
-        dcp_tolerance = self.s.settings['tolerance_DCP']
-        d44Ca_tolerance =  self.s.settings['tolerance_d44Ca']
-        sr_tolerance = self.s.settings['tolerance_SrCa'] 
-        ba_tolerance = self.s.settings['tolerance_BaCa']
-        u_tolerance  = self.s.settings['tolerance_UCa'] 
+        # Extract tolerances from settings
+        tolerance_keys = ['tolerance_d13C', 'tolerance_d18O', 'tolerance_MgCa', 'tolerance_DCP', 
+                  'tolerance_d44Ca', 'tolerance_SrCa', 'tolerance_BaCa', 'tolerance_UCa'] 
+        tolerance, d18O_tolerance, mg_tolerance, dcp_tolerance, d44Ca_tolerance, sr_tolerance, ba_tolerance, u_tolerance = \[self.s.settings[key] for key in tolerance_keys]
         results = [] 
         all_record = []
         match_found = False  # Flag to check if any match is found
@@ -578,8 +574,6 @@ class PostProcessor(object):
            UCa_spel = self.s.output.get(keys['UCa'],  [None])[i]
            dcp_spel =  self.s.output.get(keys['dcp'], [None])[i]
            d44Ca_spel = self.s.output.get(keys['d44Ca'],  [None])[i] 
-           
-
            d18O_spel =  self.s.output.get(keys['d18O'], [None])[i] 
 
            
