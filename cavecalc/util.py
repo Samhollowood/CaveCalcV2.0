@@ -461,67 +461,48 @@ class PostProcessor(object):
         
         """
         
-        # If output_dir is provided, use it; otherwise, default to the current working directory 
+        # Define output and results directories 
         output_dir = os.getcwd() 
+        results_dir = os.path.join(output_dir, 'CDA_Results') 
+        os.makedirs(results_dir, exist_ok=True) 
         
+        # Define paths to CSV outputs 
+        tolerances_csv   = os.path.join(results_dir, 'Tolerances.csv') 
+        input_ranges_csv = os.path.join(results_dir, 'Input_Ranges.csv') 
+        all_outputs_csv  = os.path.join(results_dir, 'All_outputs.csv') 
+        matches_csv      = os.path.join(results_dir, 'Matches.csv') 
         
-        # Ensure the directory exists; create it if it does not 
-        os.makedirs(output_dir, exist_ok=True)
+        # Load user file 
+        file_path = os.path.abspath(self.s.settings.get('user_filepath', '')) 
+        if not file_path: 
+            return 
         
-        # Define the new folder name for CDA Results 
-        event_analyser_results_dir = os.path.join(output_dir, 'CDA_Results') 
-        
-        # Check if the directory exists; if not, create it 
-        if not os.path.exists(event_analyser_results_dir): 
-            os.makedirs(event_analyser_results_dir)
-
-        
-        ## Paths for separate CSV files within the new folder 
-        tolerances_csv = os.path.join(event_analyser_results_dir, 'Tolerances.csv') 
-        input_ranges_csv = os.path.join(event_analyser_results_dir, 'Input_Ranges.csv') 
-        all_outputs_csv = os.path.join(event_analyser_results_dir, 'All_outputs.csv')
-        matches_csv = os.path.join(event_analyser_results_dir, 'Matches.csv')
-
-        file_path = os.path.abspath(self.s.settings['user_filepath'])
-
-        if not file_path:
-            return
-
-        try:
-            # Load the users time-series excel file
-            df = pd.read_csv(file_path)
-            # Strip whitespace from the headers and normalize column names by removing special characters
+        try: 
+            df = pd.read_csv(file_path) 
             df.columns = df.columns.str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
 
-            age_column = [col for col in df.columns if 'age' in col.lower()]
-            d13C_columns = [col for col in df.columns if 'd13c' in col.lower()]
-            d18O_columns = [col for col in df.columns if 'd18o' in col.lower()]
-            mgca_column = [col for col in df.columns if 'mgca' in col.lower()]
-            dcp_column = [col for col in df.columns if 'dcp' in col.lower()]
-            d44Ca_column = [col for col in df.columns if 'd44ca' in col.lower()]
-            srca_column = [col for col in df.columns if 'srca' in col.lower()]
-            baca_column = [col for col in df.columns if 'baca' in col.lower()]
-            uca_column = [col for col in df.columns if 'uca' in col.lower()]
-
-            age_data = df[age_column[0]].tolist()
-            d13C_data = df[d13C_columns[0]].tolist() if d13C_columns else None
-            d18O_data = df[d18O_columns[0]].tolist() if d18O_columns else None
-            MgCa_data = df[mgca_column[0]].tolist() if mgca_column else None
-            dcp_data = df[dcp_column[0]].tolist() if dcp_column else None
-            d44Ca_data = df[d44Ca_column[0]].tolist() if d44Ca_column else None
-            SrCa_data = df[srca_column[0]].tolist() if srca_column else None
-            BaCa_data = df[baca_column[0]].tolist() if baca_column else None
-            UCa_data = df[uca_column[0]].tolist() if uca_column else None
-          
+            def extract(col):  
+                match = [c for c in df.columns if col in c] 
+                return df[match[0]].tolist() if match else None 
             
-        except Exception as e:
-            print(f"Error reading Excel file: {e}")
+            age_data    = extract('age')
+            d13C_data   = extract('d13c')
+            d18O_data   = extract('d18o')
+            MgCa_data   = extract('mgca')
+            dcp_data    = extract('dcp')
+            d44Ca_data  = extract('d44ca')
+            SrCa_data   = extract('srca')
+            BaCa_data   = extract('baca')
+            UCa_data    = extract('uca')
+
+        except Exception as e: 
+            print(f"Error reading Excel file: {e}") 
             return
 
-        # Extract tolerances from settings
-        tolerance_keys = ['tolerance_d13C', 'tolerance_d18O', 'tolerance_MgCa', 'tolerance_DCP', 
-                  'tolerance_d44Ca', 'tolerance_SrCa', 'tolerance_BaCa', 'tolerance_UCa'] 
-        tolerance, d18O_tolerance, mg_tolerance, dcp_tolerance, d44Ca_tolerance, sr_tolerance, ba_tolerance, u_tolerance = \[self.s.settings[key] for key in tolerance_keys]
+        tolerance_keys = ['tolerance_d13C','tolerance_d18O','tolerance_MgCa','tolerance_DCP',
+                          'tolerance_d44Ca','tolerance_SrCa','tolerance_BaCa','tolerance_UCa']
+        tolerance, d18O_tolerance, mg_tolerance, dcp_tolerance, d44Ca_tolerance, sr_tolerance, ba_tolerance, u_tolerance = \
+            [self.s.settings[key] for key in tolerance_keys]
         results = [] 
         all_record = []
         match_found = False  # Flag to check if any match is found
@@ -566,38 +547,29 @@ class PostProcessor(object):
         lengths = [len(self.s.output.get(keys[k], [])) for k in keys if keys[k] in self.s.output]
         num_data_points = min(lengths) if lengths else 0
         
-        for i in range(num_data_points):
-           d13C_spel = self.s.output.get(keys['d13C'], [None])[i]
-           MgCa_spel =  self.s.output.get(keys['MgCa'], [None])[i]
-           SrCa_spel =  self.s.output.get(keys['SrCa'],  [None])[i]
-           BaCa_spel =  self.s.output.get(keys['BaCa'], [None])[i]
-           UCa_spel = self.s.output.get(keys['UCa'],  [None])[i]
-           dcp_spel =  self.s.output.get(keys['dcp'], [None])[i]
-           d44Ca_spel = self.s.output.get(keys['d44Ca'],  [None])[i] 
-           d18O_spel =  self.s.output.get(keys['d18O'], [None])[i] 
+        for i in range(num_data_points):            
+           # List of variable keys to extract 
+           spel_keys = ['d13C', 'd18O', 'MgCa', 'SrCa', 'BaCa', 'UCa', 'dcp', 'd44Ca'] 
+           
+           # Extract and unpack spel values 
+           d13C_spel, d18O_spel, MgCa_spel, SrCa_spel, BaCa_spel, UCa_spel, dcp_spel, d44Ca_spel = [ 
+               self.s.output.get(keys[k], [None])[i] for k in spel_keys] 
 
            
-      
-           MgCa_spel = MgCa_spel * 1000 if MgCa_spel is not None else None 
-           SrCa_spel = SrCa_spel * 1000 if SrCa_spel is not None else None 
-           BaCa_spel = BaCa_spel * 1000 if BaCa_spel is not None else None 
-           UCa_spel = UCa_spel * 1000 if UCa_spel is not None else None 
+           #Convert X/Ca from mol/mol to mmol/mol
+           for x in [MgCa_spel, SrCa_spel, BaCa_spel, UCa_spel]: 
+               if x is not None: 
+                   x *= 1000
 
            
-           # Set to -999 if None 
-           d13C_spel = -999 if d13C_spel is None else d13C_spel
-           d18O_spel = -999 if d18O_spel is None else d18O_spel
-           d44Ca_spel = -999 if d44Ca_spel is None else d44Ca_spel
-           MgCa_spel = -999 if MgCa_spel is None else MgCa_spel
-           SrCa_spel = -999 if SrCa_spel is None else SrCa_spel
-           BaCa_spel = -999 if BaCa_spel is None else BaCa_spel
-           UCa_spel = -999 if UCa_spel is None else UCa_spel
-        
-           Gkeys = [
-    'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
-    'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba', 
-    'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C' 
-    ] 
+           # Set to -999 if there is Non-precipitate values 
+           (d13C_spel, d18O_spel, d44Ca_spel, MgCa_spel, SrCa_spel, BaCa_spel, UCa_spel) = (
+               -999 if v is None else v for v in (d13C_spel, d18O_spel, d44Ca_spel, MgCa_spel, SrCa_spel, BaCa_spel, UCa_spel))
+
+          #Extract model inputs, such that, if there is match, these values are stored in the Matches.csv
+           Gkeys = ['soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O',  
+                    'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba',  
+                    'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C' ] 
     
            # Extract settings into a dictionary
            settings = {key: self.s.settings[key] for key in Gkeys}
@@ -605,11 +577,11 @@ class PostProcessor(object):
            # Automatically create variables from dictionary keys
            locals().update(settings)
            
+           #Extract fCa, the d13C initial solution, and Ca initial solution
            f_ca = self.s.output.get('f_ca',[])
            f_ca = f_ca[i]
            ca = self.s.output.get('Ca(mol/kgw)',[])
-           ca = ca[1]
- 
+           ca = ca[1] 
            d13C_DIC = self.s.output.get('d13C',[])
            d13C_DIC = d13C_DIC[1]
            atm_d18O = self.s.settings['atm_d18O']
@@ -645,49 +617,17 @@ class PostProcessor(object):
                    if key == 'reprecip': 
                        base_record['d13C_init'] = d13C_DIC 
                        base_record['Ca (mol/kgw)_init'] = ca 
-                       base_record['f_ca'] = f_ca
-
-               
+                       base_record['f_ca'] = f_ca               
                # Add these columns at the end 
                base_record['d13C'] = d13C_value 
                base_record['CaveCalc d13C'] = d13C_spel 
                base_record['d13C residual'] = residual
                  
-               
-               d18O_residual = (
-                   d18O_spel - d18O_data[index] 
-                   if d18O_data and index < len(d18O_data) and d18O_spel and d18O_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               MgCa_residual = ( 
-                   MgCa_spel - MgCa_data[index] 
-                   if MgCa_data and index < len(MgCa_data) and MgCa_spel and MgCa_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               dcp_residual = ( 
-                   dcp_spel - dcp_data[index] 
-                   if dcp_data and index < len(dcp_data) and dcp_spel and dcp_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               d44Ca_residual = ( 
-                   d44Ca_spel - d44Ca_data[index] 
-                   if d44Ca_data and index < len(d44Ca_data) and d44Ca_spel and d44Ca_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               SrCa_residual = ( 
-                   SrCa_spel - SrCa_data[index] 
-                   if SrCa_data and index < len(SrCa_data) and SrCa_spel and SrCa_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               BaCa_residual = ( 
-                   BaCa_spel - BaCa_data[index] 
-                   if BaCa_data and index < len(BaCa_data) and BaCa_spel and BaCa_data[index] not in [None, '', float('nan')] 
-                   else None) 
-               
-               UCa_residual = (
-                   UCa_spel - UCa_data[index] 
-                   if UCa_data and index < len(UCa_data) and UCa_spel and UCa_data[index] not in [None, '', float('nan')] 
-                   else None)
+               #Calcualte the residual of each proxy 
+               pairs = [(d18O_spel, d18O_data), (MgCa_spel, MgCa_data), (dcp_spel, dcp_data), (d44Ca_spel, d44Ca_data), (SrCa_spel, SrCa_data), (BaCa_spel, BaCa_data), (UCa_spel, UCa_data)] 
+               residuals = [(s - d[index]) if d and index < len(d) and s is not None and d[index] not in [None, '', float('nan')] else None for s, d in pairs] 
+               (d18O_residual, MgCa_residual, dcp_residual, d44Ca_residual, SrCa_residual, BaCa_residual, UCa_residual) = residuals
+
 
                # Check if residuals are within tolerance
                residual_check = abs(residual) <= tolerance if d13C_data else True
@@ -727,110 +667,68 @@ class PostProcessor(object):
                 
                 
            # Prepare tolerance DataFrame
-           tolerance_data = { 
-               'Proxy': [
-                   'd13C', 'd18O', 'MgCa', 'DCP', 'd44Ca', 'SrCa', 'BaCa', 'UCa' ], 
-               'Tolerance Value': [tolerance, d18O_tolerance, mg_tolerance, dcp_tolerance,
-                                   d44Ca_tolerance, sr_tolerance, ba_tolerance, u_tolerance]}
+           tolerance_data = { 'Proxy': ['d13C', 'd18O', 'MgCa', 'DCP', 'd44Ca', 'SrCa', 'BaCa', 'UCa' ], 
+                             'Tolerance Value': [tolerance, d18O_tolerance, mg_tolerance, dcp_tolerance, 
+                                                 d44Ca_tolerance, sr_tolerance, ba_tolerance, u_tolerance]}
         
            tolerance_df = pd.DataFrame(tolerance_data) 
         
         
 
-           input_ranges_data = {
-            'Variable': [    'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
-    'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba', 
-    'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C'],
-            'Minimum': [None] * 19, 
-            'Maximum': [None] * 19, 
-             }
+           input_ranges_data = {'Variable': [    'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O',  
+                                             'bedrock_pyrite', 'soil_U', 'bedrock_UCa', 'soil_Mg', 'bedrock_MgCa', 'soil_Ba',  
+                                             'bedrock_BaCa', 'soil_Sr', 'bedrock_SrCa', 'soil_O2', 'soil_R14C', 'atm_pCO2', 'atm_d13C'], 
+                                'Minimum': [None] * 19,  
+                                'Maximum': [None] * 19,}
         
            input_ranges_df = pd.DataFrame(input_ranges_data)
         
            
            # Iterate through the data points
            for index in range(len(age_data)):  
-               # Handle d13C_value
-               d13C_value = d13C_data[index] if d13C_data and index < len(d13C_data) else np.nan
-               
-               # Base dictionary with common keys for CDA.xlsx 
-               all_records = { 
-                'Age': age_data[index],  
-                'd13C': d13C_value, 
-                'CaveCalc d13C': d13C_spel, 
-                'd13C residual': residual, 
-                'f_ca': f_ca, 
-                'd13C_init': d13C_DIC,
-                'Ca (mol/kgw)': ca,  
+               d13C_value = d13C_data[index] if d13C_data and index < len(d13C_data) else np.nan 
+               all_records = {'Age': age_data[index], 
+                              'd13C': d13C_value, 
+                              'CaveCalc d13C': d13C_spel, 
+                              'd13C residual': residual, 
+                              'f_ca': f_ca, 
+                              'd13C_init': d13C_DIC, 
+                              'Ca (mol/kgw)': ca,
                 } 
-            
-               # Extend the base record with all available data
+               
                all_all_records = all_records.copy() 
-               if d18O_data:  
-                   all_all_records.update({
-                    'd18O': d18O_data[index],
-                    'CaveCalc d18O': d18O_spel,
-                    'rainfall d18O': atm_d18O, 
-                    'd18O residual': d18O_data[index] -  d18O_spel, 
-                })
-            
-               if MgCa_data: 
-                   all_all_records.update({
-                    'MgCa': MgCa_data[index], 
-                    'CaveCalc MgCa': MgCa_spel,
-                    'MgCa residual': MgCa_data[index] -  MgCa_spel,
-                })
-            
-               if dcp_data: 
-                   dcp_val = dcp_data[index]
-                   all_all_records.update({
-                    'DCP': dcp_val, 
-                    'CaveCalc DCP': dcp_spel,
-                    'DCP residual': dcp_data[index] -  dcp_spel if dcp_spel is not None and dcp_val is not None else None, 
-                }) 
-            
-               if d44Ca_data: 
-                   d44Ca_val = d44Ca_data[index] 
-                   all_all_records.update({ 
-                       'd44Ca': d44Ca_val, 
-                       'CaveCalc d44Ca': d44Ca_spel, 
-                       'd44Ca residual': d44Ca_val - d44Ca_spel if d44Ca_spel is not None and d44Ca_val is not None else None,
-               })
-
-                   
-               if SrCa_data: 
-                   all_all_records.update({
-                    'SrCa': SrCa_data[index], 
-                    'CaveCalc SrCa': SrCa_spel,
-                    'SrCa residual': SrCa_data[index] -  SrCa_spel,
-                })
-            
-               if BaCa_data: 
-                   all_all_records.update({
-                    'BaCa': BaCa_data[index], 
-                    'CaveCalc BaCa': BaCa_spel,
-                    'BaCa residual': BaCa_data[index] -  BaCa_spel, 
-                })
-            
-               if UCa_data: 
-                   all_all_records.update({
-                    'UCa': UCa_data[index], 
-                    'CaveCalc UCa': UCa_spel,
-                    'UCa residual': UCa_data[index] -  UCa_spel,
-                })
-                   
-               filtered_settings = {key: self.s.settings[key] for key in desired_keys if key in self.s.settings} 
+               # Helper mapping of data variables to their keys 
+               data_map = {'d18O': (d18O_data, d18O_spel, 'rainfall d18O', atm_d18O), 
+                           'MgCa': (MgCa_data, MgCa_spel), 
+                           'DCP': (dcp_data, dcp_spel), 
+                           'd44Ca': (d44Ca_data, d44Ca_spel), 
+                           'SrCa': (SrCa_data, SrCa_spel), 
+                           'BaCa': (BaCa_data, BaCa_spel), 
+                           'UCa': (UCa_data, UCa_spel), 
+               } 
+               
+               for key, vals in data_map.items(): 
+                   data_array, spel_val = vals[0], vals[1] 
+                   if data_array: 
+                       data_val = data_array[index] 
+                       # Special case for d18O to add rainfall and calculate residual explicitly 
+                       if key == 'd18O': 
+                           all_all_records.update({
+                               key: data_val, 
+                               f'CaveCalc {key}': spel_val, 
+                               'rainfall d18O': vals[2], 
+                               f'{key} residual': data_val - spel_val, 
+                          }) 
+                       else: 
+                           residual = data_val - spel_val if spel_val is not None and data_val is not None else None 
+                           all_all_records.update({ 
+                               key: data_val, 
+                               f'CaveCalc {key}': spel_val, f'{key} residual': residual, 
+                          }) 
+               filtered_settings = {k: self.s.settings[k] for k in desired_keys if k in self.s.settings}
                all_all_records.update(filtered_settings)
-
-               # Append the extended record to results
                all_record.append(all_all_records) 
-
-                 
-         
-            
-
-        
-
+                        
         # Convert results to a DataFrame
         all_record_df = pd.DataFrame(all_record)
         
