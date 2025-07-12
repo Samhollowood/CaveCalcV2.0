@@ -158,58 +158,6 @@ if sys.platform.lower() == 'linux':
 print("Cavecalc installation complete. Run example1.py to test.")
 
 
-# For macOS Apple Silicon (arm64)
-if sys.platform.lower() == 'darwin' and 'arm64' in platform.machine():
-    try:
-        print("Configuring phreeqpy for macOS Apple Silicon (arm64)...")
-
-        # Locate phreeqpy installation
-        output = subprocess.check_output([sys.executable, '-m', 'pip', 'show', 'phreeqpy'], universal_newlines=True)
-        phreeqpy_path = None
-        for line in output.splitlines():
-            if line.startswith('Location:'):
-                phreeqpy_path = line.split('Location: ')[1]
-                break
-
-        if not phreeqpy_path:
-            raise FileNotFoundError("phreeqpy installation path not found. Ensure it is installed.")
-
-        # Paths to IPhreeqc files
-        iphreeqc_path = os.path.join(phreeqpy_path, 'phreeqpy', 'iphreeqc')
-        iphreeqc_dylib_path = os.path.join(iphreeqc_path, 'libiphreeqc.0.dylib')
-        iphreeqc_backup_path = os.path.join(iphreeqc_path, 'libiphreeqc.0_backup.dylib')
-        iphreeqc_phreeqc3_path = os.path.join(iphreeqc_path, 'phreeqc3')
-
-        # Check if the phreeqc3 directory exists
-        if not os.path.exists(iphreeqc_phreeqc3_path):
-            raise FileNotFoundError(f"phreeqc3 directory not found at {iphreeqc_phreeqc3_path}")
-
-        # If the backup file already exists, delete it
-        if os.path.exists(iphreeqc_backup_path):
-            os.remove(iphreeqc_backup_path)
-            print(f"Deleted existing {iphreeqc_backup_path}")
-
-        # Rename the current libiphreeqc.0.dylib to backup (if it exists)
-        if os.path.exists(iphreeqc_dylib_path):
-            os.rename(iphreeqc_dylib_path, iphreeqc_backup_path)
-            print(f"Renamed {iphreeqc_dylib_path} to {iphreeqc_backup_path}")
-
-        # Find the libiphreeqc-X.X.X-m1.dylib file in phreeqc3
-        dylib_files = [f for f in os.listdir(iphreeqc_phreeqc3_path) if f.startswith('libiphreeqc-') and f.endswith('-m1.dylib')]
-        if not dylib_files:
-            raise FileNotFoundError("No libiphreeqc-<version>-m1.dylib file found in phreeqc3 directory.")
-
-        iphreeqc_versioned_dylib_path = os.path.join(iphreeqc_phreeqc3_path, dylib_files[0])
-
-        # Copy the versioned libiphreeqc-X.X.X-m1.dylib to libiphreeqc.0.dylib
-        shutil.copy(iphreeqc_versioned_dylib_path, iphreeqc_dylib_path)
-        print(f"Copied {dylib_files[0]} to {iphreeqc_dylib_path}")
-
-    except Exception as e:
-        print(f"An error occurred while configuring phreeqpy for macOS Apple Silicon: {e}")
-
-
-
 
 
 
