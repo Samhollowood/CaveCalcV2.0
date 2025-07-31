@@ -317,8 +317,8 @@ By default, after a **CDA** run, three plots are generated automatically. Howeve
 # Import modules
 import cavecalc.analyse as cca
 
-# Initialize the Evaluate class
-e = cca.Evaluate()
+# Initialize the CDA Plotting class
+e = cca.CDAPlotter()
 
 # Define path to measured data and archived output directory
 user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA run,
