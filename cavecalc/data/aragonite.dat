@@ -7347,25 +7347,25 @@ NAMED_EXPRESSIONS #give fractionation factors
 ## Aragonite Trace Element partition coefficients
 Log_alpha_MgCa_Aragonite/H2O(l)
     # Kaushal et al., 2025 
-    -ln_alpha1000    2749.12816   -33
+    -ln_alpha1000    5713   -43
 
 Log_alpha_SrCa_Aragonite/H2O(l)
     # Kaushal et al., 2025 
-    -ln_alpha1000    938.7733   -2.8
+    -ln_alpha1000    2270   -7
 
 Log_alpha_BaCa_Aragonite/H2O(l)
     # Kaushal et al., 2025 
-    -ln_alpha1000    2572.2305   -8.6
+    -ln_alpha1000    2744   -9
 
 Log_alpha_UCa_Aragonite/H2O(l)
     # Kaushal et al., 2025 
-    -ln_alpha1000    -26343.823   92
+    -ln_alpha1000    -14925   54.0
 
 #
 ## Ca isotope fractionation factors
 Log_alpha_44Ca_Aragonite/Ca(aq)
     # Kaushal et al., 2025 
-	  -ln_alpha1000	-1.17	# constant in this version
+	  -ln_alpha1000	-0.99	# constant in this version
 
 ###############################################################################################
 SOLUTION_SPECIES # 44Ca exchange reactions
