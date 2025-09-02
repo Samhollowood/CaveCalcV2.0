@@ -163,10 +163,10 @@ When using isotope systems, maintain consistancy in the reference standards thro
 
 ### Step 2: Define Tolerance Values (Optional)
 
-You can optionally set tolerance values for proxies to define what counts as a match between model and measured data. For example:
+You can optionally set tolerance values for proxies to define what counts as a match between model and measured data. These can be found in the GUI (under the sub-heading CDA settings) or defined in .py files as::
 
 - `tolerance_d13C`  - `tolerance_d18O`  - `tolerance_d44Ca`  - `tolerance_DCP`
- - `tolerance_MgCa`  - `tolerance_SrCa`  - `tolerance_BaCa`  - `tolerance_UCa`  
+   `tolerance_MgCa`  - `tolerance_SrCa`  - `tolerance_BaCa`  - `tolerance_UCa`  
 
 If you leave these blank or undefined, CDA will use the default tolerance intervals for each proxy tolerance.
  
