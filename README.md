@@ -159,6 +159,7 @@ Use the `user_filepath` settings key to point to your speleothem data file:
 
 You do not need to populate all columns or cells in the file.
 The CDA will only compare model outputs to the proxies that are filled in.
+When using isotope systems, maintain consistancy in the reference standards throughout.
 
 ### Step 2: Define Tolerance Values (Optional)
 
