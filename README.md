@@ -165,24 +165,18 @@ When using isotope systems, maintain consistancy in the reference standards thro
 
 You can optionally set tolerance values for proxies to define what counts as a match between model and measured data. For example:
 
-- `tolerance_d13C`  
-- `tolerance_d18O`  
-- `tolerance_d44Ca`  
-- `tolerance_MgCa`  
-- `tolerance_SrCa`  
-- `tolerance_BaCa`  
-- `tolerance_UCa`  
+- `tolerance_d13C`  - `tolerance_d18O`  - `tolerance_d44Ca`  - `tolerance_DCP`
+ - `tolerance_MgCa`  - `tolerance_SrCa`  - `tolerance_BaCa`  - `tolerance_UCa`  
 
 If you leave these blank or undefined, CDA will use the default tolerance intervals for each proxy tolerance.
  
 ### Step 3: Define Model Inputs
 
-Set your model input variables as usual for CaveCalc model runs. Focus on the inputs you want to constrain or explore.
+Set your model input variables as usual for CaveCalc model runs.
 
 **See usage.**  
 **See manual Table 3 for all available inputs.**
 
-Remember, these are the model inputs you wish to constrain using the CDA (e.g., environmental parameters).
 
 ### Optional: Define Output Directory
 
