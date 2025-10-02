@@ -631,8 +631,8 @@ class CDAPlotter:
                                      boxstyle="round,pad=0.05", edgecolor=color, 
                                      linewidth=5, fill=False)
         fig.patches.append(rect)
-
-    def add_input_annotations(self, fig, input_ranges_df, bedrock_text, soil_text, test_df=None):
+        
+    def add_input_annotations(self, fig, input_ranges_df, bedrock_text, soil_text):
         """Add input parameter annotations to figure."""
         # Miscellaneous inputs
         fig.text(0.50, 0.90, 'User miscellaneous inputs', ha='center', va='center', 
@@ -666,22 +666,12 @@ class CDAPlotter:
                 fig.text(0.20, y_pos, value, ha='center', va='center', fontsize=10)
                 y_pos -= 0.025
         
-        # Available measurements - filter out proxies present in test data
-        available_proxies = []
-        if test_df is not None:
-            test_columns_lower = [col.lower() for col in test_df.columns]
-            for proxy in self.column_mapping.keys():
-                # Check if this proxy is NOT in the test data
-                if proxy not in test_columns_lower:
-                    available_proxies.append(proxy)
-        else:
-            available_proxies = list(self.column_mapping.keys())
-        
+        # Available measurements
         fig.text(0.80, 0.95, 'Available measurements', ha='center', va='center', 
                 fontsize=10, fontweight='bold')
         y_avail, x_spacing, y_spacing = 0.92, 0.05, 0.025
         
-        for i, proxy in enumerate(available_proxies): 
+        for i, proxy in enumerate(self.column_mapping.keys()): 
             x_pos = 0.75 + (i % 3) * x_spacing 
             y_pos = y_avail - (i // 3) * y_spacing 
             
@@ -692,6 +682,7 @@ class CDAPlotter:
                 label = label.replace('ca', '/Ca') 
                 
             fig.text(x_pos, y_pos, label, ha='center', va='center', fontsize=10)
+            
     def plot_co2_processes(self, data):
         """Create CO2 processes plot."""
         df_main = data['matches']
@@ -941,4 +932,5 @@ class CDAPlotter:
  
     
       
+
 
