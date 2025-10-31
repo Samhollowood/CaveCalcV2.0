@@ -71,8 +71,8 @@ conda activate base
 ```
 To activate the base anaconda environment. Or you may wish to use your own environment 
 
-There are two ways to install. One uses pip install . which does not generate an .egg file. 
-The other uses Python setup.py install, which does geenrate .egg files
+There are two ways to install. One uses pip install . which does not generate an .egg file (step 4a). 
+The other uses Python setup.py install, which does geenrate .egg files (step 4b)
 *NOTE* soon .egg will be deprecated and will be removed in future versions of setuptools and pip.
 
 4a. Install the CaveCalcV2.0 package:
@@ -90,6 +90,7 @@ Install the CaveCalcV2.0 package:
 ```shell
 python setup.py install 
 ```
+The configuration with phreeqpy is automatically done as part of the setup.py file.
 You may have to install a setuptools package.
 
 If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
