@@ -37,6 +37,11 @@ setup(
     package_data={'cavecalc.data': ['*.dat']},
     scripts=['scripts/cc_input_gui.py', 'scripts/cc_output_gui.py'],
     install_requires=install_requires
+    entry_points={
+        'console_scripts': [
+            'cc-config-phreeqpy = cavecalc.configure_phreeqpy:main',
+        ],
+    },
 )
 
 # Additional setup for non-Windows platforms (if Binder is Linux or macOS)
