@@ -73,13 +73,9 @@ To activate the base anaconda environment. Or you may wish to use your own envir
 
 4. Install the CaveCalcV2.0 package:
 ```shell
-pip install .
-```
-
-Or if you would rather install the package as an .egg file (NOTE: .egg as a method of installation will be deprecated soon):
-```shell
 python setup.py install
 ```
+You may have to install a setuptools package.
 
 If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
 
