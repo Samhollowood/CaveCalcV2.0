@@ -81,7 +81,7 @@ pip install .
 ```
 This critical next step (non mac users only) will configure the phreeqpy module 
 ```shell
-cc-config-phreeqpy
+cavecalc/cc-config-phreeqpy
 ```
 If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
 
