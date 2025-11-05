@@ -716,10 +716,10 @@ class CDAPlotter:
         }
         subplot_titles = ['[A]', '[B]', '[C]', '[D]']
         subtitles = [
-            'Viable soil d13C, constrained by matches between modeled and measured CaCO3',
-            'Viable soil gas pCO2, constrained by matches between modeled and measured CaCO3',
-            'Viable cave air pCO2, constrained by matches between modeled and measured CaCO3',
-            'd13C initial solution outputs from viable soil d13C, soil gas pCO2, and gas-to-water ratio'
+            'Viable soil d13C',
+            'Viable soil gas pCO2',
+            'Viable cave air pCO2',
+            'Viable d13C initial solution outputs'
         ]
         
         # Create subplots
@@ -762,8 +762,8 @@ class CDAPlotter:
         variables = ['gas_volume', 'f_ca']
         subplot_titles = ['[A]', '[B]']
         subtitles = [
-            'Viable gas-to-water ratio, constrained by matches between modeled and measured CaCO3',
-            'Viable fca outputs constrained by matches between modeled and measured CaCO3'
+            'Viable gas-to-water ratios',
+            'Viable fca outputs'
         ]
         
         # Create subplots
@@ -978,3 +978,4 @@ class CDAPlotter:
  
     
       
+
