@@ -591,13 +591,13 @@ class PostProcessor(object):
 
            
            # Set to -999 if None 
-           d13C_spel = -999 if d13C_spel is None else d13C_spel
-           d18O_spel = -999 if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
-           d44Ca_spel = -999 if d44Ca_spel is None else d44Ca_spel
-           MgCa_spel = -999 if MgCa_spel is None else MgCa_spel
-           SrCa_spel = -999 if SrCa_spel is None else SrCa_spel
-           BaCa_spel = -999 if BaCa_spel is None else BaCa_spel
-           UCa_spel = -999 if UCa_spel is None else UCa_spel
+           d13C_spel = np.nan if d13C_spel is None else d13C_spel
+           d18O_spel = np.nan if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
+           d44Ca_spel = np.nan if d44Ca_spel is None else d44Ca_spel
+           MgCa_spel = np.nan if MgCa_spel is None else MgCa_spel
+           SrCa_spel = np.nan if SrCa_spel is None else SrCa_spel
+           BaCa_spel = np.nan if BaCa_spel is None else BaCa_spel
+           UCa_spel = np.nan if UCa_spel is None else UCa_spel
         
            Gkeys = [
     'soil_pCO2', 'soil_d13C', 'cave_pCO2', 'gas_volume', 'temperature', 'atm_d18O', 
