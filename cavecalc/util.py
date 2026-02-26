@@ -488,7 +488,7 @@ class PostProcessor(object):
             return
 
         try:
-            # Load the users time-series excel file
+            # Load the users time-series  file
             df = pd.read_csv(file_path)
             # Strip whitespace from the headers and normalize column names by removing special characters
             df.columns = df.columns.str.strip().str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
@@ -515,7 +515,6 @@ class PostProcessor(object):
           
             
         except Exception as e:
-            print(f"Error reading Excel file: {e}")
             return
 
         tolerance =    self.s.settings['tolerance_d13C']
