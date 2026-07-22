@@ -688,7 +688,7 @@ Q2(g)
 
 H2S(g)
      H2S = H2S
-     log_k           -0.997
+     log_k           7
      delta_h         -4.570 kcal
 
 CH4(g)
@@ -7365,7 +7365,7 @@ Log_alpha_UCa_Aragonite/H2O(l)
 ## Ca isotope fractionation factors
 Log_alpha_44Ca_Aragonite/Ca(aq)
     # Kaushal et al., 2025 
-	  -ln_alpha1000	-0.99	# constant in this version
+	  -ln_alpha1000	-1.10	# constant in this version
 
 ###############################################################################################
 SOLUTION_SPECIES # 44Ca exchange reactions
