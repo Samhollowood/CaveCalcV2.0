@@ -11,6 +11,7 @@
     16: Geochem: Soil Metals
     17: Geochem: Cave Air
     18: Additional d18O controls
+    19: Partition Coefficient / Fractionation Factor Overrides
     2: Scripting options
     3: Additional PHREEQC Output
     4: IO Settings
@@ -87,4 +88,9 @@ soil_O2 =       (11, 'A')
 atm_O2 =        (10, 'A')
 init_O2 =       (12, 'A')
 precipitate_mineralogy = (5,'C')
+D_MgCa =        (19, 'A')
+D_SrCa =        (19, 'A')
+D_BaCa =        (19, 'A')
+D_UCa =         (19, 'A')
+D_44Ca =        (19, 'A')
 
