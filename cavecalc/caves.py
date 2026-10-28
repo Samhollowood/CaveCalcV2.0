@@ -582,16 +582,15 @@ class Solution(object):
 
     
     def precipitate_rxn(self):
-    """Prepare PHREEQC input for calcite/aragonite precipitation.
-    ...
-    """
-    overrides = self.partition_coefficient_overrides()
-    if self.s.settings['precipitate_mineralogy'].capitalize() == 'Calcite':
-        return overrides + self.calcite_string, "CaCO3_precipitation"
-    elif self.s.settings['precipitate_mineralogy'].capitalize() == 'Aragonite':
-        return overrides + self.aragonite_string, "CaCO3_precipitation"
-    else:
-        raise ValueError("Invalid precipitate_mineralogy specified.")
+        """Prepare PHREEQC input for calcite/aragonite precipitation.
+        ...""" 
+        overrides = self.partition_coefficient_overrides() 
+        if self.s.settings['precipitate_mineralogy'].capitalize() == 'Calcite': 
+            return overrides + self.calcite_string, "CaCO3_precipitation" 
+        elif self.s.settings['precipitate_mineralogy'].capitalize() == 'Aragonite': 
+            return overrides + self.aragonite_string, "CaCO3_precipitation" 
+        else: 
+            raise ValueError("Invalid precipitate_mineralogy specified.")
             
     
 class Carbonate(object):
