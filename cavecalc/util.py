@@ -350,7 +350,7 @@ class PostProcessor(object):
         self.calculate_radiocarbon()
         self.set_none()  
         self.results_df = pd.DataFrame()
-        self.CDA()     
+        self.()     
 
     
 
@@ -579,7 +579,10 @@ class PostProcessor(object):
            d44Ca_spel = self.s.output.get(keys['d44Ca'],  [None])[i] 
            
 
-           d18O_spel =  self.s.output.get(keys['d18O'], [None])[i] 
+           d18O_spel = self.s.output.get(keys['d18O'], [None])[i]
+           if d18O_spel is not None and d18O_spel == d18O_spel:  # not None and not NaN
+               d18O_spel = (0.970001 * d18O_spel) - 29.99
+           d18O_spel = np.nan if d18O_spel is None or d18O_spel != d18O_spel else d18O_spel
 
            
       
