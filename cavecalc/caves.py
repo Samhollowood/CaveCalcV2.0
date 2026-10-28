@@ -582,22 +582,16 @@ class Solution(object):
 
     
     def precipitate_rxn(self):
-        """Prepare PHREEQC input for calcite precipitation.
-        
-        Precipitation will occur until the solution reaches saturation with
-        respect to calcite. Radiocarbon fractionation is not included as the
-        very small amounts present may cause numerical instability.
-        
-  
-        Returns:
-            (pq_str, desc_str) for adding to the iphreeqc buffer.
-        """
-        if self.s.settings['precipitate_mineralogy'].capitalize() == 'Calcite':
-            return self.calcite_string, "CaCO3_precipitation"
-        elif self.s.settings['precipitate_mineralogy'].capitalize() == 'Aragonite':
-            return self.aragonite_string, "CaCO3_precipitation"
-        else:
-            raise ValueError("Invalid precipitate_mineralogy specified.")
+    """Prepare PHREEQC input for calcite/aragonite precipitation.
+    ...
+    """
+    overrides = self.partition_coefficient_overrides()
+    if self.s.settings['precipitate_mineralogy'].capitalize() == 'Calcite':
+        return overrides + self.calcite_string, "CaCO3_precipitation"
+    elif self.s.settings['precipitate_mineralogy'].capitalize() == 'Aragonite':
+        return overrides + self.aragonite_string, "CaCO3_precipitation"
+    else:
+        raise ValueError("Invalid precipitate_mineralogy specified.")
             
     
 class Carbonate(object):
