@@ -93,5 +93,12 @@ tolerance_SrCa = 0.3
 tolerance_BaCa = 0.3
 tolerance_UCa = 0.3
 
+#Partition coefficients
+D_MgCa = None
+D_SrCa = None
+D_BaCa = None
+D_UCa = None
+D_44Ca = None
+
 
 
