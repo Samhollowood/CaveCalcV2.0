@@ -160,6 +160,21 @@ class SettingsObject(object):
             b = value
         assert a in cc_types.keys()
         r = cc_types[a]
+        
+        a = attribute
+        
+        if value == 'self':
+            b = getattr(self, a)
+        else:   
+            b = value
+        assert a in cc_types.keys()
+        r = cc_types[a]
+
+        # None is always accepted, regardless of the declared type — used
+        # as a sentinel for "not set, use database default" (e.g. the
+        # D_* partition coefficient overrides).
+        if b is None:
+            return True
 
         ## for simple string or boolean input
         def type_test(t):
@@ -436,5 +451,7 @@ if __name__ == '__main__': # testing code
     a = SettingsMaker(temperature=[15, 20], soil_pCO2=[2222, 3333])
     a.print_report()
     a = SettingsMaker()
+    
+    
     
     
