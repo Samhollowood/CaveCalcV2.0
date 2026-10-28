@@ -16,7 +16,7 @@ Version 2 and CDA are under active development, so code may be more prone to err
 - [Model Inputs](#model-inputs)
 - [Carbonate Data Analyser](#carbonate-data-analyser)
 - [Aragonite Precipitation](#aragonite-precipitation)
-- [Partition Coefficient and Fractionation Factor Overrides](#partition-coefficient-and-fractionation-factor-overrides)
+- [Partition Coefficient Overrides](#partition-coefficient-overrides)
 - [The d18O Reference Scale: VSMOW vs VPDB](#the-d18o-reference-scale-vsmow-vs-vpdb)
 - [Output](#output)
 - [Plotting](#plotting)
@@ -40,12 +40,11 @@ CaveCalcV2.0 is an updated forward-modelling tool for simulating speleothem chem
 3. U/Ca as a trace-element proxy.
 4. User-overridable partition coefficients and fractionation factors (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`), independent of mineralogy.
 
-
 ## Features
 
 - **Forward modelling of speleothem chemistry**, with updated tools and examples.
 - **Easier installation** for Windows and Linux users.
-- **Carbonate Data Analyser (CDA):** matches measured speleothem data against a batch of model runs.
+- **Carbonate Data Analyser (CDA):** automatically matches measured speleothem data against a batch of model runs.
 - **Aragonite precipitation modelling**, alongside the default calcite pathway.
 - **Site-specific partition coefficients and fractionation factors:** override any database default for Mg/Ca, Sr/Ca, Ba/Ca, U/Ca or d44Ca, without editing the thermodynamic database files.
 - **Readable output**, consolidated into a single `.csv` of settings and results per run.
@@ -156,7 +155,7 @@ Broad input categories include:
 - Soil and bedrock trace-metal/isotope chemistry (Mg, Sr, Ba, U, d44Ca, d13C, d18O)
 - Bedrock dissolution conditions (`bedrock`, `bedrock_pyrite`, `gas_volume`, `reprecip`)
 - General run settings (`temperature`, `kinetics_mode`, `precipitate_mineralogy`, `co2_decrement`, `calcite_sat_limit`)
-- Partition coefficient / fractionation factor overrides (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`, `d18O_equation`) - see [below](#partition-coefficient-and-fractionation-factor-overrides)
+- Partition coefficient / fractionation factor overrides (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`) - see [below](#partition-coefficient-overrides)
 - CDA settings (`user_filepath`, `tolerance_*`)
 - File I/O (`out_dir`, `database`, `phreeqc_log_file`)
 
@@ -233,9 +232,9 @@ CaveCalc automatically switches to the matching thermodynamic database (`aragoni
 
 Note that several model output keys (and some proxy behaviours, below) differ between Calcite and Aragonite runs, since each mineral has its own set of database partition coefficients and fractionation factors.
 
-## Partition Coefficient and Fractionation Factor Overrides
+## Partition Coefficient Overrides
 
-By default, CaveCalc draws every partition coefficient and fractionation factor (Mg/Ca, Sr/Ca, Ba/Ca, U/Ca, d44Ca, and the calcite-water d18O equation) straight from the active thermodynamic database (`calcite.dat` or `aragonite.dat`). CaveCalcV2.0 lets you override any of these directly from your settings, without touching the database files - useful if you have site-specific partitioning constraints (e.g. from your own cave monitoring or calibration study) that differ from the generic database values.
+By default, CaveCalc draws every partition coefficient and fractionation factor (Mg/Ca, Sr/Ca, Ba/Ca, U/Ca, d44Ca) straight from the active thermodynamic database (`calcite.dat` or `aragonite.dat`). CaveCalcV2.0 lets you override any of these directly from your settings, without touching the database files - useful if you have site-specific partitioning constraints (e.g. from your own cave monitoring or calibration study) that differ from the generic database values.
 
 These settings are **mineralogy-agnostic**: set `D_MgCa`, say, and it is applied to whichever mineral `precipitate_mineralogy` is currently set to (resolved at run time against the matching named expression in that mineral's database). You do not need separate settings per mineralogy.
 
@@ -246,13 +245,10 @@ These settings are **mineralogy-agnostic**: set `D_MgCa`, say, and it is applied
 | `D_BaCa` | Ba/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
 | `D_UCa` | U/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
 | `D_44Ca` | Ca isotope fractionation factor | **1000 x ln(alpha)**, per mil (may be negative) | `None` (database default) |
-| `d18O_equation` | Calcite-water d18O fractionation equation | `'ONeil'` or `'Tremaine'` | `'ONeil'` |
 
-A setting left as `None` (or `d18O_equation` left as `'ONeil'`) uses the database default and behaves exactly as CaveCalc always has.
+A setting left as `None` uses the database default and behaves exactly as CaveCalc always has.
 
 **Important - D_44Ca units.** Unlike the other four, `D_44Ca` must be supplied directly as **1000 ln(alpha)** (the same convention the database itself uses), not as a linear partition coefficient. Typical database values are small and negative (around -0.99 permil for aragonite, -1.27 permil for calcite) - if you're used to thinking of Ca isotope fractionation as a fractionation factor in permil, this is that same quantity.
-
-**d18O_equation and mineralogy.** `d18O_equation = 'Tremaine'` only takes effect when `precipitate_mineralogy` is `'Calcite'`. There is currently no cave-calibrated equivalent to Tremaine et al. (2011) for aragonite in the literature, so setting `'Tremaine'` while precipitating aragonite silently has no effect (the aragonite run still uses its own database default, Kim et al., 2007). This is a genuine limitation of the published calibration record, not a bug - if a cave-calibrated aragonite equation becomes available, it would need to be added to `caves.Solution.partition_coefficient_overrides`.
 
 **Example (API script):**
 ```python
@@ -261,7 +257,6 @@ settings = {
     'precipitate_mineralogy': 'Calcite',
     'D_MgCa': 0.02,        # override the database Mg/Ca partition coefficient
     'D_44Ca': -0.85,       # override the Ca isotope fractionation factor (1000*ln(alpha))
-    'd18O_equation': 'Tremaine',  # use the cave-calibrated d18O-H2O equation instead of Kim & O'Neil (1997)
 }
 ```
 
@@ -361,11 +356,8 @@ This project is licensed under the MIT license.
 
 ## References and Acknowledgements
 
-### Scientific references (new in CaveCalcV2.0)
+### Scientific references
 
-- Kim, S.-T. and O'Neil, J.R. (1997). Equilibrium and nonequilibrium oxygen isotope effects in synthetic carbonates. *Geochimica et Cosmochimica Acta*, 61(16), 3461-3475. (default calcite-water d18O equation)
-- Tremaine, D.M., Froelich, P.N. and Wang, Y. (2011). Speleothem calcite farmed in situ: Modern calibration of d18O and d13C paleoclimate proxies in a continuously-monitored natural cave system. *Geochimica et Cosmochimica Acta*, 75(17), 4929-4950. (cave-calibrated calcite d18O equation, `'Tremaine'`)
-- Kim, S.-T., O'Neil, J.R., Hillaire-Marcel, C. and Mucci, A. (2007). Oxygen isotope fractionation between synthetic aragonite and water: Influence of temperature and Mg2+ concentration. *Geochimica et Cosmochimica Acta*, 71(19), 4704-4715. (default aragonite-water d18O equation)
 - Owen, R., Day, C.C. and Hu, C.-Y. (2018). CaveCalc: A new model for speleothem chemistry and isotopes. *Computers & Geosciences*, 119, 115-122. (original CaveCalc model)
 
 ### Software dependencies
