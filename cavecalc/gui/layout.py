@@ -15,7 +15,7 @@
     3: Additional PHREEQC Output
     4: IO Settings
     5: Aragonite Mode
-    6: Rainfall calculator 
+
     
 Type:
     A: Text-with-range
@@ -87,5 +87,4 @@ soil_O2 =       (11, 'A')
 atm_O2 =        (10, 'A')
 init_O2 =       (12, 'A')
 precipitate_mineralogy = (5,'C')
-d44Ca_modern = (6,'A')
-rainfall_amount = (6, 'A')
+
