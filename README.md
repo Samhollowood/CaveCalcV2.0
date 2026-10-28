@@ -1,21 +1,23 @@
-# CaveCalcV2.0: A software tool for forward modelling speleothem chemistry.
-version 1 (https://github.com/Rob-Owen/cavecalc)
+# CaveCalcV2.0: A software tool for forward modelling speleothem chemistry
 
-version 2 and CDALite is still under construction 🚧🚗  So code may be more prone to errors (please still reach out!)
+Version 1: https://github.com/Rob-Owen/cavecalc
 
+Version 2 and CDA are under active development, so code may be more prone to errors than a stable release (please still reach out with anything you find).
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Samhollowood/CaveCalcV2.0/main)
 ![GitHub License](https://img.shields.io/github/license/Samhollowood/CaveCalcV2.0)
 ![Github Release](https://img.shields.io/github/v/release/Samhollowood/CaveCalcV2.0?include_prereleases&tag=Beta)
 
-
 ## Table of Contents
 - [Introduction](#introduction)
-- [Features](#features)  
+- [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Model Inputs](#model-inputs)
 - [Carbonate Data Analyser](#carbonate-data-analyser)
 - [Aragonite Precipitation](#aragonite-precipitation)
+- [Partition Coefficient and Fractionation Factor Overrides](#partition-coefficient-and-fractionation-factor-overrides)
+- [The d18O Reference Scale: VSMOW vs VPDB](#the-d18o-reference-scale-vsmow-vs-vpdb)
 - [Output](#output)
 - [Plotting](#plotting)
 - [Citing this work](#citing-this-work)
@@ -23,365 +25,367 @@ version 2 and CDALite is still under construction 🚧🚗  So code may be more 
 - [License](#license)
 - [References and Acknowledgements](#references-and-acknowledgements)
 
+## Introduction
 
-## **Introduction**
-CaveCalcV2.0 is an updated forward modelling tool for simulating speleothem chemistry. It maintains the core fundamentals of the original while adding several new features and improvements for more robust and user-friendly modeling. This repository provides the following resources:
+CaveCalcV2.0 is an updated forward-modelling tool for simulating speleothem chemistry. It keeps the core fundamentals of the original CaveCalc (Owen et al., 2018) while adding several new features aimed at more robust, flexible and user-friendly modelling. This repository provides:
 
-- Source code: `/cavecalc/`  
-- Original example scripts: `/examples/`  
-- New example scripts for API models: `/API_models/`  
-- Scripts to open the Graphical User Interface (GUI): `/scripts/`  
+- Source code: `/cavecalc/`
+- Original example scripts: `/examples/`
+- Example scripts for API-based modelling: `/API_models/`
+- Scripts to open the Graphical User Interface (GUI): `/scripts/`
 
-**Key updates include:**
-1. The new Carbonate Data Analyzer (CDA) mode.  
-2. Speleothem aragonite precipitation.  
-3. U/Ca as a proxy.
+**Key updates in CaveCalcV2.0:**
+1. The Carbonate Data Analyser (CDA) mode, for matching model output against measured speleothem data.
+2. Aragonite speleothem precipitation, alongside calcite.
+3. U/Ca as a trace-element proxy.
+4. User-overridable partition coefficients and fractionation factors (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`), independent of mineralogy.
+5. A choice of calcite-water d18O fractionation equation (`d18O_equation`): the database default (Kim and O'Neil, 1997) or a cave-calibrated alternative (Tremaine et al., 2011).
 
-## **Features**
+## Features
 
-- **Forward modeling of speleothem chemistry** with updated tools and examples.
-- **Easier installation** for Windows and Linux users. 
-- **Carbonate Data Analyzer (CDA):** A mode for analysing and matching measured data with model outputs.  
-- **Aragonite precipitation modeling** in speleothems.
-- **Readable output** now produces a .csv format with the settings and results
-- **Flexible plotting capabilities** for visualizing model and CDA outputs.  
-- Supports **Python 3.0 and above** (tested with Python 3.10.12).  
+- **Forward modelling of speleothem chemistry**, with updated tools and examples.
+- **Easier installation** for Windows and Linux users.
+- **Carbonate Data Analyser (CDA):** automatically matches measured speleothem data against a batch of model runs.
+- **Aragonite precipitation modelling**, alongside the default calcite pathway.
+- **Site-specific partition coefficients and fractionation factors:** override any database default for Mg/Ca, Sr/Ca, Ba/Ca, U/Ca or d44Ca, or switch the calcite d18O-H2O equation, without editing the thermodynamic database files.
+- **Readable output**, consolidated into a single `.csv` of settings and results per run.
+- **Flexible plotting**, for both raw model output and CDA results.
+- Supports **Python 3.0 and above** (tested with Python 3.10.12).
 
+## Installation
 
+Installing CaveCalcV2.0 requires a terminal (Mac/Linux) or command prompt (Windows).
 
-## **Installation**
-
-Installing CaveCalcV2.0 requires the use of the terminal (Mac/Linux) or command prompt (Windows). 
-
-The git command (https://git-scm.com/downloads) is recommened for this particular method of installation. Alternatively, users may download the repository as a zip-file for this repository locally.
+Git (https://git-scm.com/downloads) is recommended for installation. Alternatively, download the repository as a ZIP file and extract it locally.
 
 1. Clone the repository:
 ```shell
 git clone https://github.com/Samhollowood/CaveCalcV2.0.git
 ```
-   
-2. Go to directory:
+
+2. Move into the directory:
 ```shell
 cd CaveCalcV2.0
 ```
 
-3. If you would like to install into anaconda (optional):
+3. (Optional) Activate an Anaconda environment:
 ```shell
 conda activate base
 ```
-To activate the base anaconda environment. Or you may wish to use your own environment 
+Or use your own environment.
 
-There are two ways to install. One uses pip install . which does not generate an .egg file (step 4a). 
-The other uses Python setup.py install, which does generate .egg files (step 4b)
-*NOTE* soon .egg will be deprecated and will be removed in future versions of setuptools and pip.
+There are two ways to install: `pip install .` (step 4a), which does not generate an `.egg` file, or `python setup.py install` (step 4b), which does. `setup.py install` and `.egg` files are expected to be deprecated in future versions of setuptools/pip, so `pip install .` is the preferred route going forward.
 
-4a. Install the CaveCalcV2.0 package:
+**4a.** Install the package:
 ```shell
 pip install .
 ```
-This critical next step (non mac users only) will configure the phreeqpy module 
+Then configure phreeqpy (**non-Mac users only**):
 ```shell
 python cavecalc/configure_phreeqpy.py
 ```
-If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
+If no errors appear, CaveCalcV2.0 has installed correctly.
 
-4b.
-Install the CaveCalcV2.0 package:
+**4b.** Alternatively:
 ```shell
-python setup.py install 
+python setup.py install
 ```
-The configuration with phreeqpy is automatically done as part of the setup.py file.
-You may have to install a setuptools package.
+This configures phreeqpy automatically as part of setup. You may need to install `setuptools` first.
 
-If all has worked and no errors popped up, then CaveCalcV2.0 has installed!
-
-5. You can verify the installation by running an example:
+5. Verify the installation by running an example:
 ```shell
 cd examples/
-```
-```shell
 python example1.py
 ```
 
-6. You can now open the GUI by:
+6. Open the GUI:
 ```shell
 cd ../scripts
-```
-```shell
 python cc_input_gui.py
 ```
 
 ## Usage
 
-Once installation is complete, the **CaveCalcV2.0** module will be available in your Python or Anaconda environment.  
-You can run either a **single model** or a **batch of models** using any of the following methods:
+Once installed, the **CaveCalcV2.0** module is available in your Python/Anaconda environment. You can run a **single model** or a **batch of models** via:
 
 ### 1. Graphical User Interface (GUI)
 
-The GUI provides an intuitive interface for setting model inputs and running simulations.  
-Once inputs are defined, users can click:
+The GUI exposes model inputs grouped into collapsible sections (Atmospheric End-member, Soil Gas End-member, Bedrock Chemistry, Aragonite/Calcite Mode, Partition Coefficient Overrides, CDA Settings, and so on). Once inputs are set, click:
 
-- **Run CaveCalc Only!** — to run the CaveCalc model by itself  
-- **Run CaveCalc With CDA!** — to run the CaveCalc model alongside the Carbonate Data Analyser (CDA) mode
+- **Run CaveCalc Only!** - runs the model by itself.
+- **Run CaveCalc With CDA!** - runs the model alongside the Carbonate Data Analyser.
 
-Both single and batch model runs are supported in the GUI. To run a batch, users can provide arrays or multiple values for input parameters.
+Both single and batch runs are supported in the GUI: giving a field multiple, space-separated values runs the model over all combinations of those values.
 
 ### 2. Python Scripts
 
-For scripting-based workflows, CaveCalc can also be run via:
+For scripting-based workflows, use:
 
-- `run_models.py` (in the `API_models/` folder)  
-- `run_CDA.py` (also in `API_models/`)  
-- Custom `.py` scripts using these files as templates
+- `run_models.py` (in `API_models/`)
+- `run_CDA.py` (also in `API_models/`)
+- Custom `.py` scripts using either as a template
 
 #### `run_models.py`
 
-This script includes a `settings` dictionary containing **all available model inputs** set to their default values.  
-You can **add, remove, or modify** any inputs to tailor your simulation. If a key is removed, the value will default to what’s defined in `cavecalc/data/defaults.py`.
+Contains a `settings` dictionary with every model input set to its default value (from `cavecalc/data/defaults.py`). Add, remove, or modify any entry to tailor the run; removing a key simply falls back to its default.
 
 #### `run_CDA.py`
 
-Similar in structure to `run_models.py`, this script is optimized for the new **CDA mode**, focusing on a core set of inputs. Some are defined as arrays to support batch processing and exploration of parameter space.
-The `run_CDA.py` uses the measured data from `Example_CDA.csv`.
+Structured like `run_models.py` but set up for CDA mode: a core set of inputs, some given as lists to support batch exploration of parameter space, matched against the measured data in `Example_CDA.csv`.
 
-A full list of model inputs is provided in **`manual.pdf`**, Table 3.
-
-### 3. Running Scripts from the Terminal
-
-To execute a model run, open your terminal or command prompt, navigate to the appropriate directory, and run:
+### 3. Running scripts from the terminal
 
 ```bash
-cd API_model
+cd API_models
 python run_models.py
 ```
 
+## Model Inputs
+
+Every model input is declared in three places that must stay in sync:
+
+- `cavecalc/data/defaults.py` - the default value used if a setting isn't specified.
+- `cavecalc/data/types_and_limits.py` - the accepted type/range/options for validation.
+- `cavecalc/gui/mapping.py` - the human-readable label shown in the GUI.
+
+A setting is only usable (via `SettingsObject`, `SettingsMaker`, or the GUI) once it appears in all three. `cavecalc/gui/layout.py` additionally places each GUI-exposed setting into a numbered section and widget type (see the module docstring for the section/type codes).
+
+Broad input categories include:
+- Atmospheric, soil-gas and cave-air end-members (pCO2, O2, d13C, R14C, d18O)
+- Soil-gas mixing (`init_*` settings, `atmo_exchange`)
+- Soil and bedrock trace-metal/isotope chemistry (Mg, Sr, Ba, U, d44Ca, d13C, d18O)
+- Bedrock dissolution conditions (`bedrock`, `bedrock_pyrite`, `gas_volume`, `reprecip`)
+- General run settings (`temperature`, `kinetics_mode`, `precipitate_mineralogy`, `co2_decrement`, `calcite_sat_limit`)
+- Partition coefficient / fractionation factor overrides (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`, `d18O_equation`) - see [below](#partition-coefficient-and-fractionation-factor-overrides)
+- CDA settings (`user_filepath`, `tolerance_*`)
+- File I/O (`out_dir`, `database`, `phreeqc_log_file`)
+
+A full reference table of every input, its units and its meaning is intended for `manual.pdf`, Table 3 (consult that document for the complete, authoritative list; this guide summarises the categories and documents the newest settings in detail, since those postdate the manual).
+
 ## Carbonate Data Analyser
 
-The **Carbonate Data Analyser** (CDA) automatically compares **CaveCalcV2.0** model outputs with **measured speleothem data**.
+The **Carbonate Data Analyser** (CDA) automatically compares CaveCalcV2.0 model output against measured speleothem data, across a batch of model runs, and reports which runs fall within tolerance of the measured values.
 
----
+### Step 1: Import measured data
 
-### Step 1: Import Measured Data
-
-Use the `user_filepath` settings key to point to your speleothem data file:
-
+Point `user_filepath` at your data file:
 ```python
 'user_filepath': 'Path/to/template.csv'
 ```
+You don't need to populate every column. CDA only compares model output to the proxies present in the file. Supported proxy columns (matched by substring, so column names don't need to be exact) are: age, d13C, d18O, Mg/Ca, DCP, d44Ca, Sr/Ca, Ba/Ca and U/Ca.
 
-You do not need to populate all columns or cells in the file.
-The CDA will only compare model outputs to the proxies that are filled in.
-When using isotope systems, maintain consistancy in the reference standards throughout.
+**Reference scale note:** your measured d18O column should be on the **VPDB** scale (the standard convention for carbonates). CaveCalc's modelled d18O output (`d18O_Calcite`/`d18O_Aragonite`) is natively on the **VSMOW** scale (inherited from the database's oxygen isotope standard), so the CDA module converts the model's d18O to VPDB internally before comparing it to your data - you do not need to convert anything yourself for CDA matching. This conversion is specific to the CDA comparison step; see [below](#the-d18o-reference-scale-vsmow-vs-vpdb) for what this means elsewhere in the model.
 
-### Step 2: Define Tolerance Values (Optional)
+### Step 2: Define tolerance values (optional)
 
-You can optionally set tolerance values for proxies to define what counts as a match between model and measured data. These can be found in the GUI (under the sub-heading CDA settings) or defined in .py files as::
+Tolerances define what counts as a "match" between model and measured data. Set them in the GUI (CDA Settings section) or in a script:
+- `tolerance_d13C`, `tolerance_d18O`, `tolerance_d44Ca`, `tolerance_DCP`
+- `tolerance_MgCa`, `tolerance_SrCa`, `tolerance_BaCa`, `tolerance_UCa`
 
-- `tolerance_d13C`  - `tolerance_d18O`  - `tolerance_d44Ca`  - `tolerance_DCP`
-   `tolerance_MgCa`  - `tolerance_SrCa`  - `tolerance_BaCa`  - `tolerance_UCa`  
+Leave any blank to use its default tolerance (see `cavecalc/data/defaults.py`).
 
-If you leave these blank or undefined, CDA will use the default tolerance intervals for each proxy tolerance.
- 
-### Step 3: Define Model Inputs
+### Step 3: Define model inputs
 
-Set your model input variables as usual for CaveCalc model runs.
+Set your model inputs as usual (see [Usage](#usage) and [Model Inputs](#model-inputs)).
 
-**See usage.**  
-**See manual Table 3 for all available inputs.**
+### Optional: output directory
 
-
-### Optional: Define Output Directory
-
-By default, outputs save to:
-
-./cavecalc_output/
-
-You can override this by setting the `out_dir` key in your settings dictionary:
-
+Outputs save by default to `./cavecalc_output/`. Override with:
+```python
 'out_dir': './my_custom_output/'
+```
+or set it directly in the GUI.
 
-Or set the output directory directly in the GUI.
+CDA output is stored inside the chosen output directory, in a `CDA_Results/` subfolder containing four `.csv` files (see [Output](#output)).
 
-**Note:** The CDA output will be stored within the specified output directory inside a folder named `CDA_Results/`, containing 4 `.csv` files (see output below).
-
-
-## Running models with CDA
-
-After setting the model inputs, importing the measured data, and setting the tolerance intervals, run the CDA mode:
+### Running models with CDA
 
 ```shell
 cd CaveCalcV2.0/API_models/
 python run_CDA.py
 ```
-Via the GUI, click Run CaveCalc with CDA.
+Or, via the GUI, click **Run CaveCalc With CDA!**.
 
-Note: Any updates will be shown in the terminal or command prompt.
-
-When the CDA is functioning correctly, it will print:
-
-```shell
+Progress is reported in the terminal/command prompt. On first use in a given output directory, you'll see something like:
+```
 CDA was initialised for the first time in the output directory. Created new 'Path/to/Output_Directory/CDA_Results/All_outputs.csv
 ```
-The CDA creates a new CDA_Results folder within the output directory, which will store matches in a .csv file.
 
-Provided the output directory is left unchanged, runninng extra batches of models will append the results of the CDA AND not replace the previous batch of runs.
-
+Provided the output directory is left unchanged, running further batches appends to the existing CDA results rather than overwriting them.
 
 ## Aragonite Precipitation
 
-You can simulate **aragonite** as the speleothem precipitate in either the **GUI** or via a **Python script**.
-
----
+Simulate **aragonite** as the speleothem precipitate via the GUI or a Python script.
 
 ### In the GUI
 
-1. Navigate to the **Calcite / Aragonite** section.
-2. Use the drop-down menu labeled `precipitate_mineralogy`.
+1. Navigate to the **Aragonite/Calcite Mode** section.
+2. Use the `precipitate_mineralogy` drop-down.
 3. Select `Aragonite`.
 
-CaveCalc will automatically switch to the correct thermodynamic database (`Aragonite.dat`).  
-There is **no need to manually edit** any database files.
+CaveCalc automatically switches to the matching thermodynamic database (`aragonite.dat`) - no manual database editing required.
 
----
-
-### In a Python Script
-
-If you're running CaveCalc via a `.py` file (e.g., `run_models.py`), define the speleothem mineralogy in the `settings` dictionary using:
+### In a Python script
 
 ```python
 'precipitate_mineralogy': 'Aragonite'
 ```
 
+Note that several model output keys (and some proxy behaviours, below) differ between Calcite and Aragonite runs, since each mineral has its own set of database partition coefficients and fractionation factors.
 
+## Partition Coefficient and Fractionation Factor Overrides
+
+By default, CaveCalc draws every partition coefficient and fractionation factor (Mg/Ca, Sr/Ca, Ba/Ca, U/Ca, d44Ca, and the calcite-water d18O equation) straight from the active thermodynamic database (`calcite.dat` or `aragonite.dat`). CaveCalcV2.0 lets you override any of these directly from your settings, without touching the database files - useful if you have site-specific partitioning constraints (e.g. from your own cave monitoring or calibration study) that differ from the generic database values.
+
+These settings are **mineralogy-agnostic**: set `D_MgCa`, say, and it is applied to whichever mineral `precipitate_mineralogy` is currently set to (resolved at run time against the matching named expression in that mineral's database). You do not need separate settings per mineralogy.
+
+| Setting | What it overrides | Units / form | Default |
+|---|---|---|---|
+| `D_MgCa` | Mg/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
+| `D_SrCa` | Sr/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
+| `D_BaCa` | Ba/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
+| `D_UCa` | U/Ca partition coefficient | Linear D (dimensionless, > 0) | `None` (database default) |
+| `D_44Ca` | Ca isotope fractionation factor | **1000 x ln(alpha)**, per mil (may be negative) | `None` (database default) |
+| `d18O_equation` | Calcite-water d18O fractionation equation | `'ONeil'` or `'Tremaine'` | `'ONeil'` |
+
+A setting left as `None` (or `d18O_equation` left as `'ONeil'`) uses the database default and behaves exactly as CaveCalc always has.
+
+**Important - D_44Ca units.** Unlike the other four, `D_44Ca` must be supplied directly as **1000 ln(alpha)** (the same convention the database itself uses), not as a linear partition coefficient. Typical database values are small and negative (around -0.99 permil for aragonite, -1.27 permil for calcite) - if you're used to thinking of Ca isotope fractionation as a fractionation factor in permil, this is that same quantity.
+
+**d18O_equation and mineralogy.** `d18O_equation = 'Tremaine'` only takes effect when `precipitate_mineralogy` is `'Calcite'`. There is currently no cave-calibrated equivalent to Tremaine et al. (2011) for aragonite in the literature, so setting `'Tremaine'` while precipitating aragonite silently has no effect (the aragonite run still uses its own database default, Kim et al., 2007). This is a genuine limitation of the published calibration record, not a bug - if a cave-calibrated aragonite equation becomes available, it would need to be added to `caves.Solution.partition_coefficient_overrides`.
+
+**Example (API script):**
+```python
+settings = {
+    ...
+    'precipitate_mineralogy': 'Calcite',
+    'D_MgCa': 0.02,        # override the database Mg/Ca partition coefficient
+    'D_44Ca': -0.85,       # override the Ca isotope fractionation factor (1000*ln(alpha))
+    'd18O_equation': 'Tremaine',  # use the cave-calibrated d18O-H2O equation instead of Kim & O'Neil (1997)
+}
+```
+
+**A note on physically implausible values.** Supplying a wildly unrealistic partition coefficient (e.g. `D_MgCa = 1.5`, well above typical Mg exclusion from calcite/aragonite) can push PHREEQC into severe convergence difficulty, since the solid-solution chemistry becomes thermodynamically extreme. If a run with an override fails to converge, check the value against literature-plausible partitioning for that element/mineral before assuming it's a code issue.
+
+**GUI location.** These settings live in their own highlighted **Partition Coefficient Overrides** section, alongside Aragonite/Calcite Mode.
+
+## The d18O Reference Scale: VSMOW vs VPDB
+
+This trips people up, so it's worth stating plainly:
+
+- **`atm_d18O` (Rainfall d18O), `bedrock_d18O`, `cave_d18O`** - all model d18O *inputs* must be given on the **VSMOW** scale, matching the database's built-in oxygen isotope standard.
+- **`d18O_Calcite` / `d18O_Aragonite` (model output)** - natively on the **VSMOW** scale, inherited directly from that same standard.
+- **Measured speleothem d18O data** is conventionally reported on the **VPDB** scale.
+
+If you're plotting or comparing model d18O output directly (outside of CDA - e.g. via `analyse.py`), remember it is VSMOW and will carry an offset of roughly 30 permil relative to VPDB-reported measured values. Convert with:
+```
+VPDB = 0.970001 * VSMOW - 29.99
+```
+The CDA module applies this conversion internally and automatically when matching model output to your measured data (see [Carbonate Data Analyser](#carbonate-data-analyser)), so no manual conversion is needed there. The GUI's rainfall d18O field includes a **"Preview as VPDB"** button that shows the VPDB-equivalent of your entered value for reference only - it does not alter the field, which must remain on the VSMOW scale for the model to run correctly.
+
+d13C and d44Ca don't have an analogous dual-scale issue in CaveCalc: d13C is reported on VPDB throughout, and d44Ca follows whichever standard your bedrock/soil inputs use (commonly SRM 915a) - just keep your measured data and your bedrock/soil d44Ca inputs on the same standard.
 
 ## Output
-When running **CaveCalcV2.0**, whether it be with the CDA, or without, three model output files are generated:
 
-1. **`settings.pkl`**  
-   A pickle file that stores all the input settings for the model.
+Every CaveCalcV2.0 run (with or without CDA) generates three files in the output directory:
 
-2. **`results.pkl`**  
-   A pickle file that contains all the model results.
+1. **`settings.pkl`** - a pickle of all input settings for the run.
+2. **`results.pkl`** - a pickle of all model results.
+3. **`settings_results.csv`** - a consolidated, human-readable CSV of both. Model output is recorded at each stage of speleothem chemistry per model (soil-water equilibration, bedrock dissolution, CO2 degassing, and carbonate precipitation), so each output key holds an array of values across those steps.
 
-3. A new **`settings_results.csv`**  
-   This is a new CSV file that consolidates both the input settings and the model outputs in a single, readable format. Model outputs can be osberved for each stage of speleothem chemistry per model (e.g., soil-water equilibriation, bedrock dissolution and C02-degassing and carbonate precipitation). 
+A full reference of output keys and their meaning is intended for `manual.pdf`, Table 4; note that the exact set of output keys differs slightly depending on whether `precipitate_mineralogy` is Calcite or Aragonite.
 
-There are several model output keys, and the definition of each can be found in the manual.pdf, Table 4. Each model ouput willl have an array of values, which will represent different parts of speleothem chemistry (i.e the values after soil-water equilibriation, bedrock dissolution and C02-degassing steps). 
+If CDA was run, a `CDA_Results/` subfolder is created in the output directory, containing:
 
-If the CDA was initialised, it will create a CDA_Results folder within the output directory with additional output files:
-```shell
-cd /path/to/out_dir/CDA_Results/
-```
-
-containing:
-
-1. **`Matches.csv`**  
-   A CSV file that stores the inputs and outputs of all matches with the measured data (and the residual)
-
-2. **`All_outputs.csv`**  
-   A CSV file that stores all inputs and outputs of the CDA model runs (and the residuals)
-
-3. **`Tolerance.csv`**  
-   A CSV file that stores the tolerance intervals used for the measured proxy data in the CDA
-
-4. **`Input_ranges.csv`**  
-   A CSV file that stores the range of model inputs used in the CDA model runs
-
+1. **`Matches.csv`** - inputs, outputs and residuals for every run that matched the measured data within tolerance.
+2. **`All_outputs.csv`** - inputs, outputs and residuals for every CDA run, matched or not.
+3. **`Tolerances.csv`** - the tolerance intervals used for each proxy.
+4. **`Input_Ranges.csv`** - the range of model inputs explored across the CDA batch.
 
 ## Plotting
-CaveCalcV2.0 comes with built-in functionalities for generating plots, which are available in the `analyse.py` module. Users can initialize this file and generate plots after running models, or even delve into archived models to produce plots. To do this via python scripting, add the following lines to the bottom of the run_CDA.py or run_models.py script:
 
+CaveCalcV2.0's built-in plotting lives in `analyse.py`. Generate plots after running models, or re-plot from archived output.
+
+**Line plots of model output:**
 ```python
 import cavecalc.analyse as cca
 
-out_dir = 'path/to/output/' #Path to archived output data
+out_dir = 'path/to/output/'  # path to archived output data
 
-e = cca.Evaluate()  # Initializes the Evaluate class
-e = load_data(out_dir) #Load data 
-e1 = e.filter_by_index(0, n=True) #Filters out first model step
+e = cca.Evaluate()
+e = e.load_data(out_dir)
+e1 = e.filter_by_index(0, n=True)  # filter out the first model step
 
-#Example plot of fCa on x-axis and d13C_Calcite on y-axis. Different lines will be coloured depending on the soil_pCO2 (i.e. inputs), and added to the legend
-e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with = 'soil_pCO2')
+# d13C_Calcite vs f_ca, one coloured line per soil_pCO2 value
+e1.plot_models(x_key='f_ca', y_key='d13C_Calcite', label_with='soil_pCO2')
 ```
-This function plots model outputs with an output key on the x-axis and y-axis, with different coloured lines for each input value within label_with. In the example above, the d13C_Calcite will be plotted against f_ca, with each colored line corresponding to a specific input value of soil_pCO2. These can be replaced with any outputs for the x_key and y_key and inputs for label_with. Users can observe all the model output keys in the manual Table 3. Note, that the model key outputs will change slightly whether Calcite or Aragonite is the precipitate_mineralogy.
+`x_key`/`y_key` can be any model output key; `label_with` can be any model input key. The set of available output keys is given in `manual.pdf`, Table 3/4, and differs slightly between Calcite and Aragonite runs.
 
-There is also an option to plot by points:
+**Point/scatter plots:**
 ```python
 import cavecalc.analyse as cca
 
-out_dir = 'path/to/output/' #Path to archived output data
+out_dir = 'path/to/output/'
 
-e = cca.Evaluate()  # Initializes the Evaluate class
-e = load_data(out_dir) #Load data 
+e = cca.Evaluate()
+e = e.load_data(out_dir)
 
-#Example plot of fCa on x-axis. d13C on y-axis. Plot is scatter, it is taking the value of f_ca and d13C_Calcite at the equilibrium with cave air value (final index i.e. point_index=-1)
-e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with = 'soil_pCO2')
+# f_ca vs d13C_Calcite at the final (cave-air-equilibrated) step
+e.plot_points(x_key='f_ca', y_key='d13C_Calcite', point_index=-1, label_with='soil_pCO2')
 ```
 
-By default, after a **CDA** run, three plots are generated automatically. However, these plots can also be generated manually. To do so, users can apply this example to any archived CDA Data:
-
+**CDA plots:** three plots (CO2 processes, flow-path controls, model-data comparison) are generated automatically after a CDA run, and can also be regenerated manually from archived CDA output:
 ```python
-# Import modules
 import cavecalc.analyse as cca
 
-# Initialize the CDA Plotting class
 e = cca.CDAPlotter()
 
-# Define path to measured data and archived output directory
-user_filepath = 'path/to/data.csv' # Path to the measured data used in the CDA run,
-out_dir = 'path/to/out_dir/CDA_Results/' # Path to the archived output directory containing CDA_Results,
+user_filepath = 'path/to/data.csv'          # measured data used in the CDA run
+out_dir = 'path/to/out_dir/CDA_Results/'    # archived CDA_Results directory
 
-# Plot CDA_Results
 plot = e.plot_CDA(user_filepath, out_dir)
 ```
-
-It is important to note that the plotting feature for CDA does not plot ALL input variables, only a select amount. However, all input variables can be found in the Matches.csv file.
+The CDA plotting routine doesn't plot every input variable - only a representative selection. The full set of inputs/outputs for every matched run is always available in `Matches.csv`.
 
 ## Citing this work
-If you use CaveCalcV2.0 please cite .....
+
+If you use CaveCalcV2.0, please cite: *(citation details to be added on publication)*.
 
 ## Contributing, questions, and issues
-If you have any suggestions, improvements, questions, or comments - please create an issue, start a discussion, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
+
+Suggestions, improvements, questions or comments are welcome - please open an issue, start a discussion, or [get in touch](mailto:samuel.hollowood@earth.ox.ac.uk).
 
 ## License
-This project is licensed under the MIT license
+
+This project is licensed under the MIT license.
 
 ## References and Acknowledgements
 
-## References and Acknowledgements
+### Scientific references (new in CaveCalcV2.0)
 
-This repository uses the following open-source software libraries:
+- Kim, S.-T. and O'Neil, J.R. (1997). Equilibrium and nonequilibrium oxygen isotope effects in synthetic carbonates. *Geochimica et Cosmochimica Acta*, 61(16), 3461-3475. (default calcite-water d18O equation)
+- Tremaine, D.M., Froelich, P.N. and Wang, Y. (2011). Speleothem calcite farmed in situ: Modern calibration of d18O and d13C paleoclimate proxies in a continuously-monitored natural cave system. *Geochimica et Cosmochimica Acta*, 75(17), 4929-4950. (cave-calibrated calcite d18O equation, `'Tremaine'`)
+- Kim, S.-T., O'Neil, J.R., Hillaire-Marcel, C. and Mucci, A. (2007). Oxygen isotope fractionation between synthetic aragonite and water: Influence of temperature and Mg2+ concentration. *Geochimica et Cosmochimica Acta*, 71(19), 4704-4715. (default aragonite-water d18O equation)
+- Owen, R., Day, C.C. and Hu, C.-Y. (2018). CaveCalc: A new model for speleothem chemistry and isotopes. *Computers & Geosciences*, 119, 115-122. (original CaveCalc model)
 
-- **scipy** (v1.13.1) — Scientific computing tools  
-- **numpy** (v1.26.4) — Fundamental package for numerical computing  
-- **matplotlib** (v3.8.4) — Plotting and visualization library  
-- **inflection** (v0.5.1) — String transformation utilities  
-- **phreeqpy** (v0.6.0) — Python interface for PHREEQC geochemical modeling  
-- **seaborn** (v0.13.2) — Statistical data visualization based on matplotlib  
-- **pandas** (v2.2.3) — Data structures and data analysis tools  
-- **pywin32** (v305.1) — Windows extensions for Python  
+### Software dependencies
 
-### matplotlib dependencies
+This repository uses the following open-source libraries:
 
-- **contourpy** (v1.2.0)  
-- **cycler** (v0.11.0)  
-- **fonttools** (v4.51.0)  
-- **kiwisolver** (v1.4.4)  
-- **packaging** (v23.2)  
-- **pillow** (v10.4.0)  
-- **pyparsing** (v3.0.9)  
-- **python-dateutil** (v2.9.0.post0)  
+- **scipy** (v1.13.1) - Scientific computing tools
+- **numpy** (v1.26.4) - Fundamental package for numerical computing
+- **matplotlib** (v3.8.4) - Plotting and visualisation library
+- **inflection** (v0.5.1) - String transformation utilities
+- **phreeqpy** (v0.6.0) - Python interface for PHREEQC geochemical modelling
+- **seaborn** (v0.13.2) - Statistical data visualisation based on matplotlib
+- **pandas** (v2.2.3) - Data structures and data analysis tools
+- **pywin32** (v305.1) - Windows extensions for Python
 
-### pandas dependencies
+**matplotlib dependencies:** contourpy (v1.2.0), cycler (v0.11.0), fonttools (v4.51.0), kiwisolver (v1.4.4), packaging (v23.2), pillow (v10.4.0), pyparsing (v3.0.9), python-dateutil (v2.9.0.post0)
 
-- **pytz** (v2024.1)  
-- **tzdata** (v2023.3)  
+**pandas dependencies:** pytz (v2024.1), tzdata (v2023.3)
 
-### Other dependencies
-
-- **six** (v1.16.0) — Python 2 and 3 compatibility utilities
-
----
+**Other dependencies:** six (v1.16.0) - Python 2/3 compatibility utilities
 
 We thank the developers of these libraries for making this work possible.
 
