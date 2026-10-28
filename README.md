@@ -248,7 +248,7 @@ These settings are **mineralogy-agnostic**: set `D_MgCa`, say, and it is applied
 
 A setting left as `None` uses the database default and behaves exactly as CaveCalc always has.
 
-**Important - D_44Ca units.** Unlike the other four, `D_44Ca` must be supplied directly as **1000 ln(alpha)** (the same convention the database itself uses), not as a linear partition coefficient. Typical database values are small and negative (around -0.99 permil for aragonite, -1.27 permil for calcite) - if you're used to thinking of Ca isotope fractionation as a fractionation factor in permil, this is that same quantity.
+**Important - D_44Ca units.** Unlike the other four, `D_44Ca` must be supplied directly as **1000 ln(alpha)** (the same convention the database itself uses), not as a linear partition coefficient. 
 
 **Example (API script):**
 ```python
