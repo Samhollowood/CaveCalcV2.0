@@ -577,23 +577,27 @@ class CCInputGUI(object):
                     x = InputsRangeWidget(frame, self.settings[a]) 
                     x.grid(row=i, column=1, sticky=W) 
                     
-                    if a == 'atm_d18O': 
-                        def convert_to_vpdb(var=self.settings[a]): 
-                            try: 
-                                # Get the input string and split by commas 
-                                vsmow_values = var.get().split() 
-                                # Convert each value
-                                vpdb_values = [] 
-                                for val in vsmow_values: 
-                                    val = val.strip() 
-                                    if val:  
-                                        vsmow = float(val) 
-                                        vpdb = (0.970001 * vsmow) - 29.99 
-                                        vpdb_values.append(str(round(vpdb, 4)))  
-                                var.set(' '.join(vpdb_values)) 
-                            except ValueError: 
-                                messagebox.showerror("Conversion Error", "Please enter valid δ¹⁸O value(s), separated by commas.") 
-                        Button(frame, text="→ VPDB", command=convert_to_vpdb).grid(row=i, column=2, sticky=W)
+                    if a == 'atm_d18O':  
+                        def preview_vpdb(var=self.settings[a]):  
+                            try:  
+                                # Get the input string and split by spaces  
+                                vsmow_values = var.get().split()  
+                                # Convert each value for preview only — does NOT touch var 
+                                vpdb_values = []  
+                                for val in vsmow_values:  
+                                    val = val.strip()  
+                                    if val:   
+                                        vsmow = float(val)  
+                                        vpdb = (0.970001 * vsmow) - 29.99  
+                                        vpdb_values.append(str(round(vpdb, 4)))   
+                                        messagebox.showinfo( 
+                                            "VSMOW → VPDB preview",
+                                            "For reference only — this does NOT change the model input. "
+                                            "atm_d18O must remain in VSMOW for CaveCalc to interpret it "
+                                            "correctly.\n\n" f"VPDB equivalent: {' '.join(vpdb_values)}") 
+                            except ValueError:  
+                                messagebox.showerror("Conversion Error", "Please enter valid δ¹⁸O value(s), separated by commas.")  
+                                Button(frame, text="Preview as VPDB", command=preview_vpdb).grid(row=i, column=2, sticky=W)
 
                 elif b == 'B': # text without range
                     label = Label(frame, text=ns(a), fg=color) 
