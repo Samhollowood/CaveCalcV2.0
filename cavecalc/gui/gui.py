@@ -542,8 +542,15 @@ class CCInputGUI(object):
                 'cave_d18O':  'Alters the cave air d18O that is equilibriated with the solution d18O. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
                 'cave_air_volume': 'Alters the extent of equilibriation with the cave air. NOTE: Default CaveCalc mode does not allow for equilibriaiton with the cave air. Change Degassing/Precipitation Mode to single_step_degassing to test',
 
-                'kinetics_mode': 'Alters fundamental aspects of speleothem chemistry. Refer to Owen et al., 2018: CaveCalc: A new model for speleothem chemistry & isotopes',
+                              'kinetics_mode': 'Alters fundamental aspects of speleothem chemistry. Refer to Owen et al., 2018: CaveCalc: A new model for speleothem chemistry & isotopes',
                 'precipitate_mineralogy': 'Alters the precipitate mineralogy. Impacts d13C, d18O, X/Ca, and d44Ca',
+                
+                # Partition Coefficient / Fractionation Factor Overrides
+                'D_MgCa': 'Overrides the default Mg/Ca partition coefficient (leave blank to use the database value). Applies regardless of precipitate mineralogy selected. Impacts Mg/Ca',
+                'D_SrCa': 'Overrides the default Sr/Ca partition coefficient (leave blank to use the database value). Applies regardless of precipitate mineralogy selected. Impacts Sr/Ca',
+                'D_BaCa': 'Overrides the default Ba/Ca partition coefficient (leave blank to use the database value). Applies regardless of precipitate mineralogy selected. Impacts Ba/Ca',
+                'D_UCa': 'Overrides the default U/Ca partition coefficient (leave blank to use the database value). Applies regardless of precipitate mineralogy selected. Impacts U/Ca',
+                'D_44Ca': 'Overrides the default calcium isotope fractionation factor (leave blank to use the database value). Must be given as 1000ln(alpha), NOT a linear ratio. Applies regardless of precipitate mineralogy selected. Impacts d44Ca',
           
                 
                 'co2_decrement': 'Fraction of CO2(aq) removed on each degassing step. Alters the resolution of the evolution of d13C, d44Ca, and X/Ca',
@@ -771,6 +778,7 @@ class CCInputGUI(object):
         # Define sections
         sections = [
         ('Aragonite/Calcite Mode', 5),
+        ('Partition Coefficient Overrides', 19),
         ('Scripting Options', 2),
         ('Additional PHREEQC output', 3),
         ('CDA Settings', 1),
@@ -779,8 +787,8 @@ class CCInputGUI(object):
         current_row = 1
         for section_name, layout_number in sections: 
             # Determine button color
-            button_color = 'red' if section_name in ['Aragonite/Calcite Mode', 'CDA Mode'] else 'black'
-
+            button_color = 'red' if section_name in ['Aragonite/Calcite Mode', 'Partition Coefficient Overrides', 'CDA Mode'] else 'black'
+            
             # Add toggle button
             self.toggle_buttons[section_name] = Button(F3, text=f"▼ {section_name}", command=lambda s=section_name: toggle_expand_collapse(s))
             self.toggle_buttons[section_name].grid(row=current_row, column=0, sticky=W)
