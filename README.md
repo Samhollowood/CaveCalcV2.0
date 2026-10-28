@@ -39,15 +39,15 @@ CaveCalcV2.0 is an updated forward-modelling tool for simulating speleothem chem
 2. Aragonite speleothem precipitation, alongside calcite.
 3. U/Ca as a trace-element proxy.
 4. User-overridable partition coefficients and fractionation factors (`D_MgCa`, `D_SrCa`, `D_BaCa`, `D_UCa`, `D_44Ca`), independent of mineralogy.
-5. A choice of calcite-water d18O fractionation equation (`d18O_equation`): the database default (Kim and O'Neil, 1997) or a cave-calibrated alternative (Tremaine et al., 2011).
+
 
 ## Features
 
 - **Forward modelling of speleothem chemistry**, with updated tools and examples.
 - **Easier installation** for Windows and Linux users.
-- **Carbonate Data Analyser (CDA):** automatically matches measured speleothem data against a batch of model runs.
+- **Carbonate Data Analyser (CDA):** matches measured speleothem data against a batch of model runs.
 - **Aragonite precipitation modelling**, alongside the default calcite pathway.
-- **Site-specific partition coefficients and fractionation factors:** override any database default for Mg/Ca, Sr/Ca, Ba/Ca, U/Ca or d44Ca, or switch the calcite d18O-H2O equation, without editing the thermodynamic database files.
+- **Site-specific partition coefficients and fractionation factors:** override any database default for Mg/Ca, Sr/Ca, Ba/Ca, U/Ca or d44Ca, without editing the thermodynamic database files.
 - **Readable output**, consolidated into a single `.csv` of settings and results per run.
 - **Flexible plotting**, for both raw model output and CDA results.
 - Supports **Python 3.0 and above** (tested with Python 3.10.12).
