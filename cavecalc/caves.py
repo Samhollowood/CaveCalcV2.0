@@ -342,84 +342,6 @@ class Solution(object):
         else:
             return self.initial_chemistry, 'initial_water'   
 
-    def partition_coefficient_overrides(self):
-        """Build a NAMED_EXPRESSIONS block overriding one or more of the
-        database's default partition coefficients / fractionation factors,
-        for whichever mineralogy is currently set to precipitate.
-
-        Convention (matches util.DBReader._database_eval's coefficient
-        order: coeffs = [1, T, ...], i.e. a[0] is the CONSTANT term and
-        a[1] is the term multiplied by temperature):
-            1000 * ln(D) = intercept * 1 + gradient * T
-
-        D_MgCa, D_SrCa, D_BaCa, D_UCa are linear partition coefficients
-        (must be > 0), converted via intercept=1000*ln(D), gradient=0 (no
-        temperature dependence).
-
-        D_44Ca is a Ca isotope fractionation factor already expressed
-        directly in permil (matching the database convention, e.g. -0.99
-        for aragonite, -1.27 for calcite), so it is passed straight
-        through as the intercept with no log conversion, and may be
-        negative.
-
-        All settings apply regardless of precipitate_mineralogy: the user
-        sets a single D_MgCa (etc.), and this method resolves it against
-        whichever mineral is actually precipitating in this run.
-
-        Settings default to None, meaning "use database default, don't
-        override."
-
-        Returns:
-            A PHREEQC NAMED_EXPRESSIONS input string (empty string if no
-            overrides are set in settings).
-        """
-
-        mineral = self.s.settings['precipitate_mineralogy'].capitalize()
-
-        # settings key -> {mineralogy: exact PHREEQC named expression name}
-        # confirmed against both aragonite.dat and calcite.dat.
-        override_map = {
-            'D_MgCa': {'Aragonite': 'Log_alpha_MgCa_Aragonite/H2O(l)',
-                       'Calcite':   'Log_alpha_MgCa_Calcite/H2O(l)'},
-            'D_SrCa': {'Aragonite': 'Log_alpha_SrCa_Aragonite/H2O(l)',
-                       'Calcite':   'Log_alpha_SrCa_Calcite/H2O(l)'},
-            'D_BaCa': {'Aragonite': 'Log_alpha_BaCa_Aragonite/H2O(l)',
-                       'Calcite':   'Log_alpha_BaCa_Calcite/H2O(l)'},
-            'D_UCa':  {'Aragonite': 'Log_alpha_UCa_Aragonite/H2O(l)',
-                       'Calcite':   'Log_alpha_UCa_Calcite/H2O(l)'},
-            'D_44Ca': {'Aragonite': 'Log_alpha_44Ca_Aragonite/Ca(aq)',
-                       'Calcite':   'Log_alpha_44Ca_Calcite/Ca(aq)'},
-        }
-
-        lines = []
-        for setting_key, mineral_map in override_map.items():
-            val = self.s.settings.get(setting_key, None)
-            if val is None:
-                continue
-
-            expr_name = mineral_map.get(mineral, None)
-            if expr_name is None:
-                raise ValueError(
-                    f"{setting_key} override requested but no matching named "
-                    f"expression is defined for precipitate_mineralogy="
-                    f"{mineral!r}."
-                )
-
-            if setting_key == 'D_44Ca':
-                intercept, gradient = val, 0
-            else:
-                if val <= 0:
-                    raise ValueError(f"{setting_key} must be a positive partition "
-                                      f"coefficient (got {val}).")
-                intercept, gradient = 1000 * math.log(val), 0
-
-            # NOTE: intercept comes FIRST, gradient SECOND — matches
-            # _database_eval's coeffs=[1, T, ...] ordering.
-            lines.append(f"{expr_name}\n\t-ln_alpha1000\t{intercept}\t{gradient}")
-
-        if not lines:
-            return ""
-        return "NAMED_EXPRESSIONS\n" + "\n\n".join(lines) + "\n"
     
     def open_diss_rxn(self, Carbonate):
         """Prepare PHREEQC input for open-system dissolution.
@@ -577,6 +499,87 @@ class Solution(object):
             return False
         else:
             return True
+
+
+    def partition_coefficient_overrides(self):
+        """Build a NAMED_EXPRESSIONS block overriding one or more of the
+        database's default partition coefficients / fractionation factors,
+        for whichever mineralogy is currently set to precipitate.
+
+        Convention (matches util.DBReader._database_eval's coefficient
+        order: coeffs = [1, T, ...], i.e. a[0] is the CONSTANT term and
+        a[1] is the term multiplied by temperature):
+            1000 * ln(D) = intercept * 1 + gradient * T
+
+        D_MgCa, D_SrCa, D_BaCa, D_UCa are linear partition coefficients
+        (must be > 0), converted via intercept=1000*ln(D), gradient=0 (no
+        temperature dependence).
+
+        D_44Ca is a Ca isotope fractionation factor already expressed
+        directly in permil (matching the database convention, e.g. -0.99
+        for aragonite, -1.27 for calcite), so it is passed straight
+        through as the intercept with no log conversion, and may be
+        negative.
+
+        All settings apply regardless of precipitate_mineralogy: the user
+        sets a single D_MgCa (etc.), and this method resolves it against
+        whichever mineral is actually precipitating in this run.
+
+        Settings default to None, meaning "use database default, don't
+        override."
+
+        Returns:
+            A PHREEQC NAMED_EXPRESSIONS input string (empty string if no
+            overrides are set in settings).
+        """
+
+        mineral = self.s.settings['precipitate_mineralogy'].capitalize()
+
+        # settings key -> {mineralogy: exact PHREEQC named expression name}
+        # confirmed against both aragonite.dat and calcite.dat.
+        override_map = {
+            'D_MgCa': {'Aragonite': 'Log_alpha_MgCa_Aragonite/H2O(l)',
+                       'Calcite':   'Log_alpha_MgCa_Calcite/H2O(l)'},
+            'D_SrCa': {'Aragonite': 'Log_alpha_SrCa_Aragonite/H2O(l)',
+                       'Calcite':   'Log_alpha_SrCa_Calcite/H2O(l)'},
+            'D_BaCa': {'Aragonite': 'Log_alpha_BaCa_Aragonite/H2O(l)',
+                       'Calcite':   'Log_alpha_BaCa_Calcite/H2O(l)'},
+            'D_UCa':  {'Aragonite': 'Log_alpha_UCa_Aragonite/H2O(l)',
+                       'Calcite':   'Log_alpha_UCa_Calcite/H2O(l)'},
+            'D_44Ca': {'Aragonite': 'Log_alpha_44Ca_Aragonite/Ca(aq)',
+                       'Calcite':   'Log_alpha_44Ca_Calcite/Ca(aq)'},
+        }
+
+        lines = []
+        for setting_key, mineral_map in override_map.items():
+            val = self.s.settings.get(setting_key, None)
+            if val is None:
+                continue
+
+            expr_name = mineral_map.get(mineral, None)
+            if expr_name is None:
+                raise ValueError(
+                    f"{setting_key} override requested but no matching named "
+                    f"expression is defined for precipitate_mineralogy="
+                    f"{mineral!r}."
+                )
+
+            if setting_key == 'D_44Ca':
+                intercept, gradient = val, 0
+            else:
+                if val <= 0:
+                    raise ValueError(f"{setting_key} must be a positive partition "
+                                      f"coefficient (got {val}).")
+                intercept, gradient = 1000 * math.log(val), 0
+
+            # NOTE: intercept comes FIRST, gradient SECOND — matches
+            # _database_eval's coeffs=[1, T, ...] ordering.
+            lines.append(f"{expr_name}\n\t-ln_alpha1000\t{intercept}\t{gradient}")
+
+        if not lines:
+            return ""
+        return "NAMED_EXPRESSIONS\n" + "\n\n".join(lines) + "\n"
+
     
     def precipitate_rxn(self):
         """Prepare PHREEQC input for calcite precipitation.
