@@ -73,4 +73,10 @@ tolerance_SrCa = (0, None)
 tolerance_BaCa =  (0, None)
 tolerance_UCa =  (0, None)
 
+D_MgCa =        (0, None)
+D_SrCa =        (0, None)
+D_BaCa =        (0, None)
+D_UCa =         (0, None)
+D_44Ca =        (None, None)   # 44Ca fractionation factor, can be negative
+
 
